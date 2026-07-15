@@ -7,3 +7,11 @@ Vítej v projektu Bondik-TV-Ultimate.
 Bondík TV není jen další IPTV playlist.
 Je to komunitní open-source projekt zaměřený na kvalitní veřejně dostupné televizní kanály.
 Naším cílem je nabídnout přehledný seznam funkčních streamů bez zbytečného balastu.
+
+🎯 Naše vize
+📺 veřejně dostupné televizní kanály
+🌍 zdarma pro každého
+🤝 open-source komunita
+⭐ kvalita před kvantitou
+🔄 pravidelná kontrola playlistů
+❤️ projekt tvořený s radostí
