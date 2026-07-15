@@ -54,3 +54,15 @@ Jeho práce je jednoduchá:
 🐾 hlídat kvalitu playlistů
 🐾 testovat televizi (hlavně při kuřátku 🤤)
 🐾 vítat nové členy komunity
+
+---
+
+## ❤️ Team
+
+🤠 Michal – Founder & Maintainer
+
+🤖 ChatGPT – Co-Designer & Documentation
+
+🦮 Bondík – Chief Quality Officer & Official Mascot
+
+Made with ❤️, coffee ☕ and kuřátko 🤤
