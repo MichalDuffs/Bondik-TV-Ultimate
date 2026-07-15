@@ -47,3 +47,10 @@ IPTV přehrávače podporující M3U
 🤝 Přispění
 Každý může pomoci.
 Pokud objevíš nový veřejně dostupný kanál nebo nefunkční odkaz, budeme rádi za návrh nebo hlášení problému.
+
+🐕 Bondík
+Bondík je oficiální maskot projektu.
+Jeho práce je jednoduchá:
+🐾 hlídat kvalitu playlistů
+🐾 testovat televizi (hlavně při kuřátku 🤤)
+🐾 vítat nové členy komunity
