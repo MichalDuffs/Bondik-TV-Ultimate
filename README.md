@@ -105,3 +105,13 @@
 🦮 Bondík – Chief Quality Officer & Official Mascot
 
 Made with ❤️, coffee ☕ and kuřátko 🤤
+
+
+
+---
+
+## ⚖️ Licence
+
+Tento projekt je vydán pod licencí MIT.
+
+Více informací naleznete v souboru [LICENSE].
