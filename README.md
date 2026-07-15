@@ -29,3 +29,17 @@ Naším cílem je nabídnout přehledný seznam funkčních streamů bez zbyteč
 🐾 Příroda
 🎮 Sport
 🎄 Sezónní kanály
+
+📱 Podporovaná zařízení
+Android
+Android TV
+Google TV
+Windows
+Linux
+macOS
+iPhone / iPad
+Smart TV
+TV Box
+Kodi
+VLC
+IPTV přehrávače podporující M3U
