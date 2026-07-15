@@ -43,3 +43,7 @@ TV Box
 Kodi
 VLC
 IPTV přehrávače podporující M3U
+
+🤝 Přispění
+Každý může pomoci.
+Pokud objevíš nový veřejně dostupný kanál nebo nefunkční odkaz, budeme rádi za návrh nebo hlášení problému.
