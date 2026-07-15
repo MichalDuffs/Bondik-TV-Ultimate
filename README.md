@@ -43,18 +43,18 @@
 
 ## 📱 Podporovaná zařízení
 
--Android
-Android TV
-Google TV
-Windows
-Linux
-macOS
-iPhone / iPad
-Smart TV
-TV Box
-Kodi
-VLC
-IPTV přehrávače podporující M3U
+- Android
+- Android TV
+- Google TV
+- Windows
+- Linux
+- macOS
+- iPhone / iPad
+- Smart TV
+- TV Box
+- Kodi
+- VLC
+- IPTV přehrávače podporující M3U
 
 ---
 
@@ -67,11 +67,12 @@ IPTV přehrávače podporující M3U
 
 ## 🐕 Bondík
 
-Bondík je oficiální maskot projektu.
+- Bondík je oficiální maskot projektu.
 - Jeho práce je jednoduchá:
+
 - 🐾 hlídat kvalitu playlistů
 - 🐾 testovat televizi (hlavně při kuřátku 🤤)
-🐾 vítat nové členy komunity
+- 🐾 vítat nové členy komunity
 
 ---
 
