@@ -1,2 +1,3 @@
-# Bondik-TV-Ultimate
-🐕 Bondik-TV-Ultimate  Open • Free • Community  Kvalitní veřejně dostupná IPTV pro každého.
+<p align="center">
+  <img src="logo/bondik-tv-logo.png" width="350" alt="Bondik TV Ultimate">
+</p>
