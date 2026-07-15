@@ -76,6 +76,19 @@
 
 ---
 
+## 🐕 Bondík Certified
+
+- Každý stream musí projít přísným testem:
+
+- ✅ obraz funguje  
+- ✅ zvuk funguje  
+- ✅ nezasekává se  
+- ✅ vydrží sledování při večerním kuřátku 🤤
+
+- Certifikováno tlapkou 🐾
+
+---
+
 ## ❤️ Team
 
 🤠 Michal – Founder & Maintainer
