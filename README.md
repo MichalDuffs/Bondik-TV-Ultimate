@@ -2,6 +2,13 @@
   <img src="logo/bondik-tv-logo.png" width="350" alt="Bondik TV Ultimate">
 </p>
 
+![Bondik TV Ultimate](https://img.shields.io/badge/Bondik%20TV-Ultimate-blue)
+![Open Source](https://img.shields.io/badge/Open%20Source-❤️-green)
+![Playlist](https://img.shields.io/badge/IPTV-M3U-orange)
+
+
+> Stav projektu: 🟢 Aktivní vývoj
+
 ---
 
 ## 🐕 O projektu
