@@ -15,3 +15,17 @@ Naším cílem je nabídnout přehledný seznam funkčních streamů bez zbyteč
 ⭐ kvalita před kvantitou
 🔄 pravidelná kontrola playlistů
 ❤️ projekt tvořený s radostí
+
+📂 Kategorie
+🇨🇿 Česká republika
+🇸🇰 Slovensko
+🌍 Svět
+📰 Zprávy
+🎬 Filmy
+👶 Pohádky a dětské programy
+🎵 Hudba
+📚 Dokumenty
+🌌 Věda a vesmír
+🐾 Příroda
+🎮 Sport
+🎄 Sezónní kanály
