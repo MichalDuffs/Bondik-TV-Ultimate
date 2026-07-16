@@ -5,12 +5,11 @@
 ![Bondik TV Ultimate](https://img.shields.io/badge/Bondik%20TV-Ultimate-blue)
 ![Open Source](https://img.shields.io/badge/Open%20Source-❤️-green)
 ![Playlist](https://img.shields.io/badge/IPTV-M3U-orange)
+![License](https://img.shields.io/badge/License-MIT-green
 
 > Stav projektu: 🟢 Aktivní vývoj
 >
 > Aktuální verze: v1.0
-
-![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
 
@@ -181,7 +180,6 @@ Pomůžeš tím projektu růst a dostat se k dalším fanouškům IPTV.
 
 ---
 
-
 <a name="upozorneni"></a>
 ## 📜 Upozornění
 
@@ -216,7 +214,6 @@ Pokud některý provozovatel požádá o odstranění odkazu, bude po ověření
 
 ---
 
-
 <a name="doporucuje"></a>
 > 🐕 Bondík doporučuje:
 >
@@ -234,7 +231,6 @@ Made with ❤️ by Michal, Bondík 🦮 and the Open Source Community.
 
 ---
 
-
 <a name="zasady"></a>
 ## 🛡️ Naše zásady
 
@@ -243,6 +239,7 @@ Made with ❤️ by Michal, Bondík 🦮 and the Open Source Community.
 - ✅ pravidelně kontrolované odkazy
 - ✅ kvalita před kvantitou
 - ✅ respekt k autorům a provozovatelům vysílání
+
 ---
 
 Projekt založen v roce 2026.
