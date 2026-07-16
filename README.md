@@ -6,8 +6,13 @@
 ![Open Source](https://img.shields.io/badge/Open%20Source-❤️-green)
 ![Playlist](https://img.shields.io/badge/IPTV-M3U-orange)
 
-
 > Stav projektu: 🟢 Aktivní vývoj
+>
+> Aktuální verze: v0.1.0
+
+---
+
+Open-source IPTV playlist zaměřený na kvalitní veřejně dostupné televizní kanály z Česka, Slovenska a pečlivě vybraného světa.
 
 ---
 
@@ -36,15 +41,6 @@
 - 🇨🇿 Česká republika
 - 🇸🇰 Slovensko
 - 🌍 Svět
-- 📰 Zprávy
-- 🎬 Filmy
-- 👶 Pohádky a dětské programy
-- 🎵 Hudba
-- 📚 Dokumenty
-- 🌌 Věda a vesmír
-- 🐾 Příroda
-- 🎮 Sport
-- 🎄 Sezónní kanály
 
 ---
 
@@ -74,25 +70,28 @@
 
 ## 🐕 Bondík
 
-- Bondík je oficiální maskot projektu.
-- Jeho práce je jednoduchá:
+Bondík je oficiální maskot projektu.
+
+Jeho práce je jednoduchá:
 
 - 🐾 hlídat kvalitu playlistů
-- 🐾 testovat televizi (hlavně při kuřátku 🤤)
+- 🐾 testovat TV (hlavně při kuřátku 🤤)
 - 🐾 vítat nové členy komunity
 
 ---
 
-## 🐕 Bondík Certified
+## 🏅 Bondík Certified
 
-- Každý stream musí projít přísným testem:
+Každý stream musí projít přísným testem:
 
 - ✅ obraz funguje  
 - ✅ zvuk funguje  
 - ✅ nezasekává se  
-- ✅ vydrží sledování při večerním kuřátku 🤤
+- ✅ vydrží celodenní sledování u dobrůtek
 
-- Certifikováno tlapkou 🐾
+🐾 Certifikováno Bondíkovou tlapkou 🐾
+
+> 🐾 "Když to přehraje Bondík, přehraje to každý."
 
 ---
 
@@ -106,12 +105,40 @@
 
 Made with ❤️, coffee ☕ and kuřátko 🤤
 
-
-
 ---
 
 ## ⚖️ Licence
 
 Tento projekt je vydán pod licencí MIT.
 
-Více informací naleznete v souboru [LICENSE].
+Podrobnosti naleznete v souboru [LICENSE](LICENSE).
+
+---
+
+## ⭐ Motto
+
+> Kvalita před kvantitou.
+>
+> Jeden playlist. Jen ověřené veřejně dostupné televizní kanály.
+>
+> 🐕 Bondik-TV-Ultimate
+
+---
+
+## ⭐ Podpoř projekt
+
+Pokud se ti Bondik-TV-Ultimate líbí, nezapomeň dát ⭐ na GitHubu.
+
+Pomůžeš tím projektu růst a dostat se k dalším fanouškům IPTV.
+
+🐕 Děkujeme za podporu!
+
+---
+
+## 📜 Upozornění
+
+Bondik-TV-Ultimate obsahuje pouze odkazy na veřejně dostupné televizní streamy.
+
+Projekt nehostuje žádný audiovizuální obsah ani nevlastní autorská práva k jednotlivým vysíláním.
+
+Pokud některý provozovatel požádá o odstranění odkazu, bude po ověření bez zbytečného odkladu odstraněn.
