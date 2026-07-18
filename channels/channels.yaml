@@ -1,0 +1,39 @@
+# 📺 Channel Database
+
+This directory contains the central channel database for Bondik TV Ultimate.
+
+The database is used to generate organized playlists.
+
+---
+
+# Structure
+---
+
+# Channel Data
+
+Each channel contains:
+
+- Name
+- Country
+- Category
+- Logo
+- EPG ID
+- Stream URL
+- Status
+
+---
+
+# Status
+
+🟢 Stable  
+Verified working channel.
+
+🟡 Testing  
+Channel under review.
+
+🔴 Archive  
+Inactive channel.
+
+---
+
+🐾 Bondík Quality Control

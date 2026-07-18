@@ -1,249 +1,208 @@
-<p align="center">
-  <img src="logo/bondik-tv-logo.png" width="350" alt="Bondik TV Ultimate">
-</p>
+# 📺 Bondik TV Ultimate
 
 <p align="center">
+  <img src="assets/logo/bondik-tv-logo.png" width="350" alt="Bondik TV Ultimate Logo">
+  </p>
 
-<img src="https://img.shields.io/badge/Bondik%20TV-Ultimate-blue">
-<img src="https://img.shields.io/badge/Open%20Source-❤️-green">
-<img src="https://img.shields.io/badge/IPTV-M3U-orange">
-<img src="https://img.shields.io/badge/License-MIT-green">
-<img src="https://img.shields.io/badge/Bondik-Certified🐾-gold">
-</p>
-
-> Stav projektu: 🟢 Aktivní vývoj
->
-> Aktuální verze: v1.0
-
----
-
-Open-source IPTV playlist zaměřený na kvalitní veřejně dostupné televizní kanály z Česka, Slovenska a pečlivě vybraného světa.
-
----
-
-## 📑 Obsah
-
-- [🐕 O projektu](#projekt)
-- [🎯 Naše vize](#vize)
-- [📂 Kategorie](#kategorie)
-- [📱 Podporovaná zařízení](#zarizeni)
-- [🤝 Přispění](#prispeni)
-- [🐕 Bondík](#bondik)
-- [🐕 Bondík Certified](#certified)
-- [❤️ Team](#team)
-- [⚖️ Licence](#licence)
-- [📜 Upozornění](#upozorneni)
-- [🚀 Quick Start](#start)
-- [🗺️ Roadmap](#roadmap)
-- [🛡️ Naše zásady](#zasady)
-- [⭐ Motto](#motto)
-- [⭐ Podpoř projekt](#podpora)
+  <p align="center">
 
----
+  ![Version](https://img.shields.io/badge/version-1.0-blue)
+  ![License](https://img.shields.io/badge/license-MIT-green)
+  ![Open Source](https://img.shields.io/badge/Open%20Source-❤-success)
+  ![IPTV](https://img.shields.io/badge/IPTV-M3U-orange)
+  ![EPG](https://img.shields.io/badge/EPG-Supported-blueviolet)
 
-<a name="projekt"></a>
-## 🐕 O projektu
+  </p>
 
-- Vítej v projektu Bondik-TV-Ultimate.
-- Bondík TV není jen další IPTV playlist.
-- Je to komunitní open-source projekt zaměřený na kvalitní veřejně dostupné televizní kanály.
-- Naším cílem je nabídnout přehledný seznam funkčních streamů bez zbytečného balastu.
+  ---
 
----
+  # 🌍 Welcome
 
-<a name="vize"></a>
-## 🎯 Naše vize
+  **Bondik TV Ultimate** is a free and open-source IPTV playlist project focused on providing organized, reliable and easy-to-use television playlists.
 
-- 📺 veřejně dostupné televizní kanály
-- 🌍 zdarma pro každého
-- 🤝 open-source komunita
-- ⭐ kvalita před kvantitou
-- 🔄 pravidelná kontrola playlistů
-- ❤️ projekt tvořený s radostí
+  The goal is to create a clean repository where users can quickly find IPTV playlists sorted by country, category and provider.
 
----
+  ---
 
-<a name="kategorie"></a>
-## 📂 Kategorie
+  # ✨ Features
 
-- 🇨🇿 Česká republika
-- 🇸🇰 Slovensko
-- 🌍 Svět
-- 📰 Zprávy
-- 🎬 Filmy a seriály
-- 👶 Pohádky a dětské programy
-- 🎵 Hudba
-- 📚 Dokumenty
-- 📷 Kamery a živé přenosy
-- 🐾 Příroda a zvířata
-- ⚽ Sport
-- 🌌 Věda a vesmír
-- 🎄 Sezónní kanály
+  - 🌍 Country playlists
+  - 📺 Category playlists
+  - 📡 Provider playlists
+  - 📅 EPG support
+  - ⭐ Ultimate playlist
+  - 🚀 Open Source
+  - ❤️ Community driven
+  - 🤖 Ready for automation
 
----
+  ---
 
-<a name="zarizeni"></a>
-## 📱 Podporovaná zařízení
+  # 📂 Repository Structure
 
-- Android
-- Android TV
-- Google TV
-- Windows
-- Linux
-- macOS
-- iPhone / iPad
-- Smart TV
-- TV Box
-- Kodi
-- VLC
-- IPTV přehrávače podporující M3U
+  ```text
+  assets/
+  docs/
+  epg/
+  playlists/
+  tools/
+  .github/
+  ```
 
----
+  ---
 
-<a name="prispeni"></a>
-## 🤝 Přispění
+  # 📺 Playlists
 
-- Každý může pomoci.
-- Pokud objevíš nový veřejně dostupný kanál nebo nefunkční odkaz, budeme rádi za návrh nebo hlášení problému.
+  ## 🌍 Countries
 
-Pokud najdeš chybu nebo nefunkční stream, vytvoř GitHub Issue.
+  - 🇨🇿 Czech Republic
+  - 🇸🇰 Slovakia
+  - 🇩🇪 Germany
+  - 🇬🇧 United Kingdom
+  - 🇺🇸 United States
+  - 🇵🇱 Poland
 
----
+  ## 🎬 Categories
 
-<a name="bondik"></a>
-## 🐕 Bondík
+  - Movies
+  - Music
+  - News
+  - Kids
+  - Sport
+  - Documentary
+  - Radio
 
-Bondík je oficiální maskot projektu.
+  ## 📡 Providers
 
-Jeho práce je jednoduchá:
+  - Pluto TV
+  - Samsung TV Plus
+  - Plex TV
+  - Rakuten TV
 
-- 🐾 hlídat kvalitu playlistů
-- 🐾 testovat TV (hlavně při kuřátku 🤤)
-- 🐾 vítat nové členy komunity
+  ---
 
----
+  # 📅 EPG
 
-<a name="certified"></a>
-## 🏅 Bondík Certified
+  Electronic Program Guide support is available for supported channels.
 
-Každý stream musí projít přísným testem:
+  ---
 
-- ✅ obraz funguje  
-- ✅ zvuk funguje  
-- ✅ nezasekává se  
-- ✅ vydrží celodenní sledování u dobrůtek
+  # 📱 Supported Platforms
 
-🐾 Certifikováno Bondíkovou tlapkou 🐾
+  - Android
+  - Android TV
+  - Windows
+  - Linux
+  - macOS
+  - iPhone / iPad
+  - Apple TV
+  - LG webOS
+  - Samsung Tizen
+  - Fire TV
 
-> 🐾 "Když to přehraje Bondík, přehraje to každý."
+  ---
 
----
+  # 🚀 Roadmap
 
+  - ✅ Repository structure
+  - 🔄 Playlist improvements
+  - 🔄 Graphics package
+  - 🔄 Automatic playlist verification
+  - 🔄 Android application
+  - 🔄 Community contributions
 
-<a name="team"></a>
-## ❤️ Team
+  ---
 
-🤠 Michal – Founder & Maintainer
+  # 🤝 Contributing
 
-🤖 ChatGPT – Co-Designer & Documentation Assistant
+  Contributions are welcome!
 
-🦮 Bondík – Chief Quality Officer & Official Mascot
+  Please read:
 
-Made with ❤️, coffee ☕ and kuřátko 🤤
+  - CONTRIBUTING.md
+  - CODE_OF_CONDUCT.md
 
----
+  ---
 
-<a name="licence"></a>
-## ⚖️ Licence
+  # 📜 License
 
-Tento projekt je vydán pod licencí MIT.
+  This project is licensed under the MIT License.
 
-Podrobnosti naleznete v souboru [LICENSE](LICENSE).
+  See LICENSE for details.
 
----
+  ---
 
-<a name="motto"></a>
-## ⭐ Motto
+  # ❤️ Special Thanks
 
-> Kvalita před kvantitou.
->
-> Jeden playlist. Jen ověřené veřejně dostupné televizní kanály.
->
-> 🐕 Bondik-TV-Ultimate
+  Thanks to everyone who supports the project and helps improve it.
 
----
+  Special appreciation goes to our four-legged quality inspector.
 
-<a name="podpora"></a>
-## ⭐ Podpoř projekt
+  🐾 **Bondík – Chief Quality Officer (CQO)** 🦮
 
-Pokud se ti Bondik-TV-Ultimate líbí, nezapomeň dát ⭐ na GitHubu.
+  ---
 
-Pomůžeš tím projektu růst a dostat se k dalším fanouškům IPTV.
+  <p align="center">
 
-🐕 Děkujeme za podporu!
+  Made with ❤️ by the Open Source community.
 
----
+  Tested with 🐾 by Bondík.
 
-<a name="upozorneni"></a>
-## 📜 Upozornění
+  </p># 📜 Changelog
 
-Bondik-TV-Ultimate obsahuje pouze odkazy na veřejně dostupné televizní streamy.
+  All notable changes to **Bondik TV Ultimate** will be documented in this file.
 
-Projekt nehostuje žádný audiovizuální obsah ani nevlastní autorská práva k jednotlivým vysíláním.
+  The format is based on **Keep a Changelog** and follows **Semantic Versioning (SemVer)**.
 
-Pokud některý provozovatel požádá o odstranění odkazu, bude po ověření bez zbytečného odkladu odstraněn.
+  ---
 
----
+  # [1.0.0] - Initial Release
 
-<a name="start"></a>
-## 🚀 Quick Start
+  ## 🎉 Added
 
-1. Stáhni playlist.
-2. Otevři jej v oblíbeném IPTV přehrávači.
-3. Užij si sledování veřejně dostupných televizních kanálů.
+  - Initial GitHub repository
+  - Professional repository structure
+  - README documentation
+  - Assets directory
+  - Playlists directory
+  - EPG directory
+  - Documentation directory
+  - GitHub workflows
+  - Project roadmap
+  - Community guidelines
 
----
+  ## 📺 Playlists
 
-<a name="roadmap"></a>
-## 🗺️ Roadmap
+  - Country playlists
+  - Category playlists
+  - Provider playlists
+  - Ultimate playlist
 
-- ✅ Založení projektu
-- ✅ README
-- ✅ MIT Licence
-- 🔄 První stabilní playlist
-- 🔄 Automatická kontrola streamů
-- 🔜 Bondík Bot
-- 🔜 Verze 2.0
-- 🔜 Webová stránka projektu
+  ## 🎨 Graphics
 
----
+  - Initial logo
+  - Banner
+  - Icons
+  - Screenshots
 
-<a name="doporucuje"></a>
-> 🐕 Bondík doporučuje:
->
-> Pokud některý stream přestane fungovat, dej nám vědět přes GitHub Issues.
+  ## 📚 Documentation
 
----
+  - README
+  - CHANGELOG
+  - CONTRIBUTING
+  - SECURITY
+  - SUPPORT
+  - ROADMAP
+  - CREDITS
 
-<p align="center">
+  ---
 
-Made with ❤️ by Michal, Bondík 🦮 and the Open Source Community.
+  # Upcoming
 
-⭐ If you like this project, don't forget to leave a star.
+  ## Planned
 
-</p>
-
----
-
-<a name="zasady"></a>
-## 🛡️ Naše zásady
-
-- ✅ pouze veřejně dostupné streamy
-- ✅ žádné pirátské zdroje
-- ✅ pravidelně kontrolované odkazy
-- ✅ kvalita před kvantitou
-- ✅ respekt k autorům a provozovatelům vysílání
-
----
-
-Projekt založen v roce 2026.
+  - Automatic playlist verification
+  - EPG improvements
+  - More providers
+  - Android application
+  - Project website
+  - Community translations
