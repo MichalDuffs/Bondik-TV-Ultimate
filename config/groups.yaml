@@ -1,0 +1,16 @@
+groups:
+
+  - id: cz_general
+      name: "🇨🇿 CZ | General"
+          country: CZ
+              category: General
+
+                - id: kids
+                    name: "🧸 Kids"
+                        country: WORLD
+                            category: Kids
+
+                              - id: documentary
+                                  name: "🌍 Documentary"
+                                      country: WORLD
+                                          category: Documentary

@@ -1,0 +1,9 @@
+channels:
+
+  - name: "Example TV"
+      tvg_id: "example.tv"
+          country: "CZ"
+
+            - name: "Example Kids"
+                tvg_id: "kids.example"
+                    country: "WORLD"

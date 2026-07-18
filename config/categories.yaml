@@ -1,0 +1,16 @@
+categories:
+
+  - id: kids
+      name: "Kids"
+
+        - id: movies
+            name: "Movies"
+
+              - id: music
+                  name: "Music"
+
+                    - id: documentary
+                        name: "Documentary"
+
+                          - id: sport
+                              name: "Sport"

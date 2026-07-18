@@ -1,0 +1,54 @@
+project:
+
+  name: "Bondik TV Ultimate"
+    version: "1.0.0"
+      description: "Open-source IPTV playlist project"
+
+        language:
+            default: "en"
+                supported:
+                      - en
+                            - cs
+
+                              maintainer:
+                                  name: "Bondik TV Ultimate Team"
+
+                                    mascot:
+                                        name: "Bondík"
+                                            role: "Chief Quality Officer"
+
+
+                                            playlist:
+
+                                              default_output: "playlists/ultimate.m3u"
+
+                                                format:
+                                                    type: "M3U"
+                                                        charset: "UTF-8"
+
+                                                          features:
+                                                              logos: true
+                                                                  epg: true
+                                                                      groups: true
+
+
+                                                                      generator:
+
+                                                                        enabled: true
+
+                                                                          input:
+                                                                              channels: "channels/channels.yaml"
+
+                                                                                output:
+                                                                                    playlist: "playlists/ultimate.m3u"
+
+
+                                                                                    quality:
+
+                                                                                      minimum_status: "stable"
+
+                                                                                        require:
+
+                                                                                            stream_check: true
+                                                                                                category: true
+                                                                                                    channel_name: true

@@ -1,0 +1,21 @@
+quality_rules:
+
+  stream:
+      required: true
+          timeout_check: true
+
+            metadata:
+                channel_name: required
+                    category: required
+                        logo: recommended
+                            epg_id: recommended
+
+                              status:
+                                  stable:
+                                        verified: true
+
+                                            testing:
+                                                  verified: partial
+
+                                                      archive:
+                                                            active: false

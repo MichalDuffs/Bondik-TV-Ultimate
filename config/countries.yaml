@@ -1,0 +1,9 @@
+countries:
+
+  - code: CZ
+      name: "Czech Republic"
+          flag: "🇨🇿"
+
+            - code: SK
+                name: "Slovakia"
+                    flag: "🇸🇰"
