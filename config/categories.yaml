@@ -1,16 +1,56 @@
 categories:
+  
+  - id: entertainment
+    name: "Zábava 🎬"
+
+  - id: movies
+    name: "Filmy 🍿"
 
   - id: kids
-      name: "Kids"
+    name: "Děti 🧸"
 
-        - id: movies
-            name: "Movies"
+  - id: music
+    name: "Hudba 🎵"
 
-              - id: music
-                  name: "Music"
+  - id: documentary
+    name: "Dokumenty 🌍"
 
-                    - id: documentary
-                        name: "Documentary"
+  - id: sport
+    name: "Sport ⚽"
 
-                          - id: sport
-                              name: "Sport"
+  - id: radio
+    name: "Rádio 📻"
+
+    categories:
+  - id: news
+    name: News
+
+  - id: movies
+    name: Movies
+
+  - id: series
+    name: Series
+
+  - id: kids
+    name: Kids
+
+  - id: music
+    name: Music
+
+  - id: documentary
+    name: Documentary
+
+  - id: sport
+    name: Sport
+
+  - id: entertainment
+    name: Entertainment
+
+  - id: lifestyle
+    name: Lifestyle
+
+  - id: education
+    name: Education
+
+  - id: radio
+    name: Radio

@@ -1,9 +1,36 @@
 countries:
+  - code: CZ 
+    name: Czech Republic 
+    flag: "🇨🇿"
 
-  - code: CZ
-      name: "Czech Republic"
-          flag: "🇨🇿"
+  - code: SK
+    name: Slovakia
+    flag: "🇸🇰"
 
-            - code: SK
-                name: "Slovakia"
-                    flag: "🇸🇰"
+  - code: PL
+    name: Poland
+    flag: "🇵🇱"
+
+  - code: DE
+    name: Germany
+    flag: "🇩🇪"
+
+  - code: AT
+    name: Austria
+    flag: "🇦🇹"
+
+  - code: UK
+    name: United Kingdom
+    flag: "🇬🇧"
+
+  - code: US
+    name: United States
+    flag: "🇺🇸"
+
+  - code: UA
+    name: Ukraine
+    flag: "🇺🇦"
+  
+  - code: WORLD
+    name: World
+    flag: "WORLD"

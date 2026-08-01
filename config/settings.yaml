@@ -1,17 +1,17 @@
 project:
 
   name: "Bondik TV Ultimate"
-    version: "1.0.0"
-      description: "Open-source IPTV playlist project"
+  version: "1.0.0"
+  description: "Open-source IPTV playlist project"
 
-        language:
-            default: "en"
-                supported:
-                      - en
-                            - cs
+  language:
+  default: "en"
+  supported:
+            - en
+            - cs
 
-                              maintainer:
-                                  name: "Bondik TV Ultimate Team"
+  maintainer:
+  name: "Bondik TV Ultimate Team"
 
                                     mascot:
                                         name: "Bondík"

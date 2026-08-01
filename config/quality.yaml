@@ -2,20 +2,20 @@ quality_rules:
 
   stream:
       required: true
-          timeout_check: true
+      timeout_check: true
 
-            metadata:
-                channel_name: required
-                    category: required
-                        logo: recommended
-                            epg_id: recommended
+  metadata:
+      channel_name: required
+      category: required
+      logo: recommended
+      epg_id: recommended
 
-                              status:
-                                  stable:
-                                        verified: true
+  status:
+      stable:
+         verified: true
 
-                                            testing:
-                                                  verified: partial
+      testing:
+        verified: partial
 
-                                                      archive:
-                                                            active: false
+      archive:
+        active: false

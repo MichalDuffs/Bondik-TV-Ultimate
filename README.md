@@ -24,6 +24,19 @@
 
   ---
 
+  # 🦮 Naše filozofie
+
+  Nevytváříme projekt pro zisk.
+
+  Vytváříme projekt, který bychom sami chtěli používat.
+
+  Open Source.
+  Zdarma.
+  Komunitní.
+  S respektem k autorům obsahu.
+
+  ---
+
   # ✨ Features
 
   - 🌍 Country playlists
@@ -206,3 +219,28 @@
   - Android application
   - Project website
   - Community translations
+
+  ---
+
+  ⭐ Dej projektu hvězdičku.
+
+ 🍴 Forkni projekt.
+
+ 🤝 Přispěj.
+
+ 📢 Sdílej Bondik-TV Ultimate.
+
+ 🦮 Staň se členem Bondik komunity.
+
+ 
+ 🦮 Bondík říká:
+
+ "Nefunguje nějaký kanál?
+
+ Nevadí.
+
+ Pošli Pull Request.
+
+ Já zatím pohlídám buřty."
+
+ 🐶🔥🌭
