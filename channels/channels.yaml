@@ -1,3 +1,132 @@
 version: 1
 
-channels: []
+channels:
+  - id: "polar-tv-cz"
+    name: "POLAR"
+    country: "CZ"
+    language: "cs"
+    category: "general"
+    provider: "polar"
+
+    stream:
+      url: "https://stream.polar.cz/polar/polarlive-1/playlist.m3u8"
+      format: "hls"
+      quality: "FHD"
+
+    epg:
+      id: null
+      enabled: false
+
+    logo:
+      url: null
+      local: null
+
+    status: "stable"
+
+    metadata:
+      website: "https://polar.cz/"
+      notes: "Official/public regional television stream."
+
+  - id: "praha-tv-cz"
+    name: "Praha TV"
+    country: "CZ"
+    language: "cs"
+    category: "general"
+    provider: "praha-tv"
+
+    stream:
+      url: "https://stream.polar.cz/prahatv/prahatvlive-1/playlist.m3u8"
+      format: "hls"
+      quality: "unknown"
+
+    epg:
+      id: null
+      enabled: false
+
+    logo:
+      url: null
+      local: null
+
+    status: "testing"
+
+    metadata:
+      website: "https://prahatv.eu/"
+      notes: "Public live stream hosted on POLAR infrastructure."
+
+  - id: "ocko-cz"
+    name: "Óčko"
+    country: "CZ"
+    language: "cs"
+    category: "music"
+    provider: "ocko"
+
+    stream:
+      url: "https://ocko-live.ssl.cdn.cra.cz/channels/ocko/playlist.m3u8"
+      format: "hls"
+      quality: "unknown"
+
+    epg:
+      id: null
+      enabled: false
+
+    logo:
+      url: null
+      local: null
+
+    status: "testing"
+
+    metadata:
+      website: "https://ocko.tv/"
+      notes: "Public HLS stream. Verify with Bondik checker before stable status."
+
+  - id: "ocko-star-cz"
+    name: "Óčko Star"
+    country: "CZ"
+    language: "cs"
+    category: "music"
+    provider: "ocko"
+
+    stream:
+      url: "https://ocko-live.ssl.cdn.cra.cz/channels/ocko_gold/playlist.m3u8"
+      format: "hls"
+      quality: "unknown"
+
+    epg:
+      id: null
+      enabled: false
+
+    logo:
+      url: null
+      local: null
+
+    status: "testing"
+
+    metadata:
+      website: "https://ocko.tv/"
+      notes: "Public HLS stream. Verify with Bondik checker before stable status."
+
+  - id: "ocko-expres-cz"
+    name: "Óčko Expres"
+    country: "CZ"
+    language: "cs"
+    category: "music"
+    provider: "ocko"
+
+    stream:
+      url: "https://ocko-live.ssl.cdn.cra.cz/channels/ocko_expres/playlist.m3u8"
+      format: "hls"
+      quality: "unknown"
+
+    epg:
+      id: null
+      enabled: false
+
+    logo:
+      url: null
+      local: null
+
+    status: "testing"
+
+    metadata:
+      website: "https://ocko.tv/"
+      notes: "Public HLS stream. Verify with Bondik checker before stable status."
