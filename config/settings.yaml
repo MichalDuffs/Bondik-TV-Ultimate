@@ -1,54 +1,56 @@
 project:
-
   name: "Bondik TV Ultimate"
   version: "1.0.0"
-  description: "Open-source IPTV playlist project"
+  description: "Open-source IPTV playlist project focused on quality, organization and reliability"
 
   language:
-  default: "en"
-  supported:
-            - en
-            - cs
+    default: "en"
+    supported:
+      - en
+      - cs
+      - sk
 
   maintainer:
-  name: "Bondik TV Ultimate Team"
+    name: "Bondik TV Ultimate Team"
 
-                                    mascot:
-                                        name: "Bondík"
-                                            role: "Chief Quality Officer"
+  mascot:
+    name: "Bondík"
+    role: "Chief Quality Officer"
 
+playlist:
+  format:
+    type: "M3U"
+    charset: "UTF-8"
 
-                                            playlist:
+  default_output: "playlists/ultimate.m3u"
 
-                                              default_output: "playlists/ultimate.m3u"
+  features:
+    logos: true
+    epg: true
+    groups: true
 
-                                                format:
-                                                    type: "M3U"
-                                                        charset: "UTF-8"
+generator:
+  enabled: true
 
-                                                          features:
-                                                              logos: true
-                                                                  epg: true
-                                                                      groups: true
+  input:
+    channels: "channels/channels.yaml"
 
+  output:
+    ultimate: "playlists/ultimate.m3u"
+    countries: "playlists/countries"
+    categories: "playlists/categories"
+    providers: "playlists/providers"
 
-                                                                      generator:
+quality:
+  minimum_status: "stable"
 
-                                                                        enabled: true
+  require:
+    stream_url: true
+    channel_name: true
+    country: true
+    category: true
 
-                                                                          input:
-                                                                              channels: "channels/channels.yaml"
-
-                                                                                output:
-                                                                                    playlist: "playlists/ultimate.m3u"
-
-
-                                                                                    quality:
-
-                                                                                      minimum_status: "stable"
-
-                                                                                        require:
-
-                                                                                            stream_check: true
-                                                                                                category: true
-                                                                                                    channel_name: true
+  recommended:
+    logo: true
+    epg_id: true
+    provider: true

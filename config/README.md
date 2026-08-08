@@ -1,41 +1,33 @@
 # ⚙️ Configuration
 
-This directory contains project configuration files.
+This directory contains the central configuration for **Bondik TV Ultimate**.
 
----
+## Files
 
-# Files
+### `settings.yaml`
+Global project, playlist and generator settings.
 
-## settings.yaml
+### `countries.yaml`
+Supported countries, ISO country codes, flags and primary languages.
 
-Global project settings.
+### `categories.yaml`
+Official content categories and their target playlist files.
 
-## groups.yaml
+### `groups.yaml`
+Rules used to generate IPTV `group-title` values.
 
-Channel group definitions.
+### `quality.yaml`
+Validation rules for channels, metadata and playlist inclusion.
 
-## categories.yaml
+## Architecture
 
-Content categories.
-
-## countries.yaml
-
-Country definitions.
-
-## quality.yaml
-
-Channel validation rules.
-
----
-
-# Usage
-
-Configuration files are used by:
-
-- Playlist generator
-- Channel checker
-- Automation tools
-
----
-
-🐾 Bondík configuration approved.
+```text
+channels/channels.yaml
+        ↓
+config/*.yaml
+        ↓
+tools/checker
+        ↓
+tools/generator
+        ↓
+playlists/

@@ -1,56 +1,70 @@
 categories:
-  
+  - id: general
+    name: "General"
+    icon: "📺"
+    playlist: "general.m3u"
+
   - id: entertainment
-    name: "Zábava 🎬"
+    name: "Entertainment"
+    icon: "🎭"
+    playlist: "entertainment.m3u"
 
   - id: movies
-    name: "Filmy 🍿"
-
-  - id: kids
-    name: "Děti 🧸"
-
-  - id: music
-    name: "Hudba 🎵"
-
-  - id: documentary
-    name: "Dokumenty 🌍"
-
-  - id: sport
-    name: "Sport ⚽"
-
-  - id: radio
-    name: "Rádio 📻"
-
-    categories:
-  - id: news
-    name: News
-
-  - id: movies
-    name: Movies
+    name: "Movies"
+    icon: "🎬"
+    playlist: "movies.m3u"
 
   - id: series
-    name: Series
+    name: "Series"
+    icon: "📺"
+    playlist: "series.m3u"
 
   - id: kids
-    name: Kids
+    name: "Kids"
+    icon: "🧸"
+    playlist: "kids.m3u"
 
   - id: music
-    name: Music
+    name: "Music"
+    icon: "🎵"
+    playlist: "music.m3u"
 
-  - id: documentary
-    name: Documentary
+  - id: news
+    name: "News"
+    icon: "📰"
+    playlist: "news.m3u"
 
   - id: sport
-    name: Sport
+    name: "Sport"
+    icon: "⚽"
+    playlist: "sport.m3u"
 
-  - id: entertainment
-    name: Entertainment
+  - id: documentary
+    name: "Documentary"
+    icon: "🌍"
+    playlist: "documentary.m3u"
+
+  - id: science
+    name: "Science"
+    icon: "🔬"
+    playlist: "science.m3u"
+
+  - id: history
+    name: "History"
+    icon: "🏛️"
+    playlist: "history.m3u"
 
   - id: lifestyle
-    name: Lifestyle
+    name: "Lifestyle"
+    icon: "🌿"
+    playlist: "lifestyle.m3u"
 
   - id: education
-    name: Education
+    name: "Education"
+    icon: "🎓"
+    playlist: "education.m3u"
 
   - id: radio
-    name: Radio
+    name: "Radio"
+    icon: "📻"
+    playlist: "radio.m3u"

@@ -1,16 +1,15 @@
 groups:
+  format:
+    country_category: "{flag} {country} | {category}"
+    world_category: "🌍 WORLD | {category}"
 
-  - id: cz_general
-    name: "🇨🇿 CZ | General"
-    country: CZ
-    category: General
+  defaults:
+    country: "WORLD"
+    category: "general"
 
-  - id: kids
-    name: "🧸 Kids"
-    country: WORLD
-    category: Kids
-
-  - id: documentary
-    name: "🌍 Documentary"
-    country: WORLD
-    category: Documentary
+  examples:
+    - "🇨🇿 CZ | General"
+    - "🇨🇿 CZ | Documentary"
+    - "🇸🇰 SK | Sport"
+    - "🇺🇦 UA | News"
+    - "🌍 WORLD | Music"

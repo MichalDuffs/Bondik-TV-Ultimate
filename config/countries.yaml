@@ -1,36 +1,75 @@
 countries:
-  - code: CZ 
-    name: Czech Republic 
+  - code: CZ
+    name: "Czech Republic"
     flag: "🇨🇿"
+    language: "cs"
 
   - code: SK
-    name: Slovakia
+    name: "Slovakia"
     flag: "🇸🇰"
+    language: "sk"
 
   - code: PL
-    name: Poland
+    name: "Poland"
     flag: "🇵🇱"
+    language: "pl"
 
   - code: DE
-    name: Germany
+    name: "Germany"
     flag: "🇩🇪"
+    language: "de"
 
   - code: AT
-    name: Austria
+    name: "Austria"
     flag: "🇦🇹"
+    language: "de"
 
-  - code: UK
-    name: United Kingdom
-    flag: "🇬🇧"
-
-  - code: US
-    name: United States
-    flag: "🇺🇸"
+  - code: HU
+    name: "Hungary"
+    flag: "🇭🇺"
+    language: "hu"
 
   - code: UA
-    name: Ukraine
+    name: "Ukraine"
     flag: "🇺🇦"
-  
+    language: "uk"
+
+  - code: RO
+    name: "Romania"
+    flag: "🇷🇴"
+    language: "ro"
+
+  - code: FR
+    name: "France"
+    flag: "🇫🇷"
+    language: "fr"
+
+  - code: ES
+    name: "Spain"
+    flag: "🇪🇸"
+    language: "es"
+
+  - code: IT
+    name: "Italy"
+    flag: "🇮🇹"
+    language: "it"
+
+  - code: GB
+    name: "United Kingdom"
+    flag: "🇬🇧"
+    language: "en"
+
+  - code: US
+    name: "United States"
+    flag: "🇺🇸"
+    language: "en"
+
+  - code: CA
+    name: "Canada"
+    flag: "🇨🇦"
+    language: "en"
+
   - code: WORLD
-    name: World
-    flag: "WORLD"
+    name: "International"
+    flag: "🌍"
+    language: "multi"

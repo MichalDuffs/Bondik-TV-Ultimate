@@ -1,21 +1,47 @@
 quality_rules:
-
   stream:
-      required: true
-      timeout_check: true
+    required: true
+    timeout_seconds: 10
+    follow_redirects: true
+    allowed_protocols:
+      - http
+      - https
 
   metadata:
-      channel_name: required
-      category: required
-      logo: recommended
-      epg_id: recommended
+    channel_name:
+      required: true
+
+    country:
+      required: true
+
+    category:
+      required: true
+
+    provider:
+      required: false
+
+    logo:
+      required: false
+      recommended: true
+
+    epg_id:
+      required: false
+      recommended: true
+
+  duplicate_detection:
+    by_name: true
+    by_url: true
+    by_epg_id: true
 
   status:
-      stable:
-         verified: true
+    stable:
+      include_in_ultimate: true
+      verified: true
 
-      testing:
-        verified: partial
+    testing:
+      include_in_ultimate: false
+      verified: false
 
-      archive:
-        active: false
+    archived:
+      include_in_ultimate: false
+      active: false
