@@ -25,7 +25,7 @@ channels:
 
     metadata:
       website: "https://polar.cz/"
-      notes: "Official/public regional television stream."
+      notes: "Official/public regional television stream. Verified by Bondik checker."
 
   - id: "praha-tv-cz"
     name: "Praha TV"
@@ -51,7 +51,7 @@ channels:
 
     metadata:
       website: "https://prahatv.eu/"
-      notes: "Public live stream hosted on POLAR infrastructure."
+      notes: "Current HLS URL returns HTTP 404. Replacement stream required."
 
   - id: "ocko-cz"
     name: "Óčko"
@@ -73,11 +73,11 @@ channels:
       url: null
       local: null
 
-    status: "testing"
+    status: "stable"
 
     metadata:
       website: "https://ocko.tv/"
-      notes: "Public HLS stream. Verify with Bondik checker before stable status."
+      notes: "Public HLS stream. Verified by Bondik checker."
 
   - id: "ocko-star-cz"
     name: "Óčko Star"
@@ -99,11 +99,11 @@ channels:
       url: null
       local: null
 
-    status: "testing"
+    status: "stable"
 
     metadata:
       website: "https://ocko.tv/"
-      notes: "Public HLS stream. Verify with Bondik checker before stable status."
+      notes: "Public HLS stream. Verified by Bondik checker."
 
   - id: "ocko-expres-cz"
     name: "Óčko Expres"
@@ -125,8 +125,8 @@ channels:
       url: null
       local: null
 
-    status: "testing"
+    status: "stable"
 
     metadata:
       website: "https://ocko.tv/"
-      notes: "Public HLS stream. Verify with Bondik checker before stable status."
+      notes: "Public HLS stream. Verified by Bondik checker."
