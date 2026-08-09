@@ -171,17 +171,30 @@ def check_stream(channel: dict, timeout: int) -> tuple[bool, str]:
     url = stream["url"]
     stream_format = str(stream.get("format", "")).lower()
 
+    headers = {
+        "User-Agent": USER_AGENT,
+        "Accept": (
+            "application/vnd.apple.mpegurl,"
+            "application/x-mpegURL,"
+            "text/plain,*/*"
+        ),
+        "Accept-Encoding": "identity",
+    }
+
+    channel_headers = stream.get("headers", {})
+
+    if isinstance(channel_headers, dict):
+        headers.update(
+            {
+                str(key): str(value)
+                for key, value in channel_headers.items()
+                if value is not None
+            }
+        )
+
     request = urllib.request.Request(
         url,
-        headers={
-            "User-Agent": USER_AGENT,
-            "Accept": (
-                "application/vnd.apple.mpegurl,"
-                "application/x-mpegURL,"
-                "text/plain,*/*"
-            ),
-            "Accept-Encoding": "identity",
-        },
+        headers=headers,
         method="GET",
     )
 

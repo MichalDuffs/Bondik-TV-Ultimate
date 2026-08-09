@@ -130,3 +130,62 @@ channels:
     metadata:
       website: "https://ocko.tv/"
       notes: "Public HLS stream. Verified by Bondik checker."
+  - id: "joj-sk"
+    name: "JOJ"
+    country: "SK"
+    language: "sk"
+    category: "general"
+    provider: "joj"
+
+    stream:
+      url: "https://live.cdn.joj.sk/live/joj.m3u8"
+      format: "hls"
+      quality: "unknown"
+      headers:
+        User-Agent: "Mozilla/5.0"
+        Referer: "https://www.joj.sk/"
+        Origin: "https://www.joj.sk"
+
+    epg:
+      id: null
+      enabled: false
+
+    logo:
+      url: null
+      local: null
+
+    status: "stable"
+
+    metadata:
+      website: "https://www.joj.sk/"
+      notes: "Official JOJ HLS stream. Verified by Bondik checker with required headers."
+
+  - id: "joj24-sk"
+    name: "JOJ 24"
+    country: "SK"
+    language: "sk"
+    category: "news"
+    provider: "joj"
+
+    stream:
+      url: "https://live.cdn.joj.sk/live/andromeda/joj_news-1080.m3u8"
+      format: "hls"
+      quality: "unknown"
+      headers:
+        User-Agent: "Mozilla/5.0"
+        Referer: "https://www.joj.sk/"
+        Origin: "https://www.joj.sk"
+
+    epg:
+      id: null
+      enabled: false
+
+    logo:
+      url: null
+      local: null
+
+    status: "stable"
+
+    metadata:
+      website: "https://www.joj.sk/live/16-joj24"
+      notes: "Official JOJ HLS stream. Verified by Bondik checker with required headers."
