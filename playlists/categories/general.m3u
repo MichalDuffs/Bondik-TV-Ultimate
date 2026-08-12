@@ -1,0 +1,10 @@
+#EXTM3U
+# Bondik TV Ultimate - Category: General
+# Generated automatically from channels/channels.yaml
+# Quality checked by Bondik
+
+#EXTINF:-1 tvg-name="POLAR" group-title="CZ",POLAR
+https://stream.polar.cz/polar/polarlive-1/playlist.m3u8
+
+#EXTINF:-1 tvg-name="JOJ" group-title="SK",JOJ
+https://live.cdn.joj.sk/live/joj.m3u8

@@ -1,5 +1,7 @@
 #EXTM3U
+# Bondik TV Ultimate - Category: News
+# Generated automatically from channels/channels.yaml
+# Quality checked by Bondik
 
-# 📰 Bondik TV Ultimate
-# Category: News
-# Quality checked by 🐾 Bondík
+#EXTINF:-1 tvg-name="JOJ 24" group-title="SK",JOJ 24
+https://live.cdn.joj.sk/live/andromeda/joj_news-1080.m3u8

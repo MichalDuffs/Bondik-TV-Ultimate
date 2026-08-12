@@ -1,6 +1,16 @@
 #EXTM3U
+# Bondik TV Ultimate - Country: Czech Republic
+# Generated automatically from channels/channels.yaml
+# Quality checked by Bondik
 
-# 🇨🇿 Bondik TV Ultimate
-# Country: Czech Republic
-# Language: Czech
-# Quality checked by 🐾 Bondík
+#EXTINF:-1 tvg-name="POLAR" group-title="CZ",POLAR
+https://stream.polar.cz/polar/polarlive-1/playlist.m3u8
+
+#EXTINF:-1 tvg-name="Óčko" group-title="CZ",Óčko
+https://ocko-live.ssl.cdn.cra.cz/channels/ocko/playlist.m3u8
+
+#EXTINF:-1 tvg-name="Óčko Star" group-title="CZ",Óčko Star
+https://ocko-live.ssl.cdn.cra.cz/channels/ocko_gold/playlist.m3u8
+
+#EXTINF:-1 tvg-name="Óčko Expres" group-title="CZ",Óčko Expres
+https://ocko-live.ssl.cdn.cra.cz/channels/ocko_expres/playlist.m3u8

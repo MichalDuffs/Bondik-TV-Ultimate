@@ -1,13 +1,7 @@
 #EXTM3U
-# Bondik TV Ultimate - Country: Slovakia
+# Bondik TV Ultimate - Category: Entertainment
 # Generated automatically from channels/channels.yaml
 # Quality checked by Bondik
-
-#EXTINF:-1 tvg-name="JOJ" group-title="SK",JOJ
-https://live.cdn.joj.sk/live/joj.m3u8
-
-#EXTINF:-1 tvg-name="JOJ 24" group-title="SK",JOJ 24
-https://live.cdn.joj.sk/live/andromeda/joj_news-1080.m3u8
 
 #EXTINF:-1 tvg-name="JOJ Plus" group-title="SK",JOJ Plus
 https://live.cdn.joj.sk/live/andromeda/plus-1080.m3u8
