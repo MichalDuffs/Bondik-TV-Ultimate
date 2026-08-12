@@ -49,8 +49,8 @@ quality:
     channel_name: true
     country: true
     category: true
+    provider: true
 
   recommended:
     logo: true
     epg_id: true
-    provider: true

@@ -24,6 +24,72 @@ def load_yaml(path: Path) -> dict:
 def escape(value) -> str:
     return str(value).replace('"', "'")
 
+def validate_channels(
+    channels: list,
+    requirements: dict,
+) -> None:
+    """Validate channel metadata before writing playlists."""
+
+    for index, channel in enumerate(
+        channels,
+        start=1,
+    ):
+        if not isinstance(channel, dict):
+            raise ValueError(
+                f"Invalid channel at index {index}: "
+                "expected YAML mapping"
+            )
+
+        stream = channel.get("stream", {})
+
+        stream_url = (
+            stream.get("url")
+            if isinstance(stream, dict)
+            else None
+        )
+
+        checks = {
+            "channel_name": (
+                "name",
+                channel.get("name"),
+            ),
+            "country": (
+                "country",
+                channel.get("country"),
+            ),
+            "category": (
+                "category",
+                channel.get("category"),
+            ),
+            "provider": (
+                "provider",
+                channel.get("provider"),
+            ),
+            "stream_url": (
+                "stream.url",
+                stream_url,
+            ),
+        }
+
+        missing = []
+
+        for rule, (label, value) in checks.items():
+            if not requirements.get(rule, False):
+                continue
+
+            if value is None or not str(value).strip():
+                missing.append(label)
+
+        if missing:
+            channel_id = channel.get(
+                "id",
+                f"index-{index}",
+            )
+
+            raise ValueError(
+                f"Invalid channel '{channel_id}': "
+                f"missing {', '.join(missing)}"
+            )
 
 def channel_lines(channel: dict) -> list[str]:
     name = str(channel["name"])
@@ -144,6 +210,17 @@ def main() -> int:
             "'channels' must be a list"
         )
 
+    requirements = (
+        settings
+        .get("quality", {})
+        .get("require", {})
+    )
+
+    validate_channels(
+        channels,
+        requirements,
+    )
+
     stable = [
         channel
         for channel in channels
@@ -250,7 +327,7 @@ def main() -> int:
 
         category_count += 1
 
-        # Providers
+    # Providers
     provider_count = 0
 
     providers = sorted(
@@ -288,8 +365,9 @@ def main() -> int:
 
     print()
     print("🐾 Bondik TV Ultimate")
-    print("📺 Playlist Generator v3")
+    print("📺 Playlist Generator v4")
     print("=" * 60)
+    print(f"🔎 Validated channels: {len(channels)}")
     print(f"✅ Ultimate channels : {len(stable)}")
     print(f"🌍 Country playlists : {country_count}")
     print(f"🎬 Category playlists: {category_count}")
