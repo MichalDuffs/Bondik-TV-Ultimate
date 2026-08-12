@@ -54,7 +54,7 @@ channels:
       notes: "Current HLS URL returns HTTP 404. Replacement stream required."
 
   - id: "ocko-cz"
-    name: "Ă“ÄŤko"
+    name: "Óčko"
     country: "CZ"
     language: "cs"
     category: "music"
@@ -80,7 +80,7 @@ channels:
       notes: "Public HLS stream. Verified by Bondik checker."
 
   - id: "ocko-star-cz"
-    name: "Ă“ÄŤko Star"
+    name: "Óčko Star"
     country: "CZ"
     language: "cs"
     category: "music"
@@ -106,7 +106,7 @@ channels:
       notes: "Public HLS stream. Verified by Bondik checker."
 
   - id: "ocko-expres-cz"
-    name: "Ă“ÄŤko Expres"
+    name: "Óčko Expres"
     country: "CZ"
     language: "cs"
     category: "music"
