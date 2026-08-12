@@ -217,7 +217,7 @@ channels:
 
     metadata:
       website: "https://www.joj.sk/"
-      notes: "Official JOJ HLS stream candidate. HTTP 200 confirmed manually; awaiting Bondik checker verification."
+      notes: "Official JOJ HLS stream. Verified by Bondik checker with required headers."
 
   - id: "wau-sk"
     name: "WAU"
@@ -247,4 +247,4 @@ channels:
 
     metadata:
       website: "https://www.joj.sk/"
-      notes: "Official JOJ HLS stream candidate. HTTP 200 confirmed manually; awaiting Bondik checker verification."
+      notes: "Official JOJ HLS stream. Verified by Bondik checker with required headers."
