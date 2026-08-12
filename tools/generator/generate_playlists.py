@@ -250,13 +250,50 @@ def main() -> int:
 
         category_count += 1
 
+        # Providers
+    provider_count = 0
+
+    providers = sorted(
+        {
+            str(channel["provider"])
+            for channel in stable
+            if channel.get("provider")
+        }
+    )
+
+    for provider in providers:
+        selected = [
+            channel
+            for channel in stable
+            if channel.get("provider") == provider
+        ]
+
+        output_file = (
+            ROOT
+            / output_config.get(
+                "providers",
+                "playlists/providers",
+            )
+            / f"{provider.lower()}.m3u"
+        )
+
+        write_playlist(
+            output_file,
+            selected,
+            f"Provider: {provider}",
+        )
+
+        provider_count += 1
+
+
     print()
     print("🐾 Bondik TV Ultimate")
-    print("📺 Playlist Generator v2")
+    print("📺 Playlist Generator v3")
     print("=" * 60)
     print(f"✅ Ultimate channels : {len(stable)}")
     print(f"🌍 Country playlists : {country_count}")
     print(f"🎬 Category playlists: {category_count}")
+    print(f"📡 Provider playlists: {provider_count}")
     print(f"🏷️ Status            : {required_status}")
     print("=" * 60)
     print("🟢 RESULT: PLAYLISTS GENERATED 🐾")
