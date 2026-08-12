@@ -23,6 +23,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 import yaml
+import truststore
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -38,6 +39,7 @@ USER_AGENT = (
 )
 
 READ_LIMIT = 64 * 1024
+SSL_CONTEXT = truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 
 
 def load_yaml(path: Path) -> dict:
@@ -199,7 +201,11 @@ def check_stream(channel: dict, timeout: int) -> tuple[bool, str]:
     )
 
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        with urllib.request.urlopen(
+            request,
+            timeout=timeout,
+            context=SSL_CONTEXT,
+        ) as response:
             status = getattr(response, "status", 200)
 
             if status < 200 or status >= 400:
