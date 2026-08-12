@@ -22,7 +22,7 @@ This roadmap describes the long-term vision of the project.
 
 ## Automation
 
-- [ ] Playlist checker
+- [x] Playlist checker
 - [ ] Dead link detection
 - [ ] Automatic EPG updates
 - [ ] GitHub Actions improvements
@@ -76,7 +76,7 @@ Our goal is to create one of the most organized, transparent and community-frien
 
 ## 🤖 Phase 3 - Automation
 
-⬜ Stream checker  
+✅ Stream checker  
 ⬜ Automatic updates  
 ⬜ Quality monitoring  
 ⬜ Reports  
