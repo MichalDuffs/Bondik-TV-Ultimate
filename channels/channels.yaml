@@ -54,7 +54,7 @@ channels:
       notes: "Current HLS URL returns HTTP 404. Replacement stream required."
 
   - id: "ocko-cz"
-    name: "Óčko"
+    name: "Ă“ÄŤko"
     country: "CZ"
     language: "cs"
     category: "music"
@@ -80,7 +80,7 @@ channels:
       notes: "Public HLS stream. Verified by Bondik checker."
 
   - id: "ocko-star-cz"
-    name: "Óčko Star"
+    name: "Ă“ÄŤko Star"
     country: "CZ"
     language: "cs"
     category: "music"
@@ -106,7 +106,7 @@ channels:
       notes: "Public HLS stream. Verified by Bondik checker."
 
   - id: "ocko-expres-cz"
-    name: "Óčko Expres"
+    name: "Ă“ÄŤko Expres"
     country: "CZ"
     language: "cs"
     category: "music"
@@ -189,3 +189,62 @@ channels:
     metadata:
       website: "https://www.joj.sk/live/16-joj24"
       notes: "Official JOJ HLS stream. Verified by Bondik checker with required headers."
+  - id: "joj-plus-sk"
+    name: "JOJ Plus"
+    country: "SK"
+    language: "sk"
+    category: "entertainment"
+    provider: "joj"
+
+    stream:
+      url: "https://live.cdn.joj.sk/live/andromeda/plus-1080.m3u8"
+      format: "hls"
+      quality: "unknown"
+      headers:
+        User-Agent: "Mozilla/5.0"
+        Referer: "https://www.joj.sk/"
+        Origin: "https://www.joj.sk"
+
+    epg:
+      id: null
+      enabled: false
+
+    logo:
+      url: null
+      local: null
+
+    status: "stable"
+
+    metadata:
+      website: "https://www.joj.sk/"
+      notes: "Official JOJ HLS stream candidate. HTTP 200 confirmed manually; awaiting Bondik checker verification."
+
+  - id: "wau-sk"
+    name: "WAU"
+    country: "SK"
+    language: "sk"
+    category: "entertainment"
+    provider: "joj"
+
+    stream:
+      url: "https://live.cdn.joj.sk/live/andromeda/wau-1080.m3u8"
+      format: "hls"
+      quality: "unknown"
+      headers:
+        User-Agent: "Mozilla/5.0"
+        Referer: "https://www.joj.sk/"
+        Origin: "https://www.joj.sk"
+
+    epg:
+      id: null
+      enabled: false
+
+    logo:
+      url: null
+      local: null
+
+    status: "stable"
+
+    metadata:
+      website: "https://www.joj.sk/"
+      notes: "Official JOJ HLS stream candidate. HTTP 200 confirmed manually; awaiting Bondik checker verification."
