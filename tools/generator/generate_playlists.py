@@ -163,6 +163,41 @@ def write_playlist(
     ) as file:
         file.write("\n".join(lines))
 
+def cleanup_generated_playlists(
+    directory: Path,
+    expected_names: set[str],
+) -> list[Path]:
+    """Remove obsolete playlists previously created by the generator."""
+
+    if not directory.exists():
+        return []
+
+    marker = (
+        "# Generated automatically from "
+        "channels/channels.yaml"
+    )
+
+    removed = []
+
+    for path in directory.glob("*.m3u"):
+        if path.name in expected_names:
+            continue
+
+        try:
+            content = path.read_text(
+                encoding="utf-8",
+            )
+        except UnicodeDecodeError:
+            continue
+
+        if marker not in content:
+            continue
+
+        path.unlink()
+        removed.append(path)
+
+    return removed        
+
 
 def main() -> int:
     settings = load_yaml(SETTINGS)
@@ -362,16 +397,83 @@ def main() -> int:
 
         provider_count += 1
 
+    # Cleanup obsolete generated playlists
+    country_names = {
+        f"{str(country['code']).lower()}.m3u"
+        for country in countries_config.get(
+            "countries",
+            [],
+        )
+        if isinstance(country, dict)
+        and country.get("code")
+    }
+
+    category_names = {
+        str(
+            category.get(
+                "playlist",
+                f"{category['id']}.m3u",
+            )
+        )
+        for category in categories_config.get(
+            "categories",
+            [],
+        )
+        if isinstance(category, dict)
+        and category.get("id")
+    }
+
+    provider_names = {
+        f"{provider.lower()}.m3u"
+        for provider in providers
+    }
+
+    removed = []
+
+    removed.extend(
+        cleanup_generated_playlists(
+            ROOT
+            / output_config.get(
+                "countries",
+                "playlists/countries",
+            ),
+            country_names,
+        )
+    )
+
+    removed.extend(
+        cleanup_generated_playlists(
+            ROOT
+            / output_config.get(
+                "categories",
+                "playlists/categories",
+            ),
+            category_names,
+        )
+    )
+
+    removed.extend(
+        cleanup_generated_playlists(
+            ROOT
+            / output_config.get(
+                "providers",
+                "playlists/providers",
+            ),
+            provider_names,
+        )
+    )    
+
 
     print()
     print("🐾 Bondik TV Ultimate")
-    print("📺 Playlist Generator v4")
+    print("📺 Playlist Generator v5")
     print("=" * 60)
     print(f"🔎 Validated channels: {len(channels)}")
     print(f"✅ Ultimate channels : {len(stable)}")
     print(f"🌍 Country playlists : {country_count}")
     print(f"🎬 Category playlists: {category_count}")
     print(f"📡 Provider playlists: {provider_count}")
+    print(f"🧹 Obsolete removed  : {len(removed)}")
     print(f"🏷️ Status            : {required_status}")
     print("=" * 60)
     print("🟢 RESULT: PLAYLISTS GENERATED 🐾")
