@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: bondik-stream-check
@@ -65,6 +66,109 @@ jobs:
           cat stream-check-report.txt >> "$GITHUB_STEP_SUMMARY"
 
           exit "$CHECK_STATUS"
+
+      - name: Compare with previous stream check
+        if: always()
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo
+            echo "============================================================"
+            echo "🐾 Bondík Stream History"
+          } > stream-history.txt
+
+          grep -E '^❌ .+ \[stable\]$' stream-check-report.txt \
+            | sed -E 's/^❌ (.+) \[stable\]$/\1/' \
+            | sort -u > current-failed.txt || true
+
+          if [ ! -s current-failed.txt ]; then
+            echo "🟢 No current stream failures." \
+              | tee -a stream-history.txt
+
+            cat stream-history.txt >> stream-check-report.txt
+            cat stream-history.txt >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          curl -fsSL \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/artifacts?per_page=100" \
+            -o artifacts.json
+
+          PREVIOUS_ID="$(
+            jq -r \
+              --argjson run "$GITHUB_RUN_ID" \
+              '
+                .artifacts
+                | map(
+                    select(
+                      (.expired == false)
+                      and (.workflow_run.id != $run)
+                      and (.name | startswith("stream-check-"))
+                    )
+                  )
+                | sort_by(.created_at)
+                | reverse
+                | first
+                | .id // empty
+              ' artifacts.json
+          )"
+
+          if [ -z "$PREVIOUS_ID" ]; then
+            echo "⚠️ No previous report available - baseline created." \
+              | tee -a stream-history.txt
+
+            sed 's/^/⚠️ New failure: /' current-failed.txt \
+              | tee -a stream-history.txt
+
+            cat stream-history.txt >> stream-check-report.txt
+            cat stream-history.txt >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          mkdir -p previous-report
+
+          curl -fsSL -L \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/artifacts/$PREVIOUS_ID/zip" \
+            -o previous-report.zip
+
+          unzip -q previous-report.zip \
+            -d previous-report
+
+          grep -E '^❌ .+ \[stable\]$' \
+            previous-report/stream-check-report.txt \
+            | sed -E 's/^❌ (.+) \[stable\]$/\1/' \
+            | sort -u > previous-failed.txt || true
+
+          comm -12 \
+            current-failed.txt \
+            previous-failed.txt \
+            > repeated-failed.txt
+
+          comm -23 \
+            current-failed.txt \
+            previous-failed.txt \
+            > new-failed.txt
+
+          if [ -s new-failed.txt ]; then
+            sed 's/^/⚠️ New failure: /' new-failed.txt \
+              | tee -a stream-history.txt
+          fi
+
+          if [ -s repeated-failed.txt ]; then
+            sed 's/^/🚨 Repeated failure: /' repeated-failed.txt \
+              | tee -a stream-history.txt
+          fi
+
+          cat stream-history.txt >> stream-check-report.txt
+          cat stream-history.txt >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload stream check report
         if: always()
