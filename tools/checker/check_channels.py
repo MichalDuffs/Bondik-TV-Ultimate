@@ -19,6 +19,7 @@ import ssl
 import sys
 import urllib.error
 import urllib.request
+import time
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -257,6 +258,45 @@ def check_stream(channel: dict, timeout: int) -> tuple[bool, str]:
     except Exception as error:
         return False, f"{type(error).__name__}: {error}"
 
+def check_stream_with_retries(
+    channel: dict,
+    timeout: int,
+    attempts: int,
+    retry_delay: float,
+) -> tuple[bool, str, int, list[str]]:
+    """Retry temporary stream failures before marking a stream as failed."""
+
+    failures = []
+
+    for attempt in range(1, attempts + 1):
+        ok, message = check_stream(
+            channel,
+            timeout,
+        )
+
+        if ok:
+            return (
+                True,
+                message,
+                attempt,
+                failures,
+            )
+
+        failures.append(message)
+
+        if (
+            attempt < attempts
+            and retry_delay > 0
+        ):
+            time.sleep(retry_delay)
+
+    return (
+        False,
+        failures[-1],
+        attempts,
+        failures,
+    )        
+
 
 def find_duplicates(channels: list[dict]) -> list[str]:
     """Find duplicate IDs and stream URLs."""
@@ -318,7 +358,33 @@ def parse_arguments():
         help="validate metadata only; do not test stream URLs",
     )
 
-    return parser.parse_args()
+    parser.add_argument(
+        "--attempts",
+        type=int,
+        default=1,
+        help="number of network attempts per stream",
+    )
+
+    parser.add_argument(
+        "--retry-delay",
+        type=float,
+        default=0,
+        help="seconds to wait between failed attempts",
+    )
+
+    args = parser.parse_args()
+
+    if args.attempts < 1:
+        parser.error(
+            "--attempts must be at least 1"
+        )
+
+    if args.retry_delay < 0:
+        parser.error(
+            "--retry-delay cannot be negative"
+        )
+
+    return args
 
 
 def main() -> int:
@@ -382,6 +448,7 @@ def main() -> int:
 
     passed = 0
     failed = 0
+    recovered = 0
 
     for channel in selected_channels:
         name = channel.get("name", "<unknown>")
@@ -411,16 +478,60 @@ def main() -> int:
             print("   └─ metadata OK")
             continue
 
-        ok, message = check_stream(channel, timeout)
+        (
+            ok,
+            message,
+            attempt,
+            failures,
+        ) = check_stream_with_retries(
+            channel,
+            timeout,
+            args.attempts,
+            args.retry_delay,
+        )
 
         if ok:
             passed += 1
-            print(f"\n✅ {name} [{status}]")
-            print(f"   └─ {message}")
+
+            if attempt == 1:
+                print(f"\n✅ {name} [{status}]")
+                print(f"   └─ {message}")
+            else:
+                recovered += 1
+
+                print(f"\n⚠️ {name} [{status}]")
+                print(
+                    f"   └─ recovered on attempt "
+                    f"{attempt}/{args.attempts}: "
+                    f"{message}"
+                )
+
+                for number, failure in enumerate(
+                    failures,
+                    start=1,
+                ):
+                    print(
+                        f"      attempt {number} "
+                        f"failed: {failure}"
+                    )
+
         else:
             failed += 1
+
             print(f"\n❌ {name} [{status}]")
-            print(f"   └─ {message}")
+            print(
+                f"   └─ failed after "
+                f"{attempt}/{args.attempts} attempts"
+            )
+
+            for number, failure in enumerate(
+                failures,
+                start=1,
+            ):
+                print(
+                    f"      attempt {number}: "
+                    f"{failure}"
+                )
 
     total = passed + failed
 
@@ -428,6 +539,7 @@ def main() -> int:
     print("=" * 60)
     print("🐾 Bondík Quality Report")
     print(f"✅ Passed : {passed}")
+    print(f"⚠️ Recovered: {recovered}")
     print(f"❌ Failed : {failed}")
     print(f"📺 Total  : {total}")
     print("=" * 60)
