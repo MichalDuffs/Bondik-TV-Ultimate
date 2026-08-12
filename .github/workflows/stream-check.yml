@@ -34,5 +34,40 @@ jobs:
           python -m pip install -r requirements.txt
 
       - name: Check stable streams
+        shell: bash
         run: |
-          python tools/checker/check_channels.py --status stable
+          {
+            echo "🐾 Bondik TV Ultimate"
+            echo "📺 Stream Health Report"
+            echo "Run: $GITHUB_RUN_NUMBER"
+            echo "Commit: $GITHUB_SHA"
+            echo "UTC: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+            echo "============================================================"
+            echo
+          } | tee stream-check-report.txt
+
+          set +e
+
+          python tools/checker/check_channels.py --status stable \
+            2>&1 | tee -a stream-check-report.txt
+
+          CHECK_STATUS=${PIPESTATUS[0]}
+
+          {
+            echo
+            echo "============================================================"
+            echo "GitHub run: $GITHUB_RUN_ID"
+          } | tee -a stream-check-report.txt
+
+          cat stream-check-report.txt >> "$GITHUB_STEP_SUMMARY"
+
+          exit "$CHECK_STATUS"
+
+      - name: Upload stream check report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: stream-check-${{ github.run_id }}-attempt-${{ github.run_attempt }}
+          path: stream-check-report.txt
+          retention-days: 30
+          if-no-files-found: error
