@@ -67,7 +67,7 @@ jobs:
 
           exit "$CHECK_STATUS"
 
-      - name: Compare with previous stream check
+            - name: Compare with previous stream check
         if: always()
         shell: bash
         env:
@@ -82,15 +82,6 @@ jobs:
           grep -E '^❌ .+ \[stable\]$' stream-check-report.txt \
             | sed -E 's/^❌ (.+) \[stable\]$/\1/' \
             | sort -u > current-failed.txt || true
-
-          if [ ! -s current-failed.txt ]; then
-            echo "🟢 No current stream failures." \
-              | tee -a stream-history.txt
-
-            cat stream-history.txt >> stream-check-report.txt
-            cat stream-history.txt >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
 
           curl -fsSL \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
@@ -119,11 +110,13 @@ jobs:
           )"
 
           if [ -z "$PREVIOUS_ID" ]; then
-            echo "⚠️ No previous report available - baseline created." \
+            echo "ℹ️ No previous report available - baseline created." \
               | tee -a stream-history.txt
 
-            sed 's/^/⚠️ New failure: /' current-failed.txt \
-              | tee -a stream-history.txt
+            if [ -s current-failed.txt ]; then
+              sed 's/^/⚠️ New failure: /' current-failed.txt \
+                | tee -a stream-history.txt
+            fi
 
             cat stream-history.txt >> stream-check-report.txt
             cat stream-history.txt >> "$GITHUB_STEP_SUMMARY"
@@ -157,14 +150,39 @@ jobs:
             previous-failed.txt \
             > new-failed.txt
 
+          comm -13 \
+            current-failed.txt \
+            previous-failed.txt \
+            > recovered-streams.txt
+
+          CHANGES=0
+
           if [ -s new-failed.txt ]; then
             sed 's/^/⚠️ New failure: /' new-failed.txt \
               | tee -a stream-history.txt
+            CHANGES=1
           fi
 
           if [ -s repeated-failed.txt ]; then
             sed 's/^/🚨 Repeated failure: /' repeated-failed.txt \
               | tee -a stream-history.txt
+            CHANGES=1
+          fi
+
+          if [ -s recovered-streams.txt ]; then
+            sed 's/^/✅ Recovered since previous run: /' recovered-streams.txt \
+              | tee -a stream-history.txt
+            CHANGES=1
+          fi
+
+          if [ "$CHANGES" -eq 0 ]; then
+            if [ ! -s current-failed.txt ]; then
+              echo "🟢 No stream health changes - all streams healthy." \
+                | tee -a stream-history.txt
+            else
+              echo "ℹ️ Stream health unchanged." \
+                | tee -a stream-history.txt
+            fi
           fi
 
           cat stream-history.txt >> stream-check-report.txt
