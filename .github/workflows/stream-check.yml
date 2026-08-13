@@ -67,11 +67,11 @@ jobs:
 
           exit "$CHECK_STATUS"
 
-            - name: Compare with previous stream check
+      - name: Compare with previous stream check
         if: always()
         shell: bash
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+         GITHUB_TOKEN: ${{ github.token }}
         run: |
           {
             echo
