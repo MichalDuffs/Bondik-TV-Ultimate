@@ -37,6 +37,8 @@ jobs:
         run: |
           python -m py_compile tools/checker/check_channels.py
           python -m py_compile tools/generator/generate_playlists.py
+          python -m py_compile tools/checker/process_stream_health.py
+
 
       - name: Validate channel metadata
         run: |
