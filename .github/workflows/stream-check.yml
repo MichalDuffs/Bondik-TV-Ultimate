@@ -9,6 +9,7 @@ on:
 permissions:
   contents: read
   actions: read
+  issues: write
 
 concurrency:
   group: bondik-stream-check
@@ -71,7 +72,7 @@ jobs:
         if: always()
         shell: bash
         env:
-         GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           {
             echo
@@ -187,6 +188,157 @@ jobs:
 
           cat stream-history.txt >> stream-check-report.txt
           cat stream-history.txt >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Manage stream health issues
+        if: always()
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          if [ ! -f stream-history.txt ]; then
+            echo "No stream history available."
+            exit 0
+          fi
+
+          sed -n \
+            's/^🚨 Repeated failure: //p' \
+            stream-history.txt \
+            > repeated-issues.txt
+
+          sed -n \
+            's/^✅ Recovered since previous run: //p' \
+            stream-history.txt \
+            > recovered-issues.txt
+
+          API="$GITHUB_API_URL/repos/$GITHUB_REPOSITORY"
+
+          if [ -s repeated-issues.txt ]; then
+            while IFS= read -r CHANNEL; do
+              TITLE="🚨 Stream outage: $CHANNEL"
+
+              OPEN_ISSUE="$(
+                curl -fsSL \
+                  -H "Authorization: Bearer $GITHUB_TOKEN" \
+                  -H "Accept: application/vnd.github+json" \
+                  -H "X-GitHub-Api-Version: 2022-11-28" \
+                  "$API/issues?state=open&per_page=100" \
+                  | jq -r \
+                    --arg title "$TITLE" \
+                    '
+                      map(
+                        select(
+                          (.pull_request | not)
+                          and (.title == $title)
+                        )
+                      )
+                      | first
+                      | .number // empty
+                    '
+              )"
+
+              if [ -n "$OPEN_ISSUE" ]; then
+                echo "Issue already open for $CHANNEL (#$OPEN_ISSUE)."
+                continue
+              fi
+
+              BODY="$(
+                cat <<EOF
+          ## 🐾 Bondík Stream Health Alert
+
+          The stream **$CHANNEL** failed in consecutive health checks.
+
+          This issue was created automatically after Bondík confirmed that the failure was not just a temporary outage.
+
+          - Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          - Commit: \`$GITHUB_SHA\`
+          - Status: 🚨 repeated failure
+
+          The issue will be closed automatically when the stream recovers.
+
+          ---
+          🐾 Bondik TV Ultimate
+          EOF
+              )"
+
+              jq -n \
+                --arg title "$TITLE" \
+                --arg body "$BODY" \
+                '{
+                  title: $title,
+                  body: $body
+                }' \
+                > issue.json
+
+              curl -fsSL \
+                -X POST \
+                -H "Authorization: Bearer $GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "$API/issues" \
+                --data-binary @issue.json \
+                > created-issue.json
+
+              NUMBER="$(
+                jq -r '.number' created-issue.json
+              )"
+
+              echo "Created issue #$NUMBER for $CHANNEL."
+            done < repeated-issues.txt
+          fi
+
+          if [ -s recovered-issues.txt ]; then
+            while IFS= read -r CHANNEL; do
+              TITLE="🚨 Stream outage: $CHANNEL"
+
+              ISSUE_NUMBER="$(
+                curl -fsSL \
+                  -H "Authorization: Bearer $GITHUB_TOKEN" \
+                  -H "Accept: application/vnd.github+json" \
+                  -H "X-GitHub-Api-Version: 2022-11-28" \
+                  "$API/issues?state=open&per_page=100" \
+                  | jq -r \
+                    --arg title "$TITLE" \
+                    '
+                      map(
+                        select(
+                          (.pull_request | not)
+                          and (.title == $title)
+                        )
+                      )
+                      | first
+                      | .number // empty
+                    '
+              )"
+
+              if [ -z "$ISSUE_NUMBER" ]; then
+                echo "No open issue found for recovered stream $CHANNEL."
+                continue
+              fi
+
+              jq -n \
+                '{
+                  state: "closed",
+                  state_reason: "completed"
+                }' \
+                > close-issue.json
+
+              curl -fsSL \
+                -X PATCH \
+                -H "Authorization: Bearer $GITHUB_TOKEN" \
+                -H "Accept: application/vnd.github+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "$API/issues/$ISSUE_NUMBER" \
+                --data-binary @close-issue.json \
+                > /dev/null
+
+              echo "Closed issue #$ISSUE_NUMBER - $CHANNEL recovered."
+            done < recovered-issues.txt
+          fi
+
+          if [ ! -s repeated-issues.txt ] \
+            && [ ! -s recovered-issues.txt ]; then
+            echo "No issue action required."
+          fi
 
       - name: Upload stream check report
         if: always()
