@@ -39,6 +39,10 @@ jobs:
           python -m py_compile tools/generator/generate_playlists.py
           python -m py_compile tools/checker/process_stream_health.py
 
+      - name: Test stream health automation
+        run: |
+          python -m unittest discover -s tools/checker/tests -p "test_*.py" -v
+
 
       - name: Validate channel metadata
         run: |
