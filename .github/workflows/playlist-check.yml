@@ -38,8 +38,9 @@ jobs:
           python -m py_compile tools/checker/check_channels.py
           python -m py_compile tools/generator/generate_playlists.py
           python -m py_compile tools/checker/process_stream_health.py
+          python -m py_compile tools/updater/check_epg_sources.py
 
-      - name: Test stream health automation
+      - name: Run automated test suite
         run: |
           python -m unittest discover -s tools/checker/tests -p "test_*.py" -v
 

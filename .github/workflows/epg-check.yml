@@ -1,0 +1,73 @@
+﻿name: Bondik TV EPG Check
+
+on:
+  schedule:
+    - cron: "30 4 * * *"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bondik-epg-check
+  cancel-in-progress: true
+
+jobs:
+  epg-check:
+    name: Check EPG Sources
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Check EPG sources
+        shell: bash
+        run: |
+          {
+            echo "🐾 Bondik TV Ultimate"
+            echo "📅 EPG Health Report"
+            echo "Run: $GITHUB_RUN_NUMBER"
+            echo "Commit: $GITHUB_SHA"
+            echo "UTC: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+            echo "============================================================"
+            echo
+          } | tee epg-check-report.txt
+
+          set +e
+
+          python tools/updater/check_epg_sources.py \
+            2>&1 | tee -a epg-check-report.txt
+
+          CHECK_STATUS=${PIPESTATUS[0]}
+
+          {
+            echo
+            echo "============================================================"
+            echo "GitHub run: $GITHUB_RUN_ID"
+          } | tee -a epg-check-report.txt
+
+          cat epg-check-report.txt >> "$GITHUB_STEP_SUMMARY"
+
+          exit "$CHECK_STATUS"
+
+      - name: Upload EPG check report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: epg-check-${{ github.run_id }}-attempt-${{ github.run_attempt }}
+          path: epg-check-report.txt
+          retention-days: 30
+          if-no-files-found: error
