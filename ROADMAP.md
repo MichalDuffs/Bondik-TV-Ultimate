@@ -47,7 +47,10 @@ Our priority is quality over quantity: a clean, transparent and maintainable IPT
 - [x] Repeated outage detection
 - [x] Automatic GitHub Issue management
 - [x] Stream health automation refactor
-- [ ] Automated monitoring tests and fixtures
+- [x] Automated monitoring test suite
+- [x] Persistent failure streak tracking
+- [x] Outage escalation comments
+- [x] Escalation comment throttling
 
 ## EPG
 
@@ -121,7 +124,8 @@ Our priority is quality over quantity: a clean, transparent and maintainable IPT
 - [x] Automated outage Issues
 - [x] Health reports and artifacts
 - [x] Maintainable stream health automation
-- [ ] Automated monitoring test suite
+- [x] Automated monitoring test suite
+- [x] Persistent outage tracking and escalation
 - [ ] Automatic EPG maintenance
 
 ## Phase 4 - Applications
