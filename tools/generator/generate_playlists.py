@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SETTINGS = ROOT / "config" / "settings.yaml"
 COUNTRIES = ROOT / "config" / "countries.yaml"
 CATEGORIES = ROOT / "config" / "categories.yaml"
+EPG_SOURCES = ROOT / "epg" / "sources.yaml"
 
 
 def load_yaml(path: Path) -> dict:
@@ -23,6 +24,60 @@ def load_yaml(path: Path) -> dict:
 
 def escape(value) -> str:
     return str(value).replace('"', "'")
+
+def build_m3u_header(
+    channels: list[dict],
+    epg_sources: dict[str, str],
+) -> str:
+    """Build M3U header containing only EPG sources actually used."""
+    urls = []
+    seen = set()
+
+    for channel in channels:
+        if not isinstance(channel, dict):
+            continue
+
+        epg = channel.get("epg")
+
+        if (
+            not isinstance(epg, dict)
+            or epg.get("enabled") is not True
+        ):
+            continue
+
+        source = epg.get("source")
+
+        if (
+            source is None
+            or not str(source).strip()
+        ):
+            continue
+
+        source = str(source).strip()
+        url = epg_sources.get(source)
+
+        if not url:
+            raise ValueError(
+                f"Unknown EPG source '{source}'"
+            )
+
+        url = str(url).strip()
+
+        if not url or url in seen:
+            continue
+
+        seen.add(url)
+        urls.append(url)
+
+    if not urls:
+        return "#EXTM3U"
+
+    return (
+        '#EXTM3U x-tvg-url="'
+        + ",".join(escape(url) for url in urls)
+        + '"'
+    )
+
 
 def validate_channels(
     channels: list,
@@ -138,9 +193,13 @@ def write_playlist(
     path: Path,
     channels: list[dict],
     title: str,
+    epg_sources: dict[str, str],
 ) -> None:
     lines = [
-        "#EXTM3U",
+        build_m3u_header(
+            channels,
+            epg_sources,
+        ),
         f"# Bondik TV Ultimate - {title}",
         "# Generated automatically from channels/channels.yaml",
         "# Quality checked by Bondik",
@@ -203,6 +262,18 @@ def main() -> int:
     settings = load_yaml(SETTINGS)
     countries_config = load_yaml(COUNTRIES)
     categories_config = load_yaml(CATEGORIES)
+    epg_sources_config = load_yaml(EPG_SOURCES)
+
+    epg_sources = {
+        str(item["id"]): str(item["url"])
+        for item in epg_sources_config.get(
+            "sources",
+            [],
+        )
+        if isinstance(item, dict)
+        and item.get("id")
+        and item.get("url")
+    }
 
     generator = settings.get(
         "generator",
@@ -272,6 +343,7 @@ def main() -> int:
         ),
         stable,
         "Ultimate",
+        epg_sources,
     )
 
     # Countries
@@ -310,6 +382,7 @@ def main() -> int:
             output_file,
             selected,
             f'Country: {country.get("name", code)}',
+            epg_sources,
         )
 
         country_count += 1
@@ -358,6 +431,7 @@ def main() -> int:
             output_file,
             selected,
             f'Category: {category.get("name", category_id)}',
+            epg_sources,
         )
 
         category_count += 1
@@ -393,6 +467,7 @@ def main() -> int:
             output_file,
             selected,
             f"Provider: {provider}",
+            epg_sources,
         )
 
         provider_count += 1
