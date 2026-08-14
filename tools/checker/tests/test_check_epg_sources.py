@@ -30,6 +30,22 @@ class EpgSourceCheckerTests(unittest.TestCase):
             xml.encode("utf-8")
         )
 
+    def source_data(self, **overrides):
+        source = {
+            "id": "epgshare-cz",
+            "name": "Example EPG",
+            "country": "CZ",
+            "format": "xmltv-gzip",
+            "url": "https://example.com/epg.xml.gz",
+        }
+
+        source.update(overrides)
+
+        return {
+            "version": 1,
+            "sources": [source],
+        }
+
     def test_extracts_xmltv_channel_ids(self):
         payload = self.xmltv_payload(
             [
@@ -86,6 +102,55 @@ class EpgSourceCheckerTests(unittest.TestCase):
                 "Óčko.cz",
             },
         )
+
+    def test_source_requires_country(self):
+        data = self.source_data()
+        del data["sources"][0]["country"]
+
+        with self.assertRaises(ValueError):
+            checker.load_sources(data)
+
+    def test_source_url_requires_http_or_https(self):
+        data = self.source_data(
+            url="ftp://example.com/epg.xml.gz"
+        )
+
+        with self.assertRaises(ValueError):
+            checker.load_sources(data)
+
+    def test_source_format_must_be_supported(self):
+        data = self.source_data(
+            format="borys-json"
+        )
+
+        with self.assertRaises(ValueError):
+            checker.load_sources(data)
+
+    def test_channel_country_must_match_source_country(self):
+        sources = checker.load_sources(
+            self.source_data(
+                id="epgshare-sk",
+                country="SK",
+            )
+        )
+
+        channels = [
+            {
+                "name": "POLAR",
+                "country": "CZ",
+                "epg": {
+                    "enabled": True,
+                    "id": "POLAR.cz",
+                    "source": "epgshare-sk",
+                },
+            }
+        ]
+
+        with self.assertRaises(ValueError):
+            checker.validate_epg_source_countries(
+                channels,
+                sources,
+            )
 
 
 if __name__ == "__main__":

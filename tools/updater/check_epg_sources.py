@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Bondik TV Ultimate - EPG Source Checker
 
@@ -20,6 +20,7 @@ import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from urllib.parse import urlparse
 
 import truststore
 import yaml
@@ -37,6 +38,10 @@ USER_AGENT = (
 
 TIMEOUT = 20
 MAX_DOWNLOAD_BYTES = 32 * 1024 * 1024
+
+SUPPORTED_EPG_FORMATS = {
+    "xmltv-gzip",
+}
 
 SSL_CONTEXT = truststore.SSLContext(
     ssl.PROTOCOL_TLS_CLIENT
@@ -218,6 +223,7 @@ def load_sources(
         source_id = source.get("id")
         source_url = source.get("url")
         source_format = source.get("format")
+        source_country = source.get("country")
 
         if (
             source_id is None
@@ -235,11 +241,32 @@ def load_sources(
             )
 
         if (
+            source_country is None
+            or not str(source_country).strip()
+        ):
+            raise ValueError(
+                f"{source_id}: missing country"
+            )
+
+        if (
             source_url is None
             or not str(source_url).strip()
         ):
             raise ValueError(
                 f"{source_id}: missing URL"
+            )
+
+        source_url = str(source_url).strip()
+
+        parsed_url = urlparse(source_url)
+
+        if parsed_url.scheme not in {
+            "http",
+            "https",
+        }:
+            raise ValueError(
+                f"{source_id}: unsupported URL scheme "
+                f"'{parsed_url.scheme}'"
             )
 
         if (
@@ -250,9 +277,74 @@ def load_sources(
                 f"{source_id}: missing format"
             )
 
+        source_format = str(source_format).strip()
+
+        if source_format not in SUPPORTED_EPG_FORMATS:
+            raise ValueError(
+                f"{source_id}: unsupported format "
+                f"'{source_format}'"
+            )
+
         result[source_id] = source
 
     return result
+
+
+def validate_epg_source_countries(
+    channels: list,
+    sources: dict[str, dict],
+) -> None:
+    """Ensure enabled channel EPG source matches channel country."""
+
+    for channel in channels:
+        if not isinstance(channel, dict):
+            continue
+
+        epg = channel.get("epg")
+
+        if (
+            not isinstance(epg, dict)
+            or epg.get("enabled") is not True
+        ):
+            continue
+
+        channel_name = str(
+            channel.get("name", "<unknown>")
+        )
+
+        channel_country = channel.get("country")
+        source_id = epg.get("source")
+
+        if (
+            source_id is None
+            or not str(source_id).strip()
+        ):
+            continue
+
+        source_id = str(source_id).strip()
+        source = sources.get(source_id)
+
+        if source is None:
+            continue
+
+        source_country = str(
+            source.get("country", "")
+        ).strip()
+
+        channel_country = str(
+            channel_country or ""
+        ).strip()
+
+        if (
+            channel_country
+            and source_country
+            and channel_country != source_country
+        ):
+            raise ValueError(
+                f"{channel_name}: EPG source "
+                f"'{source_id}' is for {source_country}, "
+                f"but channel country is {channel_country}"
+            )
 
 
 def download_source(
@@ -322,6 +414,11 @@ def main() -> int:
 
         sources = load_sources(
             sources_data
+        )
+
+        validate_epg_source_countries(
+            channels,
+            sources,
         )
 
     except (
