@@ -56,7 +56,9 @@ Our priority is quality over quantity: a clean, transparent and maintainable IPT
 
 - [ ] Improve EPG coverage
 - [ ] Automatic EPG updates
-- [ ] Validate EPG identifiers
+- [x] Validate EPG identifiers
+- [x] Automated EPG source health checks
+- [x] EPG source registry validation
 
 ---
 
@@ -126,6 +128,7 @@ Our priority is quality over quantity: a clean, transparent and maintainable IPT
 - [x] Maintainable stream health automation
 - [x] Automated monitoring test suite
 - [x] Persistent outage tracking and escalation
+- [x] Scheduled EPG health monitoring
 - [ ] Automatic EPG maintenance
 
 ## Phase 4 - Applications
