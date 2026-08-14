@@ -100,20 +100,31 @@ def require_env(name: str) -> str:
 def github_request(
     url: str,
     token: str,
+    *,
+    method: str = "GET",
+    payload=None,
 ) -> bytes:
+    data = None
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+
+    if payload is not None:
+        data = json.dumps(
+            payload,
+            ensure_ascii=False,
+        ).encode("utf-8")
+
+        headers["Content-Type"] = "application/json"
+
     request = urllib.request.Request(
         url,
-        headers={
-            "Authorization": (
-                f"Bearer {token}"
-            ),
-            "Accept": (
-                "application/vnd.github+json"
-            ),
-            "X-GitHub-Api-Version": (
-                "2022-11-28"
-            ),
-        },
+        data=data,
+        headers=headers,
+        method=method,
     )
 
     try:
@@ -144,10 +155,15 @@ def github_request(
 def github_json(
     url: str,
     token: str,
+    *,
+    method: str = "GET",
+    payload=None,
 ):
     raw = github_request(
         url,
         token,
+        method=method,
+        payload=payload,
     )
 
     if not raw:
@@ -427,6 +443,274 @@ def write_streak_state(
     )
 
 
+EPG_OUTAGE_LABELS = (
+    {
+        "name": "epg-health",
+        "color": "1d76db",
+        "description": "Automated EPG health monitoring",
+    },
+    {
+        "name": "automated",
+        "color": "bfdadc",
+        "description": "Created or managed automatically",
+    },
+    {
+        "name": "outage",
+        "color": "d73a4a",
+        "description": "Confirmed service outage",
+    },
+)
+
+
+def list_open_issues(
+    *,
+    api_url: str,
+    repository: str,
+    token: str,
+):
+    payload = github_json(
+        (
+            f"{api_url}/repos/{repository}"
+            "/issues?state=open&per_page=100"
+        ),
+        token,
+    )
+
+    return [
+        issue
+        for issue in payload
+        if "pull_request" not in issue
+    ]
+
+
+def find_issue_number(
+    issues,
+    title: str,
+):
+    for issue in issues:
+        if (
+            issue.get("title") == title
+            and isinstance(
+                issue.get("number"),
+                int,
+            )
+        ):
+            return issue["number"]
+
+    return None
+
+
+def ensure_epg_labels(
+    *,
+    api_url: str,
+    repository: str,
+    token: str,
+) -> None:
+    labels = github_json(
+        (
+            f"{api_url}/repos/{repository}"
+            "/labels?per_page=100"
+        ),
+        token,
+    )
+
+    if not isinstance(labels, list):
+        raise RuntimeError(
+            "GitHub labels response "
+            "must be a list"
+        )
+
+    existing = {
+        label.get("name")
+        for label in labels
+        if isinstance(label, dict)
+    }
+
+    for label in EPG_OUTAGE_LABELS:
+        if label["name"] in existing:
+            continue
+
+        github_json(
+            (
+                f"{api_url}/repos/{repository}"
+                "/labels"
+            ),
+            token,
+            method="POST",
+            payload=label,
+        )
+
+
+def create_epg_issue(
+    *,
+    api_url: str,
+    repository: str,
+    token: str,
+    server_url: str,
+    run_id: int,
+    sha: str,
+    source: str,
+):
+    ensure_epg_labels(
+        api_url=api_url,
+        repository=repository,
+        token=token,
+    )
+
+    title = f"🚨 EPG outage: {source}"
+
+    body = f"""## 🐾 Bondík EPG Health Alert
+
+The EPG source **{source}** failed in consecutive health checks.
+
+This issue was created automatically after Bondík confirmed that the failure was not just a temporary incident.
+
+- Run: {server_url}/{repository}/actions/runs/{run_id}
+- Commit: `{sha}`
+- Status: 🚨 repeated EPG failure
+
+The issue will be closed automatically when the EPG source recovers.
+
+---
+🐾 Bondik TV Ultimate
+"""
+
+    return github_json(
+        (
+            f"{api_url}/repos/{repository}"
+            "/issues"
+        ),
+        token,
+        method="POST",
+        payload={
+            "title": title,
+            "body": body,
+            "labels": [
+                label["name"]
+                for label in EPG_OUTAGE_LABELS
+            ],
+        },
+    )
+
+
+def close_issue(
+    *,
+    api_url: str,
+    repository: str,
+    token: str,
+    issue_number: int,
+) -> None:
+    github_json(
+        (
+            f"{api_url}/repos/{repository}"
+            f"/issues/{issue_number}"
+        ),
+        token,
+        method="PATCH",
+        payload={
+            "state": "closed",
+            "state_reason": "completed",
+        },
+    )
+
+
+def manage_issues(
+    *,
+    api_url: str,
+    repository: str,
+    token: str,
+    server_url: str,
+    run_id: int,
+    sha: str,
+    repeated,
+    recovered,
+) -> None:
+    if not repeated and not recovered:
+        print(
+            "No EPG issue action required."
+        )
+        return
+
+    open_issues = list_open_issues(
+        api_url=api_url,
+        repository=repository,
+        token=token,
+    )
+
+    for source in repeated:
+        title = (
+            f"🚨 EPG outage: {source}"
+        )
+
+        existing = find_issue_number(
+            open_issues,
+            title,
+        )
+
+        if existing is not None:
+            print(
+                "EPG issue already open for "
+                f"{source} (#{existing})."
+            )
+            continue
+
+        issue = create_epg_issue(
+            api_url=api_url,
+            repository=repository,
+            token=token,
+            server_url=server_url,
+            run_id=run_id,
+            sha=sha,
+            source=source,
+        )
+
+        number = issue.get("number")
+
+        print(
+            f"Created EPG issue #{number} "
+            f"for {source}."
+        )
+
+        if isinstance(number, int):
+            open_issues.append(issue)
+
+    for source in recovered:
+        title = (
+            f"🚨 EPG outage: {source}"
+        )
+
+        issue_number = find_issue_number(
+            open_issues,
+            title,
+        )
+
+        if issue_number is None:
+            print(
+                "No open EPG issue found "
+                f"for recovered source {source}."
+            )
+            continue
+
+        close_issue(
+            api_url=api_url,
+            repository=repository,
+            token=token,
+            issue_number=issue_number,
+        )
+
+        print(
+            f"Closed EPG issue #{issue_number} "
+            f"- {source} recovered."
+        )
+
+        open_issues = [
+            issue
+            for issue in open_issues
+            if issue.get("number")
+            != issue_number
+        ]
+
+
 def load_previous_streaks(
     state_path: Path,
 ) -> dict[str, int]:
@@ -511,7 +795,7 @@ def main() -> int:
         )
         return 1
 
-    history, _, _ = build_history(
+    history, repeated, recovered = build_history(
         current_failed,
         previous_streaks,
     )
@@ -536,6 +820,49 @@ def main() -> int:
         history,
         end="",
     )
+
+    if (
+        os.environ.get("GITHUB_ACTIONS")
+        == "true"
+    ):
+        try:
+            manage_issues(
+                api_url=require_env(
+                    "GITHUB_API_URL"
+                ),
+                repository=require_env(
+                    "GITHUB_REPOSITORY"
+                ),
+                token=require_env(
+                    "GITHUB_TOKEN"
+                ),
+                server_url=os.environ.get(
+                    "GITHUB_SERVER_URL",
+                    "https://github.com",
+                ),
+                run_id=int(
+                    require_env(
+                        "GITHUB_RUN_ID"
+                    )
+                ),
+                sha=require_env(
+                    "GITHUB_SHA"
+                ),
+                repeated=repeated,
+                recovered=recovered,
+            )
+
+        except (
+            RuntimeError,
+            ValueError,
+            json.JSONDecodeError,
+        ) as exc:
+            print(
+                "❌ Unable to manage "
+                f"EPG issues: {exc}",
+                file=sys.stderr,
+            )
+            return 1
 
     return 0
 
