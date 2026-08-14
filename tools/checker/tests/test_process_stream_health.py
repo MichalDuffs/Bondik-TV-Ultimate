@@ -313,6 +313,78 @@ class StreamHealthIssueTests(unittest.TestCase):
         list_open.assert_not_called()
         self.assertIn("No issue action required.", output.getvalue())
 
+
+    def test_ensure_outage_labels_creates_only_missing_labels(self):
+        existing_labels = [
+            {"name": "automated"},
+        ]
+
+        with patch.object(
+            health,
+            "github_json",
+            return_value=existing_labels,
+        ) as github_json:
+            health.ensure_outage_labels(
+                api_url=self.common["api_url"],
+                repository=self.common["repository"],
+                token=self.common["token"],
+            )
+
+        first_call = github_json.call_args_list[0]
+
+        self.assertEqual(
+            first_call.args[0],
+            (
+                f'{self.common["api_url"]}/repos/'
+                f'{self.common["repository"]}/labels?per_page=100'
+            ),
+        )
+
+        created_names = {
+            call.kwargs["payload"]["name"]
+            for call in github_json.call_args_list[1:]
+        }
+
+        self.assertEqual(
+            created_names,
+            {"stream-health", "outage"},
+        )
+
+    def test_create_outage_issue_attaches_automation_labels(self):
+        with patch.object(
+            health,
+            "ensure_outage_labels",
+        ) as ensure_labels:
+            with patch.object(
+                health,
+                "github_json",
+                return_value={"number": 42},
+            ) as github_json:
+                issue = health.create_outage_issue(
+                    api_url=self.common["api_url"],
+                    repository=self.common["repository"],
+                    token=self.common["token"],
+                    server_url=self.common["server_url"],
+                    run_id=self.common["run_id"],
+                    sha=self.common["sha"],
+                    channel="POLAR",
+                )
+
+        ensure_labels.assert_called_once_with(
+            api_url=self.common["api_url"],
+            repository=self.common["repository"],
+            token=self.common["token"],
+        )
+
+        payload = github_json.call_args.kwargs["payload"]
+
+        self.assertEqual(
+            payload["labels"],
+            ["stream-health", "automated", "outage"],
+        )
+
+        self.assertEqual(issue["number"], 42)
+
     def test_repeated_failure_creates_issue_when_none_exists(self):
         created_issue = {
             "number": 42,

@@ -303,7 +303,59 @@ def find_issue_number(issues, title: str):
             return issue["number"]
     return None
 
+OUTAGE_LABELS = (
+    {
+        "name": "stream-health",
+        "color": "5319e7",
+        "description": "Automated stream health monitoring",
+    },
+    {
+        "name": "automated",
+        "color": "bfdadc",
+        "description": "Created or managed automatically",
+    },
+    {
+        "name": "outage",
+        "color": "d73a4a",
+        "description": "Confirmed stream outage",
+    },
+)
+
+
+def ensure_outage_labels(*, api_url, repository, token) -> None:
+    labels = github_json(
+        f"{api_url}/repos/{repository}/labels?per_page=100",
+        token,
+    )
+
+    if not isinstance(labels, list):
+        raise RuntimeError("GitHub labels response must be a list")
+
+    existing = {
+        label.get("name")
+        for label in labels
+        if isinstance(label, dict)
+    }
+
+    for label in OUTAGE_LABELS:
+        if label["name"] in existing:
+            continue
+
+        github_json(
+            f"{api_url}/repos/{repository}/labels",
+            token,
+            method="POST",
+            payload=label,
+        )
+
+
 def create_outage_issue(*, api_url, repository, token, server_url, run_id, sha, channel):
+    ensure_outage_labels(
+        api_url=api_url,
+        repository=repository,
+        token=token,
+    )
+
     title = f"🚨 Stream outage: {channel}"
     body = f"""## 🐾 Bondík Stream Health Alert
 
@@ -324,7 +376,14 @@ The issue will be closed automatically when the stream recovers.
         f"{api_url}/repos/{repository}/issues",
         token,
         method="POST",
-        payload={"title": title, "body": body},
+        payload={
+            "title": title,
+            "body": body,
+            "labels": [
+                label["name"]
+                for label in OUTAGE_LABELS
+            ],
+        },
     )
 
 def should_comment_on_streak(streak: int) -> bool:
