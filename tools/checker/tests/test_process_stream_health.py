@@ -426,6 +426,55 @@ class StreamHealthIssueTests(unittest.TestCase):
 
         comment_issue.assert_not_called()
 
+
+    def test_outage_comment_milestones(self):
+        expected = {
+            1: False,
+            2: False,
+            3: True,
+            4: False,
+            5: True,
+            6: False,
+            9: False,
+            10: True,
+            14: False,
+            15: True,
+            20: True,
+        }
+
+        for streak, should_comment in expected.items():
+            with self.subTest(streak=streak):
+                self.assertEqual(
+                    health.should_comment_on_streak(streak),
+                    should_comment,
+                )
+
+    def test_existing_issue_is_quiet_between_milestones(self):
+        open_issues = [
+            {
+                "number": 7,
+                "title": "\U0001f6a8 Stream outage: POLAR",
+            }
+        ]
+
+        with patch.object(
+            health,
+            "list_open_issues",
+            return_value=open_issues,
+        ):
+            with patch.object(
+                health,
+                "comment_outage_issue",
+            ) as comment_issue:
+                health.manage_issues(
+                    **self.common,
+                    repeated=["POLAR"],
+                    recovered=[],
+                    streaks={"POLAR": 4},
+                )
+
+        comment_issue.assert_not_called()
+
     def test_recovered_stream_closes_matching_issue(self):
         open_issues = [
             {

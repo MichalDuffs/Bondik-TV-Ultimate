@@ -327,6 +327,13 @@ The issue will be closed automatically when the stream recovers.
         payload={"title": title, "body": body},
     )
 
+def should_comment_on_streak(streak: int) -> bool:
+    if streak == 3:
+        return True
+
+    return streak >= 5 and streak % 5 == 0
+
+
 def comment_outage_issue(
     *,
     api_url,
@@ -395,7 +402,7 @@ def manage_issues(
         if existing is not None:
             streak = streaks.get(channel)
 
-            if streak is not None and streak >= 3:
+            if streak is not None and should_comment_on_streak(streak):
                 comment_outage_issue(
                     api_url=api_url,
                     repository=repository,
