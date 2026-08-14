@@ -3,8 +3,8 @@
 # Generated automatically from channels/channels.yaml
 # Quality checked by Bondik
 
-#EXTINF:-1 tvg-name="POLAR" group-title="CZ",POLAR
+#EXTINF:-1 tvg-name="POLAR" group-title="CZ" tvg-id="POLAR.cz",POLAR
 https://stream.polar.cz/polar/polarlive-1/playlist.m3u8
 
-#EXTINF:-1 tvg-name="JOJ" group-title="SK",JOJ
+#EXTINF:-1 tvg-name="JOJ" group-title="SK" tvg-id="JOJ.HD.sk",JOJ
 https://live.cdn.joj.sk/live/joj.m3u8

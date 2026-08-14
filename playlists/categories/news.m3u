@@ -3,5 +3,5 @@
 # Generated automatically from channels/channels.yaml
 # Quality checked by Bondik
 
-#EXTINF:-1 tvg-name="JOJ 24" group-title="SK",JOJ 24
+#EXTINF:-1 tvg-name="JOJ 24" group-title="SK" tvg-id="JOJ.24.HD.sk",JOJ 24
 https://live.cdn.joj.sk/live/andromeda/joj_news-1080.m3u8

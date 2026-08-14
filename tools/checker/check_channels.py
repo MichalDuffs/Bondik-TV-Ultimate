@@ -33,6 +33,7 @@ CHANNELS_FILE = REPO_ROOT / "channels" / "channels.yaml"
 COUNTRIES_FILE = REPO_ROOT / "config" / "countries.yaml"
 CATEGORIES_FILE = REPO_ROOT / "config" / "categories.yaml"
 QUALITY_FILE = REPO_ROOT / "config" / "quality.yaml"
+EPG_SOURCES_FILE = REPO_ROOT / "epg" / "sources.yaml"
 
 USER_AGENT = (
     "Bondik-TV-Ultimate/1.0 "
@@ -65,6 +66,7 @@ def load_configuration():
     countries_data = load_yaml(COUNTRIES_FILE)
     categories_data = load_yaml(CATEGORIES_FILE)
     quality_data = load_yaml(QUALITY_FILE)
+    epg_sources_data = load_yaml(EPG_SOURCES_FILE)
 
     countries = {
         str(item["code"])
@@ -103,7 +105,20 @@ def load_configuration():
             "archived",
         }
 
-    return countries, categories, allowed_protocols, allowed_statuses, timeout
+    epg_sources = {
+        str(item["id"])
+        for item in epg_sources_data.get("sources", [])
+        if isinstance(item, dict) and item.get("id")
+    }
+
+    return (
+        countries,
+        categories,
+        allowed_protocols,
+        allowed_statuses,
+        timeout,
+        epg_sources,
+    )
 
 
 def validate_channel(
@@ -186,6 +201,42 @@ def validate_channel(
 
     if not parsed.netloc:
         errors.append("invalid stream URL")
+
+    return errors
+
+
+def validate_epg_source(
+    channel: dict,
+    epg_sources: set[str],
+) -> list[str]:
+    """Validate enabled channel EPG source mapping."""
+    errors = []
+
+    epg = channel.get("epg")
+
+    if not isinstance(epg, dict):
+        return errors
+
+    if epg.get("enabled") is not True:
+        return errors
+
+    source = epg.get("source")
+
+    if (
+        source is None
+        or not str(source).strip()
+    ):
+        errors.append(
+            "EPG is enabled but 'epg.source' is missing"
+        )
+        return errors
+
+    source = str(source).strip()
+
+    if source not in epg_sources:
+        errors.append(
+            f"unknown EPG source '{source}'"
+        )
 
     return errors
 
@@ -449,6 +500,7 @@ def main() -> int:
             allowed_protocols,
             allowed_statuses,
             timeout,
+            epg_sources,
         ) = load_configuration()
 
     except (FileNotFoundError, ValueError, yaml.YAMLError) as error:
@@ -505,6 +557,13 @@ def main() -> int:
             categories,
             allowed_protocols,
             allowed_statuses,
+        )
+
+        metadata_errors.extend(
+            validate_epg_source(
+                channel,
+                epg_sources,
+            )
         )
 
         if metadata_errors:

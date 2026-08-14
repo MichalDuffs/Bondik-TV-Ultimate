@@ -3,26 +3,26 @@
 # Generated automatically from channels/channels.yaml
 # Quality checked by Bondik
 
-#EXTINF:-1 tvg-name="POLAR" group-title="CZ",POLAR
+#EXTINF:-1 tvg-name="POLAR" group-title="CZ" tvg-id="POLAR.cz",POLAR
 https://stream.polar.cz/polar/polarlive-1/playlist.m3u8
 
-#EXTINF:-1 tvg-name="Óčko" group-title="CZ",Óčko
+#EXTINF:-1 tvg-name="Óčko" group-title="CZ" tvg-id="Óčko.cz",Óčko
 https://ocko-live.ssl.cdn.cra.cz/channels/ocko/playlist.m3u8
 
-#EXTINF:-1 tvg-name="Óčko Star" group-title="CZ",Óčko Star
+#EXTINF:-1 tvg-name="Óčko Star" group-title="CZ" tvg-id="Óčko.Star.cz",Óčko Star
 https://ocko-live.ssl.cdn.cra.cz/channels/ocko_gold/playlist.m3u8
 
-#EXTINF:-1 tvg-name="Óčko Expres" group-title="CZ",Óčko Expres
+#EXTINF:-1 tvg-name="Óčko Expres" group-title="CZ" tvg-id="Óčko.Expres.cz",Óčko Expres
 https://ocko-live.ssl.cdn.cra.cz/channels/ocko_expres/playlist.m3u8
 
-#EXTINF:-1 tvg-name="JOJ" group-title="SK",JOJ
+#EXTINF:-1 tvg-name="JOJ" group-title="SK" tvg-id="JOJ.HD.sk",JOJ
 https://live.cdn.joj.sk/live/joj.m3u8
 
-#EXTINF:-1 tvg-name="JOJ 24" group-title="SK",JOJ 24
+#EXTINF:-1 tvg-name="JOJ 24" group-title="SK" tvg-id="JOJ.24.HD.sk",JOJ 24
 https://live.cdn.joj.sk/live/andromeda/joj_news-1080.m3u8
 
-#EXTINF:-1 tvg-name="JOJ Plus" group-title="SK",JOJ Plus
+#EXTINF:-1 tvg-name="JOJ Plus" group-title="SK" tvg-id="Plus.HD.sk",JOJ Plus
 https://live.cdn.joj.sk/live/andromeda/plus-1080.m3u8
 
-#EXTINF:-1 tvg-name="WAU" group-title="SK",WAU
+#EXTINF:-1 tvg-name="WAU" group-title="SK" tvg-id="Wau.HD.sk",WAU
 https://live.cdn.joj.sk/live/andromeda/wau-1080.m3u8

@@ -1,0 +1,14 @@
+version: 1
+
+sources:
+  - id: "epgshare-cz"
+    name: "EPGShare Czech Republic"
+    country: "CZ"
+    format: "xmltv-gzip"
+    url: "https://epgshare01.online/epgshare01/epg_ripper_CZ1.xml.gz"
+
+  - id: "epgshare-sk"
+    name: "EPGShare Slovakia"
+    country: "SK"
+    format: "xmltv-gzip"
+    url: "https://epgshare01.online/epgshare01/epg_ripper_SK1.xml.gz"

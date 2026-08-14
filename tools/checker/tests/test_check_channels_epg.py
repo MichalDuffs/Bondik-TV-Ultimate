@@ -1,4 +1,4 @@
-﻿from pathlib import Path
+from pathlib import Path
 import sys
 import unittest
 
@@ -126,6 +126,76 @@ class EpgValidationTests(unittest.TestCase):
             "duplicate EPG ID 'polar.cz' (POLAR / OTHER)",
             problems,
         )
+
+
+
+    def test_enabled_epg_requires_source(self):
+        channel = self.channel(
+            epg={
+                "id": "Óčko.cz",
+                "enabled": True,
+            }
+        )
+
+        errors = checker.validate_epg_source(
+            channel,
+            {"epgshare-cz"},
+        )
+
+        self.assertIn(
+            "EPG is enabled but 'epg.source' is missing",
+            errors,
+        )
+
+    def test_unknown_epg_source_is_rejected(self):
+        channel = self.channel(
+            epg={
+                "id": "Óčko.cz",
+                "source": "borys-epg",
+                "enabled": True,
+            }
+        )
+
+        errors = checker.validate_epg_source(
+            channel,
+            {"epgshare-cz"},
+        )
+
+        self.assertIn(
+            "unknown EPG source 'borys-epg'",
+            errors,
+        )
+
+    def test_known_epg_source_is_valid(self):
+        channel = self.channel(
+            epg={
+                "id": "Óčko.cz",
+                "source": "epgshare-cz",
+                "enabled": True,
+            }
+        )
+
+        errors = checker.validate_epg_source(
+            channel,
+            {"epgshare-cz"},
+        )
+
+        self.assertEqual(errors, [])
+
+    def test_disabled_epg_does_not_require_source(self):
+        channel = self.channel(
+            epg={
+                "id": None,
+                "enabled": False,
+            }
+        )
+
+        errors = checker.validate_epg_source(
+            channel,
+            {"epgshare-cz"},
+        )
+
+        self.assertEqual(errors, [])
 
 
 if __name__ == "__main__":

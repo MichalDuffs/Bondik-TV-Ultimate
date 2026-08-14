@@ -3,14 +3,14 @@
 # Generated automatically from channels/channels.yaml
 # Quality checked by Bondik
 
-#EXTINF:-1 tvg-name="POLAR" group-title="CZ",POLAR
+#EXTINF:-1 tvg-name="POLAR" group-title="CZ" tvg-id="POLAR.cz",POLAR
 https://stream.polar.cz/polar/polarlive-1/playlist.m3u8
 
-#EXTINF:-1 tvg-name="Óčko" group-title="CZ",Óčko
+#EXTINF:-1 tvg-name="Óčko" group-title="CZ" tvg-id="Óčko.cz",Óčko
 https://ocko-live.ssl.cdn.cra.cz/channels/ocko/playlist.m3u8
 
-#EXTINF:-1 tvg-name="Óčko Star" group-title="CZ",Óčko Star
+#EXTINF:-1 tvg-name="Óčko Star" group-title="CZ" tvg-id="Óčko.Star.cz",Óčko Star
 https://ocko-live.ssl.cdn.cra.cz/channels/ocko_gold/playlist.m3u8
 
-#EXTINF:-1 tvg-name="Óčko Expres" group-title="CZ",Óčko Expres
+#EXTINF:-1 tvg-name="Óčko Expres" group-title="CZ" tvg-id="Óčko.Expres.cz",Óčko Expres
 https://ocko-live.ssl.cdn.cra.cz/channels/ocko_expres/playlist.m3u8

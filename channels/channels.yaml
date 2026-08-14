@@ -14,8 +14,9 @@ channels:
       quality: "FHD"
 
     epg:
-      id: null
-      enabled: false
+      id: "POLAR.cz"
+      source: "epgshare-cz"
+      enabled: true
 
     logo:
       url: null
@@ -66,8 +67,9 @@ channels:
       quality: "unknown"
 
     epg:
-      id: null
-      enabled: false
+      id: "Óčko.cz"
+      source: "epgshare-cz"
+      enabled: true
 
     logo:
       url: null
@@ -92,8 +94,9 @@ channels:
       quality: "unknown"
 
     epg:
-      id: null
-      enabled: false
+      id: "Óčko.Star.cz"
+      source: "epgshare-cz"
+      enabled: true
 
     logo:
       url: null
@@ -118,8 +121,9 @@ channels:
       quality: "unknown"
 
     epg:
-      id: null
-      enabled: false
+      id: "Óčko.Expres.cz"
+      source: "epgshare-cz"
+      enabled: true
 
     logo:
       url: null
@@ -147,8 +151,9 @@ channels:
         Origin: "https://www.joj.sk"
 
     epg:
-      id: null
-      enabled: false
+      id: "JOJ.HD.sk"
+      source: "epgshare-sk"
+      enabled: true
 
     logo:
       url: null
@@ -177,8 +182,9 @@ channels:
         Origin: "https://www.joj.sk"
 
     epg:
-      id: null
-      enabled: false
+      id: "JOJ.24.HD.sk"
+      source: "epgshare-sk"
+      enabled: true
 
     logo:
       url: null
@@ -206,8 +212,9 @@ channels:
         Origin: "https://www.joj.sk"
 
     epg:
-      id: null
-      enabled: false
+      id: "Plus.HD.sk"
+      source: "epgshare-sk"
+      enabled: true
 
     logo:
       url: null
@@ -236,8 +243,9 @@ channels:
         Origin: "https://www.joj.sk"
 
     epg:
-      id: null
-      enabled: false
+      id: "Wau.HD.sk"
+      source: "epgshare-sk"
+      enabled: true
 
     logo:
       url: null
