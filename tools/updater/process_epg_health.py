@@ -614,6 +614,58 @@ def close_issue(
     )
 
 
+def should_comment_on_streak(
+    streak: int,
+) -> bool:
+    if streak == 3:
+        return True
+
+    return (
+        streak >= 5
+        and streak % 5 == 0
+    )
+
+
+def comment_epg_issue(
+    *,
+    api_url: str,
+    repository: str,
+    token: str,
+    server_url: str,
+    run_id: int,
+    sha: str,
+    source: str,
+    streak: int,
+    issue_number: int,
+) -> None:
+    body = f"""## 🐾 Bondík EPG Health Update
+
+The EPG source **{source}** is still failing.
+
+- Run: {server_url}/{repository}/actions/runs/{run_id}
+- Commit: `{sha}`
+- Status: 🚨 EPG outage continues
+- Failure streak: ×{streak}
+
+Bondík will keep monitoring the EPG source automatically.
+
+---
+🐾 Bondik TV Ultimate
+"""
+
+    github_json(
+        (
+            f"{api_url}/repos/{repository}"
+            f"/issues/{issue_number}/comments"
+        ),
+        token,
+        method="POST",
+        payload={
+            "body": body,
+        },
+    )
+
+
 def manage_issues(
     *,
     api_url: str,
@@ -624,7 +676,10 @@ def manage_issues(
     sha: str,
     repeated,
     recovered,
+    streaks=None,
 ) -> None:
+    streaks = streaks or {}
+
     if not repeated and not recovered:
         print(
             "No EPG issue action required."
@@ -648,10 +703,40 @@ def manage_issues(
         )
 
         if existing is not None:
-            print(
-                "EPG issue already open for "
-                f"{source} (#{existing})."
+            streak = streaks.get(
+                source
             )
+
+            if (
+                streak is not None
+                and should_comment_on_streak(
+                    streak
+                )
+            ):
+                comment_epg_issue(
+                    api_url=api_url,
+                    repository=repository,
+                    token=token,
+                    server_url=server_url,
+                    run_id=run_id,
+                    sha=sha,
+                    source=source,
+                    streak=streak,
+                    issue_number=existing,
+                )
+
+                print(
+                    "Updated EPG issue "
+                    f"#{existing} for {source} "
+                    f"(streak ×{streak})."
+                )
+
+            else:
+                print(
+                    "EPG issue already open for "
+                    f"{source} (#{existing})."
+                )
+
             continue
 
         issue = create_epg_issue(
@@ -850,6 +935,7 @@ def main() -> int:
                 ),
                 repeated=repeated,
                 recovered=recovered,
+                streaks=current_streaks,
             )
 
         except (

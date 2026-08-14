@@ -1,8 +1,10 @@
-﻿from pathlib import Path
+from pathlib import Path
 import io
 import sys
+import tempfile
 import unittest
 from contextlib import redirect_stdout
+from types import SimpleNamespace
 from unittest.mock import patch
 
 
@@ -182,6 +184,262 @@ class EpgHealthIssueTests(unittest.TestCase):
             token=self.common["token"],
             issue_number=9,
         )
+
+
+    def test_epg_comment_milestones(self):
+        expected = {
+            1: False,
+            2: False,
+            3: True,
+            4: False,
+            5: True,
+            6: False,
+            9: False,
+            10: True,
+            14: False,
+            15: True,
+            20: True,
+        }
+
+        for streak, should_comment in expected.items():
+            with self.subTest(streak=streak):
+                self.assertEqual(
+                    health.should_comment_on_streak(
+                        streak
+                    ),
+                    should_comment,
+                )
+
+    def test_existing_epg_issue_gets_comment_at_streak_three(self):
+        open_issues = [
+            {
+                "number": 7,
+                "title": (
+                    "🚨 EPG outage: epgshare-cz"
+                ),
+            }
+        ]
+
+        with patch.object(
+            health,
+            "list_open_issues",
+            return_value=open_issues,
+        ):
+            with patch.object(
+                health,
+                "comment_epg_issue",
+            ) as comment_issue:
+                with patch.object(
+                    health,
+                    "create_epg_issue",
+                ) as create_issue:
+
+                    health.manage_issues(
+                        **self.common,
+                        repeated=[
+                            "epgshare-cz"
+                        ],
+                        recovered=[],
+                        streaks={
+                            "epgshare-cz": 3
+                        },
+                    )
+
+        comment_issue.assert_called_once_with(
+            api_url=self.common["api_url"],
+            repository=self.common[
+                "repository"
+            ],
+            token=self.common["token"],
+            server_url=self.common[
+                "server_url"
+            ],
+            run_id=self.common["run_id"],
+            sha=self.common["sha"],
+            source="epgshare-cz",
+            streak=3,
+            issue_number=7,
+        )
+
+        create_issue.assert_not_called()
+
+    def test_existing_epg_issue_is_quiet_between_milestones(self):
+        open_issues = [
+            {
+                "number": 7,
+                "title": (
+                    "🚨 EPG outage: epgshare-cz"
+                ),
+            }
+        ]
+
+        with patch.object(
+            health,
+            "list_open_issues",
+            return_value=open_issues,
+        ):
+            with patch.object(
+                health,
+                "comment_epg_issue",
+            ) as comment_issue:
+
+                health.manage_issues(
+                    **self.common,
+                    repeated=[
+                        "epgshare-cz"
+                    ],
+                    recovered=[],
+                    streaks={
+                        "epgshare-cz": 4
+                    },
+                )
+
+        comment_issue.assert_not_called()
+
+    def test_comment_epg_issue_posts_update(self):
+        with patch.object(
+            health,
+            "github_json",
+            return_value={},
+        ) as github_json:
+
+            health.comment_epg_issue(
+                **self.common,
+                source="epgshare-cz",
+                streak=5,
+                issue_number=7,
+            )
+
+        call = github_json.call_args
+
+        self.assertEqual(
+            call.args[0],
+            (
+                "https://api.github.test/"
+                "repos/Bondik/Test/"
+                "issues/7/comments"
+            ),
+        )
+
+        self.assertEqual(
+            call.kwargs["method"],
+            "POST",
+        )
+
+        body = call.kwargs[
+            "payload"
+        ]["body"]
+
+        self.assertIn(
+            "epgshare-cz",
+            body,
+        )
+
+        self.assertIn(
+            "×5",
+            body,
+        )
+
+    def test_main_passes_current_streaks_to_issue_manager(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp = Path(temp_dir)
+
+            report = temp / (
+                "epg-check-report.txt"
+            )
+            history = temp / (
+                "epg-history.txt"
+            )
+            state = temp / (
+                "epg-health-state.json"
+            )
+
+            report.write_text(
+                """
+📡 epgshare-cz
+   └─ ❌ HTTP Error 503: Service Unavailable
+""",
+                encoding="utf-8",
+            )
+
+            args = SimpleNamespace(
+                report=report,
+                history=history,
+                state=state,
+            )
+
+            env_values = {
+                "GITHUB_API_URL": (
+                    "https://api.github.test"
+                ),
+                "GITHUB_REPOSITORY": (
+                    "Bondik/Test"
+                ),
+                "GITHUB_TOKEN": (
+                    "test-token"
+                ),
+                "GITHUB_RUN_ID": "123",
+                "GITHUB_SHA": "abc123",
+            }
+
+            def fake_require_env(name):
+                return env_values[name]
+
+            with patch.dict(
+                health.os.environ,
+                {
+                    "GITHUB_ACTIONS": "true",
+                    "GITHUB_SERVER_URL": (
+                        "https://github.test"
+                    ),
+                },
+                clear=True,
+            ):
+                with patch.object(
+                    health,
+                    "parse_arguments",
+                    return_value=args,
+                ):
+                    with patch.object(
+                        health,
+                        "load_previous_streaks",
+                        return_value={
+                            "epgshare-cz": 2
+                        },
+                    ):
+                        with patch.object(
+                            health,
+                            "require_env",
+                            side_effect=(
+                                fake_require_env
+                            ),
+                        ):
+                            with patch.object(
+                                health,
+                                "manage_issues",
+                            ) as manage_issues:
+
+                                result = (
+                                    health.main()
+                                )
+
+            self.assertEqual(
+                result,
+                0,
+            )
+
+            kwargs = (
+                manage_issues
+                .call_args
+                .kwargs
+            )
+
+            self.assertEqual(
+                kwargs["streaks"],
+                {
+                    "epgshare-cz": 3
+                },
+            )
 
 
 if __name__ == "__main__":
