@@ -242,6 +242,11 @@ class StreamHealthMainTests(unittest.TestCase):
             self.assertEqual(call_kwargs["repeated"], ["POLAR"])
             self.assertEqual(call_kwargs["recovered"], [])
 
+            self.assertEqual(
+                call_kwargs["streaks"],
+                {"POLAR": 3},
+            )
+
     def test_main_guard_is_at_module_level(self):
         source_path = CHECKER_DIR / "process_stream_health.py"
 
@@ -351,6 +356,75 @@ class StreamHealthIssueTests(unittest.TestCase):
                 )
 
         create_issue.assert_not_called()
+
+
+    def test_repeated_failure_comments_on_existing_issue_from_streak_three(self):
+        open_issues = [
+            {
+                "number": 7,
+                "title": "\U0001f6a8 Stream outage: POLAR",
+            }
+        ]
+
+        with patch.object(
+            health,
+            "list_open_issues",
+            return_value=open_issues,
+        ):
+            with patch.object(
+                health,
+                "comment_outage_issue",
+            ) as comment_issue:
+                with patch.object(
+                    health,
+                    "create_outage_issue",
+                ) as create_issue:
+                    health.manage_issues(
+                        **self.common,
+                        repeated=["POLAR"],
+                        recovered=[],
+                        streaks={"POLAR": 3},
+                    )
+
+        comment_issue.assert_called_once_with(
+            api_url=self.common["api_url"],
+            repository=self.common["repository"],
+            token=self.common["token"],
+            server_url=self.common["server_url"],
+            run_id=self.common["run_id"],
+            sha=self.common["sha"],
+            channel="POLAR",
+            streak=3,
+            issue_number=7,
+        )
+
+        create_issue.assert_not_called()
+
+    def test_repeated_failure_does_not_comment_before_streak_three(self):
+        open_issues = [
+            {
+                "number": 7,
+                "title": "\U0001f6a8 Stream outage: POLAR",
+            }
+        ]
+
+        with patch.object(
+            health,
+            "list_open_issues",
+            return_value=open_issues,
+        ):
+            with patch.object(
+                health,
+                "comment_outage_issue",
+            ) as comment_issue:
+                health.manage_issues(
+                    **self.common,
+                    repeated=["POLAR"],
+                    recovered=[],
+                    streaks={"POLAR": 2},
+                )
+
+        comment_issue.assert_not_called()
 
     def test_recovered_stream_closes_matching_issue(self):
         open_issues = [

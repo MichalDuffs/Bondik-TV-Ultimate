@@ -327,6 +327,41 @@ The issue will be closed automatically when the stream recovers.
         payload={"title": title, "body": body},
     )
 
+def comment_outage_issue(
+    *,
+    api_url,
+    repository,
+    token,
+    server_url,
+    run_id,
+    sha,
+    channel,
+    streak,
+    issue_number,
+):
+    body = f"""## \U0001f43e Bondik Stream Health Update
+
+The stream **{channel}** is still unavailable.
+
+- Run: {server_url}/{repository}/actions/runs/{run_id}
+- Commit: `{sha}`
+- Status: \U0001f6a8 outage continues
+- Failure streak: \u00d7{streak}
+
+Bondik will keep monitoring the stream automatically.
+
+---
+\U0001f43e Bondik TV Ultimate
+"""
+
+    github_json(
+        f"{api_url}/repos/{repository}/issues/{issue_number}/comments",
+        token,
+        method="POST",
+        payload={"body": body},
+    )
+
+
 def close_issue(*, api_url, repository, token, issue_number):
     github_json(
         f"{api_url}/repos/{repository}/issues/{issue_number}",
@@ -335,7 +370,19 @@ def close_issue(*, api_url, repository, token, issue_number):
         payload={"state": "closed", "state_reason": "completed"},
     )
 
-def manage_issues(*, api_url, repository, token, server_url, run_id, sha, repeated, recovered):
+def manage_issues(
+    *,
+    api_url,
+    repository,
+    token,
+    server_url,
+    run_id,
+    sha,
+    repeated,
+    recovered,
+    streaks=None,
+):
+    streaks = streaks or {}
     if not repeated and not recovered:
         print("No issue action required.")
         return
@@ -346,7 +393,31 @@ def manage_issues(*, api_url, repository, token, server_url, run_id, sha, repeat
         title = f"🚨 Stream outage: {channel}"
         existing = find_issue_number(open_issues, title)
         if existing is not None:
-            print(f"Issue already open for {channel} (#{existing}).")
+            streak = streaks.get(channel)
+
+            if streak is not None and streak >= 3:
+                comment_outage_issue(
+                    api_url=api_url,
+                    repository=repository,
+                    token=token,
+                    server_url=server_url,
+                    run_id=run_id,
+                    sha=sha,
+                    channel=channel,
+                    streak=streak,
+                    issue_number=existing,
+                )
+
+                print(
+                    f"Updated issue #{existing} for {channel} "
+                    f"(streak \u00d7{streak})."
+                )
+            else:
+                print(
+                    f"Issue already open for {channel} "
+                    f"(#{existing})."
+                )
+
             continue
         issue = create_outage_issue(
             api_url=api_url,
@@ -448,6 +519,7 @@ def main() -> int:
             sha=sha,
             repeated=repeated,
             recovered=recovered,
+            streaks=current_streaks,
         )
 
     except Exception as exc:
