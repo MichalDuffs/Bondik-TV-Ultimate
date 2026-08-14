@@ -108,6 +108,55 @@ class StreamHealthHistoryTests(unittest.TestCase):
         self.assertEqual(repeated, [])
         self.assertEqual(recovered, [])
 
+class StreamHealthStreakTests(unittest.TestCase):
+    def test_parse_streak_state(self):
+        raw = '{"POLAR": 3, "JOJ": 1}'
+
+        self.assertEqual(
+            health.parse_streak_state(raw),
+            {
+                "POLAR": 3,
+                "JOJ": 1,
+            },
+        )
+
+    def test_parse_streak_state_rejects_invalid_value(self):
+        with self.assertRaises(ValueError):
+            health.parse_streak_state('{"POLAR": 0}')
+
+    def test_advance_streaks_increments_failed_channels(self):
+        streaks = health.advance_streaks(
+            {"POLAR", "JOJ"},
+            {
+                "POLAR": 2,
+                "WAU": 5,
+            },
+        )
+
+        self.assertEqual(
+            streaks,
+            {
+                "JOJ": 1,
+                "POLAR": 3,
+            },
+        )
+
+    def test_recovered_channel_is_removed_from_new_state(self):
+        streaks = health.advance_streaks(
+            {"POLAR"},
+            {
+                "POLAR": 2,
+                "WAU": 4,
+            },
+        )
+
+        self.assertEqual(
+            streaks,
+            {
+                "POLAR": 3,
+            },
+        )
+
 
 class StreamHealthIssueTests(unittest.TestCase):
     def setUp(self):

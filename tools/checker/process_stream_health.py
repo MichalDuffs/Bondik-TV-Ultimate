@@ -34,6 +34,11 @@ def parse_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("--report", type=Path, default=Path("stream-check-report.txt"))
     parser.add_argument("--history", type=Path, default=Path("stream-history.txt"))
+    parser.add_argument(
+        "--state",
+        type=Path,
+        default=Path("stream-health-state.json"),
+    )
     return parser.parse_args()
 
 def require_env(name: str) -> str:
@@ -74,32 +79,129 @@ def extract_failures(report: str) -> set[str]:
             failures.add(match.group(1))
     return failures
 
-def find_previous_report(*, api_url: str, repository: str, run_id: int, token: str):
+def parse_streak_state(raw: str) -> dict[str, int]:
+    payload = json.loads(raw)
+
+    if not isinstance(payload, dict):
+        raise ValueError("stream health state must be a JSON object")
+
+    streaks: dict[str, int] = {}
+
+    for channel, streak in payload.items():
+        if not isinstance(channel, str) or not channel.strip():
+            raise ValueError("stream health state contains an invalid channel name")
+
+        if not isinstance(streak, int) or isinstance(streak, bool) or streak < 1:
+            raise ValueError(
+                f"stream health state contains an invalid streak for {channel}"
+            )
+
+        streaks[channel] = streak
+
+    return streaks
+
+
+def advance_streaks(
+    current_failed: set[str],
+    previous_streaks: dict[str, int],
+    ) -> dict[str, int]:
+    return {
+        channel: previous_streaks.get(channel, 0) + 1
+        for channel in sorted(current_failed)
+    }
+
+
+def write_streak_state(path: Path, streaks: dict[str, int]) -> None:
+    path.write_text(
+        json.dumps(
+            streaks,
+            ensure_ascii=False,
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+
+def find_previous_health_data(
+    *,
+    api_url: str,
+    repository: str,
+    run_id: int,
+    token: str,
+):
     artifacts = github_json(
-        f"{api_url}/repos/{repository}/actions/artifacts?per_page=100", token
+        f"{api_url}/repos/{repository}/actions/artifacts?per_page=100",
+        token,
     ).get("artifacts", [])
+
     candidates = []
+
     for artifact in artifacts:
         workflow_run = artifact.get("workflow_run") or {}
+
         if artifact.get("expired", False):
             continue
+
         if workflow_run.get("id") == run_id:
             continue
+
         if not artifact.get("name", "").startswith("stream-check-"):
             continue
+
         candidates.append(artifact)
+
     if not candidates:
-        return None
-    previous = max(candidates, key=lambda artifact: artifact.get("created_at", ""))
-    archive_bytes = github_request(
-        f"{api_url}/repos/{repository}/actions/artifacts/{previous['id']}/zip", token
+        return None, {}
+
+    previous = max(
+        candidates,
+        key=lambda artifact: artifact.get("created_at", ""),
     )
+
+    archive_bytes = github_request(
+        f"{api_url}/repos/{repository}/actions/artifacts/{previous['id']}/zip",
+        token,
+    )
+
     with zipfile.ZipFile(io.BytesIO(archive_bytes)) as archive:
         try:
             report_bytes = archive.read("stream-check-report.txt")
+            previous_report = report_bytes.decode(
+                "utf-8-sig",
+                errors="replace",
+            )
         except KeyError:
-            return ""
-    return report_bytes.decode("utf-8-sig", errors="replace")
+            previous_report = ""
+
+        try:
+            state_bytes = archive.read("stream-health-state.json")
+        except KeyError:
+            previous_streaks = {
+                channel: 1
+                for channel in extract_failures(previous_report)
+            }
+        else:
+            try:
+                previous_streaks = parse_streak_state(
+                    state_bytes.decode(
+                        "utf-8-sig",
+                        errors="replace",
+                    )
+                )
+            except (json.JSONDecodeError, ValueError) as exc:
+                print(
+                    "⚠️ Previous streak state invalid - "
+                    f"falling back to report: {exc}"
+                )
+                previous_streaks = {
+                    channel: 1
+                    for channel in extract_failures(previous_report)
+                }
+
+    return previous_report, previous_streaks
 
 def build_history(current_failed: set[str], previous_report):
     lines = ["", SEPARATOR, "🐾 Bondík Stream History"]
@@ -264,5 +366,5 @@ def main() -> int:
         return 1
     return 0
 
-if __name__ == "__main__":
-    raise SystemExit(main())
+    if __name__ == "__main__":
+        raise SystemExit(main())

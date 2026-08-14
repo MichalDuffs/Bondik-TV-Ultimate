@@ -80,6 +80,8 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: stream-check-${{ github.run_id }}-attempt-${{ github.run_attempt }}
-          path: stream-check-report.txt
+          path: |
+            stream-check-report.txt
+            stream-health-state.json
           retention-days: 30
           if-no-files-found: error
