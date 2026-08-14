@@ -1,4 +1,4 @@
-﻿from pathlib import Path
+from pathlib import Path
 import gzip
 import sys
 import unittest
@@ -151,6 +151,125 @@ class EpgSourceCheckerTests(unittest.TestCase):
                 channels,
                 sources,
             )
+
+
+    def test_xmltv_timestamp_is_parsed(self):
+        timestamp = checker.parse_xmltv_timestamp(
+            "20260814143000 +0200"
+        )
+
+        self.assertEqual(
+            timestamp.year,
+            2026,
+        )
+
+        self.assertEqual(
+            timestamp.month,
+            8,
+        )
+
+        self.assertEqual(
+            timestamp.day,
+            14,
+        )
+
+        self.assertEqual(
+            timestamp.hour,
+            14,
+        )
+
+        self.assertIsNotNone(
+            timestamp.tzinfo
+        )
+
+    def test_current_programme_counts_as_fresh(self):
+        payload = gzip.compress(
+            b"""<?xml version="1.0" encoding="UTF-8"?>
+<tv>
+  <channel id="POLAR.cz"></channel>
+  <programme
+      channel="POLAR.cz"
+      start="20260814130000 +0200"
+      stop="20260814150000 +0200">
+  </programme>
+</tv>
+"""
+        )
+
+        now = checker.parse_xmltv_timestamp(
+            "20260814140000 +0200"
+        )
+
+        fresh = checker.extract_fresh_programme_ids(
+            payload,
+            "xmltv-gzip",
+            now,
+        )
+
+        self.assertEqual(
+            fresh,
+            {"POLAR.cz"},
+        )
+
+    def test_future_programme_counts_as_fresh(self):
+        payload = gzip.compress(
+            b"""<?xml version="1.0" encoding="UTF-8"?>
+<tv>
+  <channel id="POLAR.cz"></channel>
+  <programme
+      channel="POLAR.cz"
+      start="20260814160000 +0200"
+      stop="20260814170000 +0200">
+  </programme>
+</tv>
+"""
+        )
+
+        now = checker.parse_xmltv_timestamp(
+            "20260814140000 +0200"
+        )
+
+        fresh = checker.extract_fresh_programme_ids(
+            payload,
+            "xmltv-gzip",
+            now,
+            horizon_hours=24,
+        )
+
+        self.assertEqual(
+            fresh,
+            {"POLAR.cz"},
+        )
+
+    def test_stale_programme_is_not_fresh(self):
+        payload = gzip.compress(
+            b"""<?xml version="1.0" encoding="UTF-8"?>
+<tv>
+  <channel id="POLAR.cz"></channel>
+  <programme
+      channel="POLAR.cz"
+      start="20260810130000 +0200"
+      stop="20260810140000 +0200">
+  </programme>
+</tv>
+"""
+        )
+
+        now = checker.parse_xmltv_timestamp(
+            "20260814140000 +0200"
+        )
+
+        fresh = checker.extract_fresh_programme_ids(
+            payload,
+            "xmltv-gzip",
+            now,
+        )
+
+        self.assertEqual(
+            fresh,
+            set(),
+        )
+
 
 
 if __name__ == "__main__":

@@ -19,6 +19,7 @@ import sys
 import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -38,6 +39,7 @@ USER_AGENT = (
 
 TIMEOUT = 20
 MAX_DOWNLOAD_BYTES = 32 * 1024 * 1024
+FRESHNESS_HORIZON_HOURS = 24
 
 SUPPORTED_EPG_FORMATS = {
     "xmltv-gzip",
@@ -131,6 +133,139 @@ def extract_xmltv_channel_ids(
             channel_ids.add(channel_id)
 
     return channel_ids
+
+
+def parse_xmltv_timestamp(
+    value: str,
+) -> datetime:
+    """Parse a common XMLTV timestamp into datetime."""
+
+    value = str(value).strip()
+
+    formats = (
+        "%Y%m%d%H%M%S %z",
+        "%Y%m%d%H%M%S%z",
+        "%Y%m%d%H%M%S",
+    )
+
+    for timestamp_format in formats:
+        try:
+            parsed = datetime.strptime(
+                value,
+                timestamp_format,
+            )
+
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(
+                    tzinfo=timezone.utc
+                )
+
+            return parsed
+
+        except ValueError:
+            continue
+
+    raise ValueError(
+        f"Invalid XMLTV timestamp '{value}'"
+    )
+
+
+def extract_fresh_programme_ids(
+    payload: bytes,
+    source_format: str,
+    now: datetime,
+    horizon_hours: int = FRESHNESS_HORIZON_HOURS,
+) -> set[str]:
+    """Return channel IDs with current or near-future programmes."""
+
+    if source_format != "xmltv-gzip":
+        raise ValueError(
+            f"Unsupported EPG format: {source_format}"
+        )
+
+    if now.tzinfo is None:
+        raise ValueError(
+            "'now' must be timezone-aware"
+        )
+
+    try:
+        xml_data = gzip.decompress(payload)
+    except (
+        gzip.BadGzipFile,
+        EOFError,
+        OSError,
+    ) as exc:
+        raise ValueError(
+            "Invalid gzip EPG payload"
+        ) from exc
+
+    try:
+        root = ET.fromstring(xml_data)
+    except ET.ParseError as exc:
+        raise ValueError(
+            "Invalid XML EPG payload"
+        ) from exc
+
+    if local_name(root.tag) != "tv":
+        raise ValueError(
+            "Invalid XMLTV document: "
+            "root element must be <tv>"
+        )
+
+    horizon = now + timedelta(
+        hours=horizon_hours
+    )
+
+    fresh_ids: set[str] = set()
+
+    for element in root.iter():
+        if local_name(element.tag) != "programme":
+            continue
+
+        channel_id = str(
+            element.get("channel", "")
+        ).strip()
+
+        start_value = element.get("start")
+        stop_value = element.get("stop")
+
+        if (
+            not channel_id
+            or not start_value
+            or not stop_value
+        ):
+            continue
+
+        try:
+            start = parse_xmltv_timestamp(
+                start_value
+            )
+
+            stop = parse_xmltv_timestamp(
+                stop_value
+            )
+
+        except ValueError:
+            continue
+
+        if stop <= start:
+            continue
+
+        current_programme = (
+            start <= now < stop
+        )
+
+        future_programme = (
+            now < start <= horizon
+        )
+
+        if (
+            current_programme
+            or future_programme
+        ):
+            fresh_ids.add(channel_id)
+
+    return fresh_ids
 
 
 def find_missing_epg_ids(
@@ -497,14 +632,54 @@ def main() -> int:
                 continue
 
             print(
-                "   └─ ✅ "
+                "   ├─ ✅ "
                 f"{len(required_ids)}/"
                 f"{len(required_ids)} IDs found"
             )
 
             print(
-                "      XMLTV channels: "
+                "   │  XMLTV channels: "
                 f"{len(available_ids)}"
+            )
+
+            now = datetime.now(
+                timezone.utc
+            )
+
+            fresh_ids = (
+                extract_fresh_programme_ids(
+                    payload,
+                    source_format,
+                    now,
+                )
+            )
+
+            stale_ids = (
+                required_ids - fresh_ids
+            )
+
+            if stale_ids:
+                print(
+                    "   └─ ❌ "
+                    f"{len(stale_ids)} ID(s) have "
+                    "no fresh programme data"
+                )
+
+                for epg_id in sorted(
+                    stale_ids
+                ):
+                    print(
+                        f"      • {epg_id}"
+                    )
+
+                failed += 1
+                continue
+
+            print(
+                "   └─ ✅ "
+                f"{len(required_ids)}/"
+                f"{len(required_ids)} IDs have "
+                "fresh programme data"
             )
 
             passed += 1
