@@ -143,6 +143,28 @@ def validate_channel(
     if status and status not in allowed_statuses:
         errors.append(f"unknown status '{status}'")
 
+    epg = channel.get("epg")
+
+    if epg is not None:
+        if not isinstance(epg, dict):
+            errors.append("'epg' must be a mapping")
+        else:
+            epg_enabled = epg.get("enabled", False)
+
+            if not isinstance(epg_enabled, bool):
+                errors.append("'epg.enabled' must be boolean")
+
+            elif epg_enabled:
+                epg_id = epg.get("id")
+
+                if (
+                    epg_id is None
+                    or not str(epg_id).strip()
+                ):
+                    errors.append(
+                        "EPG is enabled but 'epg.id' is missing"
+                    )
+
     stream = channel.get("stream")
 
     if not isinstance(stream, dict):
@@ -304,6 +326,7 @@ def find_duplicates(channels: list[dict]) -> list[str]:
 
     ids = {}
     urls = {}
+    epg_ids = {}
 
     for channel in channels:
         channel_id = channel.get("id")
@@ -331,6 +354,28 @@ def find_duplicates(channels: list[dict]) -> list[str]:
                     )
                 else:
                     urls[url] = name
+
+        epg = channel.get("epg")
+
+        if (
+            isinstance(epg, dict)
+            and epg.get("enabled") is True
+        ):
+            epg_id = epg.get("id")
+
+            if (
+                epg_id is not None
+                and str(epg_id).strip()
+            ):
+                epg_id = str(epg_id).strip()
+
+                if epg_id in epg_ids:
+                    problems.append(
+                        f"duplicate EPG ID '{epg_id}' "
+                        f"({epg_ids[epg_id]} / {name})"
+                    )
+                else:
+                    epg_ids[epg_id] = name
 
     return problems
 
