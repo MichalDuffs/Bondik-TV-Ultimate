@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import ast
+import tempfile
+from types import SimpleNamespace
 import io
 import sys
 import unittest
@@ -157,6 +160,128 @@ class StreamHealthStreakTests(unittest.TestCase):
             },
         )
 
+class StreamHealthMainTests(unittest.TestCase):
+    def test_main_processes_streak_state(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_path = Path(temp_dir)
+
+            report = temp_path / "stream-check-report.txt"
+            history = temp_path / "stream-history.txt"
+            state = temp_path / "stream-health-state.json"
+
+            report.write_text(
+                report_with_failures("POLAR"),
+                encoding="utf-8",
+            )
+
+            args = SimpleNamespace(
+                report=report,
+                history=history,
+                state=state,
+            )
+
+            required_env = {
+                "GITHUB_TOKEN": "test-token",
+                "GITHUB_API_URL": "https://api.github.test",
+                "GITHUB_REPOSITORY": "Bondik/Test",
+                "GITHUB_RUN_ID": "123",
+                "GITHUB_SHA": "abc123",
+            }
+
+            def fake_require_env(name):
+                return required_env[name]
+
+            previous_report = report_with_failures("POLAR")
+
+            with patch.dict(
+                health.os.environ,
+                {"GITHUB_SERVER_URL": "https://github.test"},
+                clear=True,
+            ):
+                with patch.object(
+                    health,
+                    "parse_arguments",
+                    return_value=args,
+                ):
+                    with patch.object(
+                        health,
+                        "require_env",
+                        side_effect=fake_require_env,
+                    ):
+                        with patch.object(
+                            health,
+                            "find_previous_health_data",
+                            return_value=(
+                                previous_report,
+                                {"POLAR": 2},
+                            ),
+                        ):
+                            with patch.object(
+                                health,
+                                "manage_issues",
+                            ) as manage_issues:
+                                result = health.main()
+
+            self.assertEqual(result, 0)
+
+            self.assertEqual(
+                health.parse_streak_state(
+                    state.read_text(encoding="utf-8")
+                ),
+                {"POLAR": 3},
+            )
+
+            self.assertIn(
+                "🚨 Repeated failure: POLAR (streak ×3)",
+                history.read_text(encoding="utf-8"),
+            )
+
+            manage_issues.assert_called_once()
+
+            call_kwargs = manage_issues.call_args.kwargs
+            self.assertEqual(call_kwargs["repeated"], ["POLAR"])
+            self.assertEqual(call_kwargs["recovered"], [])
+
+    def test_main_guard_is_at_module_level(self):
+        source_path = CHECKER_DIR / "process_stream_health.py"
+
+        tree = ast.parse(
+            source_path.read_text(encoding="utf-8")
+        )
+
+        has_main_guard = False
+
+        for node in tree.body:
+            if not isinstance(node, ast.If):
+                continue
+
+            test = node.test
+
+            if not isinstance(test, ast.Compare):
+                continue
+
+            if not isinstance(test.left, ast.Name):
+                continue
+
+            if test.left.id != "__name__":
+                continue
+
+            if len(test.comparators) != 1:
+                continue
+
+            comparator = test.comparators[0]
+
+            if (
+                isinstance(comparator, ast.Constant)
+                and comparator.value == "__main__"
+            ):
+                has_main_guard = True
+                break
+
+        self.assertTrue(
+            has_main_guard,
+            '__main__ guard must exist at module level',
+            )
 
 class StreamHealthIssueTests(unittest.TestCase):
     def setUp(self):

@@ -203,31 +203,89 @@ def find_previous_health_data(
 
     return previous_report, previous_streaks
 
-def build_history(current_failed: set[str], previous_report):
-    lines = ["", SEPARATOR, "🐾 Bondík Stream History"]
+def build_history(
+    current_failed: set[str],
+    previous_report,
+    previous_streaks: dict[str, int] | None = None,
+):
+    lines = ["", SEPARATOR, "\U0001f43e Bond\u00edk Stream History"]
+
+    if previous_streaks is None:
+        previous_failed = (
+            set()
+            if previous_report is None
+            else extract_failures(previous_report)
+        )
+        previous_streaks = {
+            channel: 1
+            for channel in previous_failed
+        }
+
+    current_streaks = advance_streaks(
+        current_failed,
+        previous_streaks,
+    )
+
     repeated = []
     recovered = []
-    if previous_report is None:
-        lines.append("ℹ️ No previous report available - baseline created.")
+
+    if previous_report is None and not previous_streaks:
+        lines.append(
+            "\u2139\ufe0f No previous report available - baseline created."
+        )
+
         for channel in sorted(current_failed):
-            lines.append(f"⚠️ New failure: {channel}")
+            lines.append(
+                f"\u26a0\ufe0f New failure: {channel} "
+                f"(streak \u00d7{current_streaks[channel]})"
+            )
+
         return "\n".join(lines) + "\n", repeated, recovered
-    previous_failed = extract_failures(previous_report)
-    repeated = sorted(current_failed & previous_failed)
-    new_failures = sorted(current_failed - previous_failed)
-    recovered = sorted(previous_failed - current_failed)
+
+    new_failures = sorted(
+        channel
+        for channel in current_failed
+        if channel not in previous_streaks
+    )
+
+    repeated = sorted(
+        channel
+        for channel in current_failed
+        if channel in previous_streaks
+    )
+
+    recovered = sorted(
+        set(previous_streaks) - current_failed
+    )
+
     for channel in new_failures:
-        lines.append(f"⚠️ New failure: {channel}")
+        lines.append(
+            f"\u26a0\ufe0f New failure: {channel} "
+            f"(streak \u00d7{current_streaks[channel]})"
+        )
+
     for channel in repeated:
-        lines.append(f"🚨 Repeated failure: {channel}")
+        lines.append(
+            f"\U0001f6a8 Repeated failure: {channel} "
+            f"(streak \u00d7{current_streaks[channel]})"
+        )
+
     for channel in recovered:
-        lines.append(f"✅ Recovered since previous run: {channel}")
+        lines.append(
+            f"\u2705 Recovered since previous run: {channel} "
+            f"(previous streak \u00d7{previous_streaks[channel]})"
+        )
+
     if not new_failures and not repeated and not recovered:
         if current_failed:
-            lines.append("ℹ️ Stream health unchanged.")
+            lines.append("\u2139\ufe0f Stream health unchanged.")
         else:
-            lines.append("🟢 No stream health changes - all streams healthy.")
+            lines.append(
+                "\U0001f7e2 No stream health changes - all streams healthy."
+            )
+
     return "\n".join(lines) + "\n", repeated, recovered
+
 
 def append_text(path: Path, text: str) -> None:
     with path.open("a", encoding="utf-8", newline="\n") as handle:
@@ -322,35 +380,65 @@ def manage_issues(*, api_url, repository, token, server_url, run_id, sha, repeat
 
 def main() -> int:
     args = parse_arguments()
+
     if not args.report.is_file():
-        print(f"❌ Stream report not found: {args.report}", file=sys.stderr)
+        print(
+            f"\u274c Stream report not found: {args.report}",
+            file=sys.stderr,
+        )
         return 1
+
     try:
         token = require_env("GITHUB_TOKEN")
         api_url = require_env("GITHUB_API_URL")
         repository = require_env("GITHUB_REPOSITORY")
         run_id = int(require_env("GITHUB_RUN_ID"))
-        server_url = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
+        server_url = os.environ.get(
+            "GITHUB_SERVER_URL",
+            "https://github.com",
+        )
         sha = require_env("GITHUB_SHA")
+
         current_report = args.report.read_text(encoding="utf-8")
         current_failed = extract_failures(current_report)
-        previous_report = find_previous_report(
+
+        previous_report, previous_streaks = find_previous_health_data(
             api_url=api_url,
             repository=repository,
             run_id=run_id,
             token=token,
         )
+
+        current_streaks = advance_streaks(
+            current_failed,
+            previous_streaks,
+        )
+
         history_text, repeated, recovered = build_history(
-            current_failed, previous_report
+            current_failed,
+            previous_report,
+            previous_streaks,
         )
+
+        write_streak_state(
+            args.state,
+            current_streaks,
+        )
+
         args.history.write_text(
-            history_text, encoding="utf-8", newline="\n"
+            history_text,
+            encoding="utf-8",
+            newline="\n",
         )
+
         append_text(args.report, history_text)
+
         step_summary = os.environ.get("GITHUB_STEP_SUMMARY")
         if step_summary:
             append_text(Path(step_summary), history_text)
+
         print(history_text.rstrip())
+
         manage_issues(
             api_url=api_url,
             repository=repository,
@@ -361,10 +449,16 @@ def main() -> int:
             repeated=repeated,
             recovered=recovered,
         )
+
     except Exception as exc:
-        print(f"❌ Stream health processing failed: {exc}", file=sys.stderr)
+        print(
+            f"\u274c Stream health processing failed: {exc}",
+            file=sys.stderr,
+        )
         return 1
+
     return 0
 
-    if __name__ == "__main__":
-        raise SystemExit(main())
+
+if __name__ == "__main__":
+    raise SystemExit(main())
