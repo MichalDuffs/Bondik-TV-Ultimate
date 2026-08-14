@@ -39,6 +39,7 @@ jobs:
           python -m py_compile tools/generator/generate_playlists.py
           python -m py_compile tools/checker/process_stream_health.py
           python -m py_compile tools/updater/check_epg_sources.py
+          python -m py_compile tools/updater/process_epg_health.py
 
       - name: Run automated test suite
         run: |

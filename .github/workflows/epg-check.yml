@@ -1,4 +1,4 @@
-﻿name: Bondik TV EPG Check
+name: Bondik TV EPG Check
 
 on:
   schedule:
@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: bondik-epg-check
@@ -63,11 +64,22 @@ jobs:
 
           exit "$CHECK_STATUS"
 
+      - name: Process EPG health history
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python tools/updater/process_epg_health.py
+          cat epg-history.txt >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload EPG check report
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: epg-check-${{ github.run_id }}-attempt-${{ github.run_attempt }}
-          path: epg-check-report.txt
+          path: |
+            epg-check-report.txt
+            epg-history.txt
+            epg-health-state.json
           retention-days: 30
           if-no-files-found: error
