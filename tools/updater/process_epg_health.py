@@ -169,6 +169,13 @@ def github_request(
                 )
             )
 
+            details = exc.read().decode(
+                "utf-8",
+                errors="replace",
+            ).strip()
+
+            details_lower = details.lower()
+
             primary_rate_limit = (
                 exc.code in {403, 429}
                 and remaining == "0"
@@ -176,7 +183,13 @@ def github_request(
 
             secondary_rate_limit = (
                 exc.code == 403
-                and retry_after is not None
+                and (
+                    retry_after is not None
+                    or (
+                        "secondary rate limit"
+                        in details_lower
+                    )
+                )
             )
 
             rate_limit_retry = (
@@ -246,14 +259,7 @@ def github_request(
 
                 continue
 
-            try:
-                details = exc.read().decode(
-                    "utf-8",
-                    errors="replace",
-                ).strip()
-
-            finally:
-                exc.close()
+            exc.close()
 
             raise RuntimeError(
                 "GitHub API returned "
