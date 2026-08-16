@@ -5,6 +5,15 @@ on:
     - cron: "0 4 * * *"
 
   workflow_dispatch:
+    inputs:
+      status:
+        description: "Channel status to check"
+        required: true
+        default: "stable"
+        type: choice
+        options:
+          - stable
+          - testing
 
 permissions:
   contents: read
@@ -17,9 +26,11 @@ concurrency:
 
 jobs:
   stream-check:
-    name: Check Stable Streams
+    name: Check Streams
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      CHANNEL_STATUS: ${{ github.event_name == 'workflow_dispatch' && inputs.status || 'stable' }}
 
     steps:
       - name: Checkout repository
@@ -35,12 +46,13 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      - name: Check stable streams
+      - name: Check selected streams
         shell: bash
         run: |
           {
             echo "🐾 Bondik TV Ultimate"
             echo "📺 Stream Health Report"
+            echo "Status filter: $CHANNEL_STATUS"
             echo "Run: $GITHUB_RUN_NUMBER"
             echo "Commit: $GITHUB_SHA"
             echo "UTC: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
@@ -51,7 +63,7 @@ jobs:
           set +e
 
           python tools/checker/check_channels.py \
-            --status stable \
+            --status "$CHANNEL_STATUS" \
             --attempts 3 \
             --retry-delay 5 \
             2>&1 | tee -a stream-check-report.txt
@@ -68,8 +80,8 @@ jobs:
 
           exit "$CHECK_STATUS"
 
-      - name: Process stream health
-        if: always()
+      - name: Process stable stream health
+        if: ${{ always() && (github.event_name != 'workflow_dispatch' || inputs.status == 'stable') }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
