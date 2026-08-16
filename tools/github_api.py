@@ -100,6 +100,13 @@ def github_request(
             "GitHub API URL requires hostname"
         )
 
+    try:
+        parsed_url.port
+    except ValueError as exc:
+        raise RuntimeError(
+            "GitHub API URL has invalid port"
+        ) from exc
+
     data = None
 
     headers = {
