@@ -7,20 +7,37 @@ import urllib.parse
 import urllib.request
 
 
+MAX_HOSTNAME_DECODE_ROUNDS = 10
+
+
 def _hostname_has_whitespace(
     hostname: str,
 ) -> bool:
     decoded_hostname = hostname
 
-    while True:
+    for _ in range(
+        MAX_HOSTNAME_DECODE_ROUNDS
+    ):
         next_hostname = urllib.parse.unquote(
             decoded_hostname
         )
 
         if next_hostname == decoded_hostname:
-            break
+            return any(
+                character.isspace()
+                for character in decoded_hostname
+            )
 
         decoded_hostname = next_hostname
+
+    next_hostname = urllib.parse.unquote(
+        decoded_hostname
+    )
+
+    if next_hostname != decoded_hostname:
+        raise ValueError(
+            "hostname encoding depth exceeds safety limit"
+        )
 
     return any(
         character.isspace()
@@ -83,9 +100,16 @@ class SafeRedirectHandler(
         if not parsed_new_url.hostname:
             return None
 
-        if _hostname_has_whitespace(
-            parsed_new_url.hostname
-        ):
+        try:
+            hostname_has_whitespace = (
+                _hostname_has_whitespace(
+                    parsed_new_url.hostname
+                )
+            )
+        except ValueError:
+            return None
+
+        if hostname_has_whitespace:
             return None
 
         try:
@@ -162,9 +186,18 @@ def github_request(
             "GitHub API URL requires hostname"
         )
 
-    if _hostname_has_whitespace(
-        parsed_url.hostname
-    ):
+    try:
+        hostname_has_whitespace = (
+            _hostname_has_whitespace(
+                parsed_url.hostname
+            )
+        )
+    except ValueError as exc:
+        raise RuntimeError(
+            "GitHub API URL has invalid hostname"
+        ) from exc
+
+    if hostname_has_whitespace:
         raise RuntimeError(
             "GitHub API URL has invalid hostname"
         )
