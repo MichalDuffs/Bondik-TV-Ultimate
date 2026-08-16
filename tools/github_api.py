@@ -7,6 +7,27 @@ import urllib.parse
 import urllib.request
 
 
+def _hostname_has_whitespace(
+    hostname: str,
+) -> bool:
+    decoded_hostname = hostname
+
+    while True:
+        next_hostname = urllib.parse.unquote(
+            decoded_hostname
+        )
+
+        if next_hostname == decoded_hostname:
+            break
+
+        decoded_hostname = next_hostname
+
+    return any(
+        character.isspace()
+        for character in decoded_hostname
+    )
+
+
 def _url_origin(
     url: str,
 ):
@@ -62,17 +83,8 @@ class SafeRedirectHandler(
         if not parsed_new_url.hostname:
             return None
 
-        decoded_hostname = urllib.parse.unquote(
+        if _hostname_has_whitespace(
             parsed_new_url.hostname
-        )
-
-        decoded_hostname = urllib.parse.unquote(
-            decoded_hostname
-        )
-
-        if any(
-            character.isspace()
-            for character in decoded_hostname
         ):
             return None
 
@@ -150,17 +162,8 @@ def github_request(
             "GitHub API URL requires hostname"
         )
 
-    decoded_hostname = urllib.parse.unquote(
+    if _hostname_has_whitespace(
         parsed_url.hostname
-    )
-
-    decoded_hostname = urllib.parse.unquote(
-        decoded_hostname
-    )
-
-    if any(
-        character.isspace()
-        for character in decoded_hostname
     ):
         raise RuntimeError(
             "GitHub API URL has invalid hostname"
