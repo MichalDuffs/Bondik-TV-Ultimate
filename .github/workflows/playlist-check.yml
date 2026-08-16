@@ -40,6 +40,7 @@ jobs:
           python -m py_compile tools/checker/process_stream_health.py
           python -m py_compile tools/updater/check_epg_sources.py
           python -m py_compile tools/updater/process_epg_health.py
+          python -m py_compile tools/updater/plan_epg_maintenance.py
 
       - name: Run automated test suite
         run: |

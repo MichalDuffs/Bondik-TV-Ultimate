@@ -65,6 +65,16 @@ jobs:
 
           exit "$CHECK_STATUS"
 
+      - name: Plan EPG maintenance
+        if: always()
+        continue-on-error: true
+        run: |
+          python tools/updater/plan_epg_maintenance.py
+
+          if [ -f epg-maintenance-summary.md ]; then
+            cat epg-maintenance-summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Process EPG health history
         if: always()
         env:
@@ -82,5 +92,7 @@ jobs:
             epg-check-report.txt
             epg-history.txt
             epg-health-state.json
+            epg-maintenance-report.json
+            epg-maintenance-summary.md
           retention-days: 30
           if-no-files-found: error
