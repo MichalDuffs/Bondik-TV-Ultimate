@@ -129,7 +129,7 @@ Our priority is quality over quantity: a clean, transparent and maintainable IPT
 - [x] Automated monitoring test suite
 - [x] Persistent outage tracking and escalation
 - [x] Scheduled EPG health monitoring
-- [ ] Automatic EPG maintenance
+- [x] Automatic EPG maintenance
 
 ## Phase 4 - Applications
 
