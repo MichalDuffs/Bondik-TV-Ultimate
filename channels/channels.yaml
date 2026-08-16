@@ -36,7 +36,7 @@ channels:
     provider: "praha-tv"
 
     stream:
-      url: "https://stream.polar.cz/prahatv/prahatvlive-1/playlist.m3u8"
+      url: "https://1977134029.rsc.cdn77.org/1977134029/index.m3u8"
       format: "hls"
       quality: "unknown"
 
@@ -52,7 +52,7 @@ channels:
 
     metadata:
       website: "https://prahatv.eu/"
-      notes: "Current HLS URL returns HTTP 404. Replacement stream required."
+      notes: "Candidate HLS extracted from official Praha TV website. Awaiting targeted Bondik checker."
 
   - id: "tv-brno1-cz"
     name: "TV Brno 1"
