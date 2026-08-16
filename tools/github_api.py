@@ -136,6 +136,14 @@ def github_request(
             "GitHub API URL requires hostname"
         )
 
+    if any(
+        character.isspace()
+        for character in parsed_url.hostname
+    ):
+        raise RuntimeError(
+            "GitHub API URL has invalid hostname"
+        )
+
     try:
         parsed_url.port
     except ValueError as exc:
