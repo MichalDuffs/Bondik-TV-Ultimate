@@ -110,7 +110,7 @@ channels:
       notes: "Public HLS stream. Verified by targeted Bondik checker."
 
   - id: "jtv-cz"
-    name: "Jihoceska televize"
+    name: "Jihočeská televize"
     country: "CZ"
     language: "cs"
     category: "general"
@@ -129,11 +129,11 @@ channels:
       url: null
       local: null
 
-    status: "testing"
+    status: "stable"
 
     metadata:
       website: "https://www.jihoceskatelevize.cz/"
-      notes: "Public HLS candidate. Playlist and fresh media segment verified locally. Awaiting targeted Bondik checker."
+      notes: "Public HLS stream. Verified locally and by targeted Bondik checker."
 
   - id: "ocko-cz"
     name: "Óčko"
