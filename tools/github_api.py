@@ -56,6 +56,9 @@ class SafeRedirectHandler(
         ):
             return None
 
+        if not parsed_new_url.hostname:
+            return None
+
         parsed_old_url = urllib.parse.urlparse(
             req.full_url
         )
