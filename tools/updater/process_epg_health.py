@@ -993,7 +993,7 @@ def manage_issues(
                     streak
                 )
             ):
-                comment_epg_issue(
+                comment_added = comment_epg_issue(
                     api_url=api_url,
                     repository=repository,
                     token=token,
@@ -1005,11 +1005,19 @@ def manage_issues(
                     issue_number=existing,
                 )
 
-                print(
-                    "Updated EPG issue "
-                    f"#{existing} for {source} "
-                    f"(streak ×{streak})."
-                )
+                if comment_added:
+                    print(
+                        "Updated EPG issue "
+                        f"#{existing} for {source} "
+                        f"(streak ×{streak})."
+                    )
+                else:
+                    print(
+                        "EPG issue update already "
+                        f"recorded for {source} "
+                        f"(#{existing}, "
+                        f"streak ×{streak})."
+                    )
 
             else:
                 print(
@@ -1069,7 +1077,7 @@ def manage_issues(
             )
             and previous_streak > 0
         ):
-            comment_epg_recovery(
+            recovery_added = comment_epg_recovery(
                 api_url=api_url,
                 repository=repository,
                 token=token,
@@ -1081,13 +1089,22 @@ def manage_issues(
                 issue_number=issue_number,
             )
 
-            print(
-                "Added EPG recovery report "
-                f"to issue #{issue_number} "
-                f"for {source} "
-                f"(previous streak "
-                f"×{previous_streak})."
-            )
+            if recovery_added:
+                print(
+                    "Added EPG recovery report "
+                    f"to issue #{issue_number} "
+                    f"for {source} "
+                    f"(previous streak "
+                    f"×{previous_streak})."
+                )
+            else:
+                print(
+                    "EPG recovery report already "
+                    f"recorded for {source} "
+                    f"(#{issue_number}, "
+                    f"previous streak "
+                    f"×{previous_streak})."
+                )
 
         close_issue(
             api_url=api_url,
