@@ -252,6 +252,100 @@ def github_paginated_list(
         page += 1
 
 
+def github_paginated_collection(
+    url: str,
+    token: str,
+    *,
+    key: str,
+) -> list:
+    items = []
+    page = 1
+
+    while True:
+        parsed = urllib.parse.urlsplit(
+            url
+        )
+
+        query = [
+            (name, value)
+            for name, value
+            in urllib.parse.parse_qsl(
+                parsed.query,
+                keep_blank_values=True,
+            )
+            if name not in {
+                "per_page",
+                "page",
+            }
+        ]
+
+        query.extend(
+            [
+                (
+                    "per_page",
+                    "100",
+                ),
+                (
+                    "page",
+                    str(page),
+                ),
+            ]
+        )
+
+        page_url = urllib.parse.urlunsplit(
+            (
+                parsed.scheme,
+                parsed.netloc,
+                parsed.path,
+                urllib.parse.urlencode(
+                    query
+                ),
+                parsed.fragment,
+            )
+        )
+
+        payload = github_json(
+            page_url,
+            token,
+            method="GET",
+        )
+
+        if payload == {}:
+            return items
+
+        if not isinstance(
+            payload,
+            dict,
+        ):
+            raise RuntimeError(
+                "GitHub paginated collection "
+                "response must be an object"
+            )
+
+        page_items = payload.get(
+            key,
+            [],
+        )
+
+        if not isinstance(
+            page_items,
+            list,
+        ):
+            raise RuntimeError(
+                "GitHub paginated collection "
+                f"field {key!r} must be a list"
+            )
+
+        items.extend(
+            page_items
+        )
+
+        if len(page_items) < 100:
+            return items
+
+        page += 1
+
+
 def extract_failures(
     report: str,
 ) -> set[str]:
@@ -343,17 +437,13 @@ def find_previous_health_state(
     run_id: int,
     token: str,
 ) -> dict[str, int]:
-    payload = github_json(
+    artifacts = github_paginated_collection(
         (
             f"{api_url}/repos/{repository}"
-            "/actions/artifacts?per_page=100"
+            "/actions/artifacts"
         ),
         token,
-    )
-
-    artifacts = payload.get(
-        "artifacts",
-        [],
+        key="artifacts",
     )
 
     candidates = []
