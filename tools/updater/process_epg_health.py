@@ -257,7 +257,13 @@ def github_request(
 
                 if delay is None:
                     if rate_limit_retry:
-                        delay = 60
+                        delay = (
+                            60
+                            * (
+                                2
+                                ** (attempt - 1)
+                            )
+                        )
                     else:
                         delay = attempt
 
