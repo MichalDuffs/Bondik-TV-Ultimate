@@ -54,6 +54,32 @@ channels:
       website: "https://prahatv.eu/"
       notes: "Current HLS URL returns HTTP 404. Replacement stream required."
 
+  - id: "tv-brno1-cz"
+    name: "TV Brno 1"
+    country: "CZ"
+    language: "cs"
+    category: "general"
+    provider: "tv-brno1"
+
+    stream:
+      url: "https://stream.polar.cz/tvbrno1/tvbrno1live-1/playlist.m3u8"
+      format: "hls"
+      quality: "unknown"
+
+    epg:
+      id: null
+      enabled: false
+
+    logo:
+      url: null
+      local: null
+
+    status: "testing"
+
+    metadata:
+      website: "https://tvbrno1.cz/"
+      notes: "Candidate public HLS stream. Pending targeted Bondik verification."
+
   - id: "ocko-cz"
     name: "Óčko"
     country: "CZ"
