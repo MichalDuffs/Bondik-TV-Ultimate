@@ -574,12 +574,16 @@ def find_previous_health_data(
             previous_streaks,
         )
 
-    if (
-        candidates
-        and not download_succeeded
-        and last_download_error is not None
-    ):
-        raise last_download_error
+    if candidates:
+        if (
+            not download_succeeded
+            and last_download_error is not None
+        ):
+            raise last_download_error
+
+        raise RuntimeError(
+            "No usable stream health artifact found"
+        )
 
     return None, {}
 

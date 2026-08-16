@@ -658,12 +658,16 @@ def find_previous_health_state(
                 f"{exc}"
             )
 
-    if (
-        candidates
-        and not download_succeeded
-        and last_download_error is not None
-    ):
-        raise last_download_error
+    if candidates:
+        if (
+            not download_succeeded
+            and last_download_error is not None
+        ):
+            raise last_download_error
+
+        raise RuntimeError(
+            "No usable EPG health artifact found"
+        )
 
     return {}
 
