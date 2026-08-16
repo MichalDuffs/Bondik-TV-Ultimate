@@ -7,6 +7,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -47,25 +48,95 @@ def require_env(name: str) -> str:
         raise RuntimeError(f"missing required environment variable: {name}")
     return value
 
-def github_request(url: str, token: str, *, method: str = "GET", payload=None) -> bytes:
+def github_request(
+    url: str,
+    token: str,
+    *,
+    method: str = "GET",
+    payload=None,
+) -> bytes:
     data = None
+
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
     }
+
     if payload is not None:
-        data = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        data = json.dumps(
+            payload,
+            ensure_ascii=False,
+        ).encode("utf-8")
+
         headers["Content-Type"] = "application/json"
-    request = urllib.request.Request(url, data=data, headers=headers, method=method)
-    try:
-        with OPENER.open(request, timeout=30) as response:
-            return response.read()
-    except urllib.error.HTTPError as exc:
-        details = exc.read().decode("utf-8", errors="replace").strip()
-        raise RuntimeError(f"GitHub API returned HTTP {exc.code}: {details}") from exc
-    except urllib.error.URLError as exc:
-        raise RuntimeError(f"GitHub API request failed: {exc.reason}") from exc
+
+    request = urllib.request.Request(
+        url,
+        data=data,
+        headers=headers,
+        method=method,
+    )
+
+    retryable_statuses = {
+        408,
+        429,
+        500,
+        502,
+        503,
+        504,
+    }
+
+    max_attempts = 3
+
+    for attempt in range(
+        1,
+        max_attempts + 1,
+    ):
+        try:
+            with OPENER.open(
+                request,
+                timeout=30,
+            ) as response:
+                return response.read()
+
+        except urllib.error.HTTPError as exc:
+            if (
+                exc.code in retryable_statuses
+                and attempt < max_attempts
+            ):
+                time.sleep(
+                    attempt
+                )
+                continue
+
+            details = exc.read().decode(
+                "utf-8",
+                errors="replace",
+            ).strip()
+
+            raise RuntimeError(
+                "GitHub API returned "
+                f"HTTP {exc.code}: {details}"
+            ) from exc
+
+        except urllib.error.URLError as exc:
+            if attempt < max_attempts:
+                time.sleep(
+                    attempt
+                )
+                continue
+
+            raise RuntimeError(
+                "GitHub API request failed: "
+                f"{exc.reason}"
+            ) from exc
+
+    raise RuntimeError(
+        "GitHub API request failed "
+        "after retries"
+    )
+
 
 def github_json(url: str, token: str, *, method: str = "GET", payload=None):
     raw = github_request(url, token, method=method, payload=payload)

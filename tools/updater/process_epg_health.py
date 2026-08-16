@@ -6,6 +6,7 @@ import io
 import json
 import os
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -127,29 +128,64 @@ def github_request(
         method=method,
     )
 
-    try:
-        with OPENER.open(
-            request,
-            timeout=30,
-        ) as response:
-            return response.read()
+    retryable_statuses = {
+        408,
+        429,
+        500,
+        502,
+        503,
+        504,
+    }
 
-    except urllib.error.HTTPError as exc:
-        details = exc.read().decode(
-            "utf-8",
-            errors="replace",
-        )
+    max_attempts = 3
 
-        raise RuntimeError(
-            "GitHub API returned "
-            f"HTTP {exc.code}: {details}"
-        ) from exc
+    for attempt in range(
+        1,
+        max_attempts + 1,
+    ):
+        try:
+            with OPENER.open(
+                request,
+                timeout=30,
+            ) as response:
+                return response.read()
 
-    except urllib.error.URLError as exc:
-        raise RuntimeError(
-            "GitHub API request failed: "
-            f"{exc.reason}"
-        ) from exc
+        except urllib.error.HTTPError as exc:
+            if (
+                exc.code in retryable_statuses
+                and attempt < max_attempts
+            ):
+                time.sleep(
+                    attempt
+                )
+                continue
+
+            details = exc.read().decode(
+                "utf-8",
+                errors="replace",
+            ).strip()
+
+            raise RuntimeError(
+                "GitHub API returned "
+                f"HTTP {exc.code}: {details}"
+            ) from exc
+
+        except urllib.error.URLError as exc:
+            if attempt < max_attempts:
+                time.sleep(
+                    attempt
+                )
+                continue
+
+            raise RuntimeError(
+                "GitHub API request failed: "
+                f"{exc.reason}"
+            ) from exc
+
+    raise RuntimeError(
+        "GitHub API request failed "
+        "after retries"
+    )
 
 
 def github_json(
