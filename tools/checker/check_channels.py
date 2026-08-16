@@ -431,6 +431,55 @@ def find_duplicates(channels: list[dict]) -> list[str]:
     return problems
 
 
+def select_channels(
+    channels: list,
+    status: str,
+    channel_id: str | None = None,
+) -> list[dict]:
+    """Select channels by status and optional exact channel ID."""
+
+    requested_id = (
+        str(channel_id).strip()
+        if channel_id is not None
+        else None
+    )
+
+    if requested_id == "":
+        requested_id = None
+
+    selected = []
+    id_found = requested_id is None
+
+    for channel in channels:
+        if not isinstance(channel, dict):
+            raise ValueError("Invalid channel entry.")
+
+        if requested_id is not None:
+            if channel.get("id") != requested_id:
+                continue
+
+            id_found = True
+
+        if status != "all":
+            if channel.get("status") != status:
+                continue
+
+        if channel.get("status") == "archived" and status == "all":
+            continue
+
+        selected.append(channel)
+
+    if not id_found:
+        raise ValueError(f"Unknown channel id '{requested_id}'.")
+
+    if requested_id is not None and not selected:
+        raise ValueError(
+            f"Channel '{requested_id}' does not match status '{status}'."
+        )
+
+    return selected
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description="🐾 Bondik TV Ultimate channel checker"
@@ -446,6 +495,12 @@ def parse_arguments():
         ],
         default="all",
         help="check only channels with selected status",
+    )
+
+    parser.add_argument(
+        "--channel-id",
+        default=None,
+        help="check only the channel with this exact database ID",
     )
 
     parser.add_argument(
@@ -523,21 +578,15 @@ def main() -> int:
 
         return 1
 
-    selected_channels = []
-
-    for channel in channels:
-        if not isinstance(channel, dict):
-            print("❌ Invalid channel entry.")
-            return 2
-
-        if args.status != "all":
-            if channel.get("status") != args.status:
-                continue
-
-        if channel.get("status") == "archived" and args.status == "all":
-            continue
-
-        selected_channels.append(channel)
+    try:
+        selected_channels = select_channels(
+            channels,
+            args.status,
+            args.channel_id,
+        )
+    except ValueError as error:
+        print(f"❌ {error}")
+        return 2
 
     if not selected_channels:
         print("ℹ️ No channels selected.")

@@ -14,6 +14,11 @@ on:
         options:
           - stable
           - testing
+      channel_id:
+        description: "Optional exact channel ID (leave empty for all)"
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
@@ -31,6 +36,7 @@ jobs:
     timeout-minutes: 10
     env:
       CHANNEL_STATUS: ${{ github.event_name == 'workflow_dispatch' && inputs.status || 'stable' }}
+      CHANNEL_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.channel_id || '' }}
 
     steps:
       - name: Checkout repository
@@ -53,6 +59,7 @@ jobs:
             echo "🐾 Bondik TV Ultimate"
             echo "📺 Stream Health Report"
             echo "Status filter: $CHANNEL_STATUS"
+            echo "Channel ID: ${CHANNEL_ID:-all matching status}"
             echo "Run: $GITHUB_RUN_NUMBER"
             echo "Commit: $GITHUB_SHA"
             echo "UTC: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
@@ -62,10 +69,18 @@ jobs:
 
           set +e
 
+          CHECK_ARGS=(
+            --status "$CHANNEL_STATUS"
+            --attempts 3
+            --retry-delay 5
+          )
+
+          if [ -n "$CHANNEL_ID" ]; then
+            CHECK_ARGS+=(--channel-id "$CHANNEL_ID")
+          fi
+
           python tools/checker/check_channels.py \
-            --status "$CHANNEL_STATUS" \
-            --attempts 3 \
-            --retry-delay 5 \
+            "${CHECK_ARGS[@]}" \
             2>&1 | tee -a stream-check-report.txt
 
           CHECK_STATUS=${PIPESTATUS[0]}
