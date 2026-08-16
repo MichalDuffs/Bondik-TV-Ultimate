@@ -535,6 +535,43 @@ def should_comment_on_streak(streak: int) -> bool:
     return streak >= 5 and streak % 5 == 0
 
 
+def has_issue_comment_marker(
+    *,
+    api_url,
+    repository,
+    token,
+    issue_number,
+    marker,
+) -> bool:
+    comments = github_paginated_list(
+        (
+            f"{api_url}/repos/{repository}"
+            f"/issues/{issue_number}"
+            "/comments"
+        ),
+        token,
+    )
+
+    for comment in comments:
+        if not isinstance(
+            comment,
+            dict,
+        ):
+            continue
+
+        body = comment.get(
+            "body"
+        )
+
+        if (
+            isinstance(body, str)
+            and marker in body
+        ):
+            return True
+
+    return False
+
+
 def comment_outage_issue(
     *,
     api_url,
@@ -546,7 +583,21 @@ def comment_outage_issue(
     channel,
     streak,
     issue_number,
-):
+) -> bool:
+    marker = (
+        "<!-- bondik-stream:"
+        f"outage:run:{run_id} -->"
+    )
+
+    if has_issue_comment_marker(
+        api_url=api_url,
+        repository=repository,
+        token=token,
+        issue_number=issue_number,
+        marker=marker,
+    ):
+        return False
+
     body = f"""## \U0001f43e Bondik Stream Health Update
 
 The stream **{channel}** is still unavailable.
@@ -560,14 +611,23 @@ Bondik will keep monitoring the stream automatically.
 
 ---
 \U0001f43e Bondik TV Ultimate
+
+{marker}
 """
 
     github_json(
-        f"{api_url}/repos/{repository}/issues/{issue_number}/comments",
+        (
+            f"{api_url}/repos/{repository}"
+            f"/issues/{issue_number}/comments"
+        ),
         token,
         method="POST",
-        payload={"body": body},
+        payload={
+            "body": body,
+        },
     )
+
+    return True
 
 
 def close_issue(*, api_url, repository, token, issue_number):
@@ -604,7 +664,7 @@ def manage_issues(
             streak = streaks.get(channel)
 
             if streak is not None and should_comment_on_streak(streak):
-                comment_outage_issue(
+                comment_added = comment_outage_issue(
                     api_url=api_url,
                     repository=repository,
                     token=token,
@@ -616,10 +676,19 @@ def manage_issues(
                     issue_number=existing,
                 )
 
-                print(
-                    f"Updated issue #{existing} for {channel} "
-                    f"(streak \u00d7{streak})."
-                )
+                if comment_added:
+                    print(
+                        f"Updated issue #{existing} "
+                        f"for {channel} "
+                        f"(streak \u00d7{streak})."
+                    )
+                else:
+                    print(
+                        "Stream issue update already "
+                        f"recorded for {channel} "
+                        f"(#{existing}, "
+                        f"streak \u00d7{streak})."
+                    )
             else:
                 print(
                     f"Issue already open for {channel} "
