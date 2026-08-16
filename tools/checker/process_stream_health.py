@@ -88,6 +88,7 @@ def github_request(
     }
 
     max_attempts = 3
+    max_retry_delay = 300
 
     retry_safe_method = (
         method.upper() in {"GET", "HEAD"}
@@ -209,6 +210,15 @@ def github_request(
                         delay = 60
                     else:
                         delay = attempt
+
+                if delay > max_retry_delay:
+                    exc.close()
+
+                    raise RuntimeError(
+                        "GitHub API retry delay "
+                        f"{delay}s exceeds safety "
+                        f"limit {max_retry_delay}s"
+                    ) from exc
 
                 exc.close()
 
