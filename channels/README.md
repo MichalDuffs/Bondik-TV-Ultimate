@@ -84,7 +84,7 @@ Do not guess stream quality.
 
 EPG mapping uses the channel epg.id.
 
-The value should match the XMLTV channel identifier whenever 
+The value should match the XMLTV channel identifier whenever
 possible.
 
 ---
