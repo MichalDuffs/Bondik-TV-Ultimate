@@ -75,6 +75,53 @@ jobs:
             cat epg-maintenance-summary.md >> "$GITHUB_STEP_SUMMARY"
           fi
 
+      - name: Validate proposed EPG patch
+        if: always()
+        shell: bash
+        run: |
+          PATCH="epg-maintenance-proposals.patch"
+          REPORT="epg-maintenance-validation.txt"
+
+          cleanup() {
+            git restore --source=HEAD --worktree --staged -- channels/channels.yaml playlists 2>/dev/null || true
+            git clean -fd -- playlists >/dev/null 2>&1 || true
+          }
+
+          trap cleanup EXIT
+
+          if [ ! -f "$PATCH" ]; then
+            echo "❌ EPG maintenance patch was not generated." | tee "$REPORT"
+            exit 1
+          fi
+
+          if [ ! -s "$PATCH" ]; then
+            echo "✅ Bondik approved: no EPG proposal to validate." | tee "$REPORT"
+            cat "$REPORT" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          {
+            echo "🐾 Bondik EPG Proposal Validation"
+            echo "================================"
+          } | tee "$REPORT"
+
+          git apply --check "$PATCH"
+          echo "✅ git apply --check" | tee -a "$REPORT"
+
+          git apply "$PATCH"
+          echo "✅ proposal applied in temporary CI workspace" | tee -a "$REPORT"
+
+          python tools/checker/check_channels.py --no-network
+          echo "✅ channel metadata" | tee -a "$REPORT"
+
+          python tools/generator/generate_playlists.py
+          echo "✅ playlist regeneration" | tee -a "$REPORT"
+
+          git diff --check
+          echo "✅ git diff --check" | tee -a "$REPORT"
+
+          cat "$REPORT" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Process EPG health history
         if: always()
         env:
@@ -95,5 +142,6 @@ jobs:
             epg-maintenance-report.json
             epg-maintenance-summary.md
             epg-maintenance-proposals.patch
+            epg-maintenance-validation.txt
           retention-days: 30
           if-no-files-found: error
