@@ -51,6 +51,12 @@ def _hostname_has_unsafe_characters(
             decoded_hostname
         )
 
+        if (
+            next_hostname.count(":")
+            > decoded_hostname.count(":")
+        ):
+            return True
+
         if next_hostname == decoded_hostname:
             return any(
                 (
@@ -220,6 +226,13 @@ def github_request(
             "GitHub API URL requires hostname"
         )
 
+    if _url_has_credentials(
+        parsed_url
+    ):
+        raise RuntimeError(
+            "GitHub API URL must not contain credentials"
+        )
+
     try:
         hostname_has_unsafe_characters = (
             _hostname_has_unsafe_characters(
@@ -242,13 +255,6 @@ def github_request(
         raise RuntimeError(
             "GitHub API URL has invalid port"
         ) from exc
-
-    if _url_has_credentials(
-        parsed_url
-    ):
-        raise RuntimeError(
-            "GitHub API URL must not contain credentials"
-        )
 
     data = None
 
