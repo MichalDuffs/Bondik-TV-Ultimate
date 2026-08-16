@@ -107,6 +107,14 @@ def github_request(
             "GitHub API URL has invalid port"
         ) from exc
 
+    if (
+        parsed_url.username is not None
+        or parsed_url.password is not None
+    ):
+        raise RuntimeError(
+            "GitHub API URL must not contain credentials"
+        )
+
     data = None
 
     headers = {
