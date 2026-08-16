@@ -117,9 +117,14 @@ def github_request(
     sleep,
     now,
 ) -> bytes:
-    parsed_url = urllib.parse.urlparse(
-        url
-    )
+    try:
+        parsed_url = urllib.parse.urlparse(
+            url
+        )
+    except ValueError as exc:
+        raise RuntimeError(
+            "GitHub API URL is malformed"
+        ) from exc
 
     if parsed_url.scheme.lower() != "https":
         raise RuntimeError(
