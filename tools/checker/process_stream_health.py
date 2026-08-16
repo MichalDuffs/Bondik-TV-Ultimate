@@ -183,7 +183,10 @@ def github_request(
                         pass
 
                 if delay is None:
-                    delay = attempt
+                    if rate_limit_retry:
+                        delay = 60
+                    else:
+                        delay = attempt
 
                 exc.close()
 
