@@ -666,6 +666,47 @@ Bondík will keep monitoring the EPG source automatically.
     )
 
 
+def comment_epg_recovery(
+    *,
+    api_url: str,
+    repository: str,
+    token: str,
+    server_url: str,
+    run_id: int,
+    sha: str,
+    source: str,
+    streak: int,
+    issue_number: int,
+) -> None:
+    body = f"""## ✅ Bondík EPG Recovery
+
+The EPG source **{source}** has recovered.
+
+- Run: {server_url}/{repository}/actions/runs/{run_id}
+- Commit: `{sha}`
+- Status: ✅ EPG recovered
+- Previous failure streak: ×{streak}
+
+Bondík confirmed that the source is healthy again.
+The outage issue will now be closed automatically.
+
+---
+🐾 Bondik TV Ultimate
+"""
+
+    github_json(
+        (
+            f"{api_url}/repos/{repository}"
+            f"/issues/{issue_number}/comments"
+        ),
+        token,
+        method="POST",
+        payload={
+            "body": body,
+        },
+    )
+
+
 def manage_issues(
     *,
     api_url: str,
@@ -677,8 +718,12 @@ def manage_issues(
     repeated,
     recovered,
     streaks=None,
+    previous_streaks=None,
 ) -> None:
     streaks = streaks or {}
+    previous_streaks = (
+        previous_streaks or {}
+    )
 
     if not repeated and not recovered:
         print(
@@ -775,6 +820,39 @@ def manage_issues(
                 f"for recovered source {source}."
             )
             continue
+
+        previous_streak = (
+            previous_streaks.get(
+                source
+            )
+        )
+
+        if (
+            isinstance(
+                previous_streak,
+                int,
+            )
+            and previous_streak > 0
+        ):
+            comment_epg_recovery(
+                api_url=api_url,
+                repository=repository,
+                token=token,
+                server_url=server_url,
+                run_id=run_id,
+                sha=sha,
+                source=source,
+                streak=previous_streak,
+                issue_number=issue_number,
+            )
+
+            print(
+                "Added EPG recovery report "
+                f"to issue #{issue_number} "
+                f"for {source} "
+                f"(previous streak "
+                f"×{previous_streak})."
+            )
 
         close_issue(
             api_url=api_url,
@@ -936,6 +1014,7 @@ def main() -> int:
                 repeated=repeated,
                 recovered=recovered,
                 streaks=current_streaks,
+                previous_streaks=previous_streaks,
             )
 
         except (

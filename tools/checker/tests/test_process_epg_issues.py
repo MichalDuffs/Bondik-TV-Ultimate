@@ -442,5 +442,262 @@ class EpgHealthIssueTests(unittest.TestCase):
             )
 
 
+    def test_comment_epg_recovery_posts_update(self):
+        with patch.object(
+            health,
+            "github_json",
+            return_value={},
+        ) as github_json:
+
+            health.comment_epg_recovery(
+                **self.common,
+                source="epgshare-cz",
+                streak=5,
+                issue_number=9,
+            )
+
+        call = github_json.call_args
+
+        self.assertEqual(
+            call.args[0],
+            (
+                "https://api.github.test/"
+                "repos/Bondik/Test/"
+                "issues/9/comments"
+            ),
+        )
+
+        self.assertEqual(
+            call.kwargs["method"],
+            "POST",
+        )
+
+        body = call.kwargs[
+            "payload"
+        ]["body"]
+
+        self.assertIn(
+            "epgshare-cz",
+            body,
+        )
+
+        self.assertIn(
+            "recovered",
+            body.lower(),
+        )
+
+        self.assertIn(
+            "×5",
+            body,
+        )
+
+    def test_recovery_comments_before_closing_issue(self):
+        existing = {
+            "number": 9,
+            "title": (
+                "🚨 EPG outage: epgshare-cz"
+            ),
+        }
+
+        events = []
+
+        with patch.object(
+            health,
+            "list_open_issues",
+            return_value=[existing],
+        ):
+            with patch.object(
+                health,
+                "comment_epg_recovery",
+                side_effect=lambda **kwargs: (
+                    events.append("comment")
+                ),
+            ) as recovery_comment:
+                with patch.object(
+                    health,
+                    "close_issue",
+                    side_effect=lambda **kwargs: (
+                        events.append("close")
+                    ),
+                ) as close_issue:
+
+                    health.manage_issues(
+                        **self.common,
+                        repeated=[],
+                        recovered=[
+                            "epgshare-cz"
+                        ],
+                        previous_streaks={
+                            "epgshare-cz": 5
+                        },
+                    )
+
+        self.assertEqual(
+            events,
+            [
+                "comment",
+                "close",
+            ],
+        )
+
+        recovery_comment.assert_called_once_with(
+            api_url=self.common["api_url"],
+            repository=self.common[
+                "repository"
+            ],
+            token=self.common["token"],
+            server_url=self.common[
+                "server_url"
+            ],
+            run_id=self.common["run_id"],
+            sha=self.common["sha"],
+            source="epgshare-cz",
+            streak=5,
+            issue_number=9,
+        )
+
+        close_issue.assert_called_once()
+
+    def test_recovery_without_open_issue_does_not_comment(self):
+        with patch.object(
+            health,
+            "list_open_issues",
+            return_value=[],
+        ):
+            with patch.object(
+                health,
+                "comment_epg_recovery",
+            ) as recovery_comment:
+                with patch.object(
+                    health,
+                    "close_issue",
+                ) as close_issue:
+
+                    health.manage_issues(
+                        **self.common,
+                        repeated=[],
+                        recovered=[
+                            "epgshare-cz"
+                        ],
+                        previous_streaks={
+                            "epgshare-cz": 5
+                        },
+                    )
+
+        recovery_comment.assert_not_called()
+        close_issue.assert_not_called()
+
+    def test_main_passes_previous_streaks_to_issue_manager(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp = Path(temp_dir)
+
+            report = temp / (
+                "epg-check-report.txt"
+            )
+            history = temp / (
+                "epg-history.txt"
+            )
+            state = temp / (
+                "epg-health-state.json"
+            )
+
+            report.write_text(
+                """
+📡 epgshare-cz
+   ├─ ✅ 4/4 IDs found
+   └─ ✅ 4/4 IDs have fresh programme data
+""",
+                encoding="utf-8",
+            )
+
+            args = SimpleNamespace(
+                report=report,
+                history=history,
+                state=state,
+            )
+
+            previous = {
+                "epgshare-cz": 5
+            }
+
+            env_values = {
+                "GITHUB_API_URL": (
+                    "https://api.github.test"
+                ),
+                "GITHUB_REPOSITORY": (
+                    "Bondik/Test"
+                ),
+                "GITHUB_TOKEN": (
+                    "test-token"
+                ),
+                "GITHUB_RUN_ID": "123",
+                "GITHUB_SHA": "abc123",
+            }
+
+            def fake_require_env(name):
+                return env_values[name]
+
+            with patch.dict(
+                health.os.environ,
+                {
+                    "GITHUB_ACTIONS": "true",
+                    "GITHUB_SERVER_URL": (
+                        "https://github.test"
+                    ),
+                },
+                clear=True,
+            ):
+                with patch.object(
+                    health,
+                    "parse_arguments",
+                    return_value=args,
+                ):
+                    with patch.object(
+                        health,
+                        "load_previous_streaks",
+                        return_value=previous,
+                    ):
+                        with patch.object(
+                            health,
+                            "require_env",
+                            side_effect=(
+                                fake_require_env
+                            ),
+                        ):
+                            with patch.object(
+                                health,
+                                "manage_issues",
+                            ) as manage_issues:
+
+                                result = (
+                                    health.main()
+                                )
+
+            self.assertEqual(
+                result,
+                0,
+            )
+
+            kwargs = (
+                manage_issues
+                .call_args
+                .kwargs
+            )
+
+            self.assertEqual(
+                kwargs[
+                    "previous_streaks"
+                ],
+                previous,
+            )
+
+            self.assertEqual(
+                kwargs["recovered"],
+                [
+                    "epgshare-cz"
+                ],
+            )
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
