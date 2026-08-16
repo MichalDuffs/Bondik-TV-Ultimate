@@ -62,9 +62,13 @@ class SafeRedirectHandler(
         if not parsed_new_url.hostname:
             return None
 
+        decoded_hostname = urllib.parse.unquote(
+            parsed_new_url.hostname
+        )
+
         if any(
             character.isspace()
-            for character in parsed_new_url.hostname
+            for character in decoded_hostname
         ):
             return None
 
