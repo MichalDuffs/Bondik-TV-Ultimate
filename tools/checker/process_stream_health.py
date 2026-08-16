@@ -71,6 +71,133 @@ def github_json(url: str, token: str, *, method: str = "GET", payload=None):
     raw = github_request(url, token, method=method, payload=payload)
     return {} if not raw else json.loads(raw.decode("utf-8"))
 
+
+def _github_page_url(
+    url: str,
+    page: int,
+) -> str:
+    parsed = urllib.parse.urlsplit(url)
+
+    query = urllib.parse.parse_qsl(
+        parsed.query,
+        keep_blank_values=True,
+    )
+
+    has_per_page = any(
+        name == "per_page"
+        for name, _ in query
+    )
+
+    query = [
+        (name, value)
+        for name, value in query
+        if name != "page"
+    ]
+
+    if not has_per_page:
+        query.append(
+            ("per_page", "100")
+        )
+
+    # Preserve existing first-page URLs such as
+    # ?per_page=100, but control later pages.
+    if page > 1 or not has_per_page:
+        query.append(
+            ("page", str(page))
+        )
+
+    return urllib.parse.urlunsplit(
+        (
+            parsed.scheme,
+            parsed.netloc,
+            parsed.path,
+            urllib.parse.urlencode(query),
+            parsed.fragment,
+        )
+    )
+
+
+def github_paginated_list(
+    url: str,
+    token: str,
+) -> list:
+    items = []
+    page = 1
+
+    while True:
+        payload = github_json(
+            _github_page_url(
+                url,
+                page,
+            ),
+            token,
+            method="GET",
+        )
+
+        if payload == {}:
+            return items
+
+        if not isinstance(payload, list):
+            raise RuntimeError(
+                "GitHub paginated response "
+                "must be a list"
+            )
+
+        items.extend(payload)
+
+        if len(payload) < 100:
+            return items
+
+        page += 1
+
+
+def github_paginated_collection(
+    url: str,
+    token: str,
+    *,
+    key: str,
+) -> list:
+    items = []
+    page = 1
+
+    while True:
+        payload = github_json(
+            _github_page_url(
+                url,
+                page,
+            ),
+            token,
+            method="GET",
+        )
+
+        if payload == {}:
+            return items
+
+        if not isinstance(payload, dict):
+            raise RuntimeError(
+                "GitHub paginated collection "
+                "response must be an object"
+            )
+
+        page_items = payload.get(
+            key,
+            [],
+        )
+
+        if not isinstance(page_items, list):
+            raise RuntimeError(
+                "GitHub paginated collection "
+                f"field {key!r} must be a list"
+            )
+
+        items.extend(page_items)
+
+        if len(page_items) < 100:
+            return items
+
+        page += 1
+
+
 def extract_failures(report: str) -> set[str]:
     failures = set()
     for line in report.splitlines():
@@ -132,10 +259,14 @@ def find_previous_health_data(
     run_id: int,
     token: str,
 ):
-    artifacts = github_json(
-        f"{api_url}/repos/{repository}/actions/artifacts?per_page=100",
+    artifacts = github_paginated_collection(
+        (
+            f"{api_url}/repos/{repository}"
+            "/actions/artifacts?per_page=100"
+        ),
         token,
-    ).get("artifacts", [])
+        key="artifacts",
+    )
 
     candidates = []
 
@@ -292,10 +423,18 @@ def append_text(path: Path, text: str) -> None:
         handle.write(text)
 
 def list_open_issues(*, api_url: str, repository: str, token: str):
-    payload = github_json(
-        f"{api_url}/repos/{repository}/issues?state=open&per_page=100", token
+    payload = github_paginated_list(
+        (
+            f"{api_url}/repos/{repository}"
+            "/issues?state=open&per_page=100"
+        ),
+        token,
     )
-    return [issue for issue in payload if "pull_request" not in issue]
+    return [
+        issue
+        for issue in payload
+        if "pull_request" not in issue
+    ]
 
 def find_issue_number(issues, title: str):
     for issue in issues:
@@ -323,8 +462,11 @@ OUTAGE_LABELS = (
 
 
 def ensure_outage_labels(*, api_url, repository, token) -> None:
-    labels = github_json(
-        f"{api_url}/repos/{repository}/labels?per_page=100",
+    labels = github_paginated_list(
+        (
+            f"{api_url}/repos/{repository}"
+            "/labels?per_page=100"
+        ),
         token,
     )
 
