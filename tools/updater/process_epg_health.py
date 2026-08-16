@@ -626,6 +626,50 @@ def should_comment_on_streak(
     )
 
 
+def has_issue_comment_marker(
+    *,
+    api_url: str,
+    repository: str,
+    token: str,
+    issue_number: int,
+    marker: str,
+) -> bool:
+    comments = github_json(
+        (
+            f"{api_url}/repos/{repository}"
+            f"/issues/{issue_number}"
+            "/comments?per_page=100"
+        ),
+        token,
+        method="GET",
+    )
+
+    if not isinstance(
+        comments,
+        list,
+    ):
+        return False
+
+    for comment in comments:
+        if not isinstance(
+            comment,
+            dict,
+        ):
+            continue
+
+        body = comment.get(
+            "body"
+        )
+
+        if (
+            isinstance(body, str)
+            and marker in body
+        ):
+            return True
+
+    return False
+
+
 def comment_epg_issue(
     *,
     api_url: str,
@@ -637,7 +681,21 @@ def comment_epg_issue(
     source: str,
     streak: int,
     issue_number: int,
-) -> None:
+) -> bool:
+    marker = (
+        "<!-- bondik-epg:"
+        f"outage:run:{run_id} -->"
+    )
+
+    if has_issue_comment_marker(
+        api_url=api_url,
+        repository=repository,
+        token=token,
+        issue_number=issue_number,
+        marker=marker,
+    ):
+        return False
+
     body = f"""## 🐾 Bondík EPG Health Update
 
 The EPG source **{source}** is still failing.
@@ -651,6 +709,8 @@ Bondík will keep monitoring the EPG source automatically.
 
 ---
 🐾 Bondik TV Ultimate
+
+{marker}
 """
 
     github_json(
@@ -665,6 +725,8 @@ Bondík will keep monitoring the EPG source automatically.
         },
     )
 
+    return True
+
 
 def comment_epg_recovery(
     *,
@@ -677,7 +739,21 @@ def comment_epg_recovery(
     source: str,
     streak: int,
     issue_number: int,
-) -> None:
+) -> bool:
+    marker = (
+        "<!-- bondik-epg:"
+        f"recovery:run:{run_id} -->"
+    )
+
+    if has_issue_comment_marker(
+        api_url=api_url,
+        repository=repository,
+        token=token,
+        issue_number=issue_number,
+        marker=marker,
+    ):
+        return False
+
     body = f"""## ✅ Bondík EPG Recovery
 
 The EPG source **{source}** has recovered.
@@ -692,6 +768,8 @@ The outage issue will now be closed automatically.
 
 ---
 🐾 Bondik TV Ultimate
+
+{marker}
 """
 
     github_json(
@@ -705,6 +783,8 @@ The outage issue will now be closed automatically.
             "body": body,
         },
     )
+
+    return True
 
 
 def manage_issues(

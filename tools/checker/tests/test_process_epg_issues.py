@@ -699,5 +699,210 @@ class EpgHealthIssueTests(unittest.TestCase):
             )
 
 
+    def test_outage_comment_skips_duplicate_same_run(self):
+        run_marker = (
+            "<!-- bondik-epg:outage:run:123 -->"
+        )
+
+        comments = [
+            {
+                "body": (
+                    "Previous update\n"
+                    + run_marker
+                )
+            }
+        ]
+
+        with patch.object(
+            health,
+            "github_json",
+            return_value=comments,
+        ) as github_json:
+
+            posted = health.comment_epg_issue(
+                **self.common,
+                source="epgshare-cz",
+                streak=5,
+                issue_number=7,
+            )
+
+        self.assertIs(
+            posted,
+            False,
+        )
+
+        self.assertEqual(
+            github_json.call_count,
+            1,
+        )
+
+        call = github_json.call_args
+
+        self.assertEqual(
+            call.kwargs.get(
+                "method",
+                "GET",
+            ),
+            "GET",
+        )
+
+    def test_outage_comment_posts_marker_for_new_run(self):
+        run_marker = (
+            "<!-- bondik-epg:outage:run:123 -->"
+        )
+
+        with patch.object(
+            health,
+            "github_json",
+            side_effect=[
+                [],
+                {},
+            ],
+        ) as github_json:
+
+            posted = health.comment_epg_issue(
+                **self.common,
+                source="epgshare-cz",
+                streak=5,
+                issue_number=7,
+            )
+
+        self.assertIs(
+            posted,
+            True,
+        )
+
+        self.assertEqual(
+            github_json.call_count,
+            2,
+        )
+
+        first_call = (
+            github_json.call_args_list[0]
+        )
+
+        self.assertEqual(
+            first_call.kwargs.get(
+                "method",
+                "GET",
+            ),
+            "GET",
+        )
+
+        second_call = (
+            github_json.call_args_list[1]
+        )
+
+        self.assertEqual(
+            second_call.kwargs["method"],
+            "POST",
+        )
+
+        body = second_call.kwargs[
+            "payload"
+        ]["body"]
+
+        self.assertIn(
+            run_marker,
+            body,
+        )
+
+    def test_recovery_comment_skips_duplicate_same_run(self):
+        run_marker = (
+            "<!-- bondik-epg:recovery:run:123 -->"
+        )
+
+        comments = [
+            {
+                "body": (
+                    "Previous recovery\n"
+                    + run_marker
+                )
+            }
+        ]
+
+        with patch.object(
+            health,
+            "github_json",
+            return_value=comments,
+        ) as github_json:
+
+            posted = health.comment_epg_recovery(
+                **self.common,
+                source="epgshare-cz",
+                streak=5,
+                issue_number=9,
+            )
+
+        self.assertIs(
+            posted,
+            False,
+        )
+
+        self.assertEqual(
+            github_json.call_count,
+            1,
+        )
+
+        call = github_json.call_args
+
+        self.assertEqual(
+            call.kwargs.get(
+                "method",
+                "GET",
+            ),
+            "GET",
+        )
+
+    def test_recovery_comment_posts_marker_for_new_run(self):
+        run_marker = (
+            "<!-- bondik-epg:recovery:run:123 -->"
+        )
+
+        with patch.object(
+            health,
+            "github_json",
+            side_effect=[
+                [],
+                {},
+            ],
+        ) as github_json:
+
+            posted = health.comment_epg_recovery(
+                **self.common,
+                source="epgshare-cz",
+                streak=5,
+                issue_number=9,
+            )
+
+        self.assertIs(
+            posted,
+            True,
+        )
+
+        self.assertEqual(
+            github_json.call_count,
+            2,
+        )
+
+        second_call = (
+            github_json.call_args_list[1]
+        )
+
+        self.assertEqual(
+            second_call.kwargs["method"],
+            "POST",
+        )
+
+        body = second_call.kwargs[
+            "payload"
+        ]["body"]
+
+        self.assertIn(
+            run_marker,
+            body,
+        )
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
