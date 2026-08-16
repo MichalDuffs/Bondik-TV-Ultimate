@@ -3,7 +3,77 @@ from __future__ import annotations
 
 import json
 import urllib.error
+import urllib.parse
 import urllib.request
+
+
+def _url_origin(
+    url: str,
+):
+    parsed = urllib.parse.urlparse(
+        url
+    )
+
+    scheme = parsed.scheme.lower()
+    hostname = (
+        parsed.hostname or ""
+    ).lower()
+
+    port = parsed.port
+
+    if port is None:
+        if scheme == "https":
+            port = 443
+        elif scheme == "http":
+            port = 80
+
+    return (
+        scheme,
+        hostname,
+        port,
+    )
+
+
+class SafeRedirectHandler(
+    urllib.request.HTTPRedirectHandler
+):
+    def redirect_request(
+        self,
+        req,
+        fp,
+        code,
+        msg,
+        headers,
+        newurl,
+    ):
+        redirected = (
+            super().redirect_request(
+                req,
+                fp,
+                code,
+                msg,
+                headers,
+                newurl,
+            )
+        )
+
+        if redirected is None:
+            return None
+
+        old_origin = _url_origin(
+            req.full_url
+        )
+
+        new_origin = _url_origin(
+            newurl
+        )
+
+        if old_origin != new_origin:
+            redirected.remove_header(
+                "Authorization"
+            )
+
+        return redirected
 
 
 def github_request(

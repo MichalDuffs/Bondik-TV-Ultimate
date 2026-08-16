@@ -25,51 +25,12 @@ if str(TOOLS_DIR) not in sys.path:
     )
 
 from github_api import (
+    SafeRedirectHandler,
     github_request as _shared_github_request,
 )
 
 
 SEPARATOR = "=" * 60
-
-
-class SafeRedirectHandler(
-    urllib.request.HTTPRedirectHandler
-):
-    def redirect_request(
-        self,
-        req,
-        fp,
-        code,
-        msg,
-        headers,
-        newurl,
-    ):
-        redirected = super().redirect_request(
-            req,
-            fp,
-            code,
-            msg,
-            headers,
-            newurl,
-        )
-
-        if redirected is None:
-            return None
-
-        old_host = urllib.parse.urlparse(
-            req.full_url
-        ).netloc
-
-        new_host = urllib.parse.urlparse(
-            newurl
-        ).netloc
-
-        if old_host != new_host:
-            redirected.remove_header(
-                "Authorization"
-            )
-
-        return redirected
 
 
 OPENER = urllib.request.build_opener(
