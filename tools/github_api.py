@@ -86,6 +86,15 @@ def github_request(
     sleep,
     now,
 ) -> bytes:
+    parsed_url = urllib.parse.urlparse(
+        url
+    )
+
+    if parsed_url.scheme.lower() != "https":
+        raise RuntimeError(
+            "GitHub API requests require HTTPS"
+        )
+
     data = None
 
     headers = {
