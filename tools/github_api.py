@@ -62,6 +62,12 @@ class SafeRedirectHandler(
         if not parsed_new_url.hostname:
             return None
 
+        if any(
+            character.isspace()
+            for character in parsed_new_url.hostname
+        ):
+            return None
+
         try:
             parsed_new_url.port
         except ValueError:
