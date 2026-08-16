@@ -89,6 +89,10 @@ def github_request(
 
     max_attempts = 3
 
+    retry_safe_method = (
+        method.upper() in {"GET", "HEAD"}
+    )
+
     for attempt in range(
         1,
         max_attempts + 1,
@@ -125,10 +129,19 @@ def github_request(
                 and retry_after is not None
             )
 
-            retryable = (
-                exc.code in retryable_statuses
+            rate_limit_retry = (
+                exc.code == 429
                 or primary_rate_limit
                 or secondary_rate_limit
+            )
+
+            retryable = (
+                rate_limit_retry
+                or (
+                    retry_safe_method
+                    and exc.code
+                    in retryable_statuses
+                )
             )
 
             if (
@@ -195,7 +208,10 @@ def github_request(
             ) from exc
 
         except urllib.error.URLError as exc:
-            if attempt < max_attempts:
+            if (
+                retry_safe_method
+                and attempt < max_attempts
+            ):
                 time.sleep(
                     attempt
                 )
