@@ -174,6 +174,84 @@ def github_json(
     )
 
 
+def github_paginated_list(
+    url: str,
+    token: str,
+) -> list:
+    items = []
+    page = 1
+
+    while True:
+        parsed = urllib.parse.urlsplit(
+            url
+        )
+
+        query = [
+            (key, value)
+            for key, value
+            in urllib.parse.parse_qsl(
+                parsed.query,
+                keep_blank_values=True,
+            )
+            if key not in {
+                "per_page",
+                "page",
+            }
+        ]
+
+        query.extend(
+            [
+                (
+                    "per_page",
+                    "100",
+                ),
+                (
+                    "page",
+                    str(page),
+                ),
+            ]
+        )
+
+        page_url = urllib.parse.urlunsplit(
+            (
+                parsed.scheme,
+                parsed.netloc,
+                parsed.path,
+                urllib.parse.urlencode(
+                    query
+                ),
+                parsed.fragment,
+            )
+        )
+
+        payload = github_json(
+            page_url,
+            token,
+            method="GET",
+        )
+
+        if payload == {}:
+            return items
+
+        if not isinstance(
+            payload,
+            list,
+        ):
+            raise RuntimeError(
+                "GitHub paginated response "
+                "must be a list"
+            )
+
+        items.extend(
+            payload
+        )
+
+        if len(payload) < 100:
+            return items
+
+        page += 1
+
+
 def extract_failures(
     report: str,
 ) -> set[str]:
@@ -468,10 +546,10 @@ def list_open_issues(
     repository: str,
     token: str,
 ):
-    payload = github_json(
+    payload = github_paginated_list(
         (
             f"{api_url}/repos/{repository}"
-            "/issues?state=open&per_page=100"
+            "/issues?state=open"
         ),
         token,
     )
@@ -481,7 +559,6 @@ def list_open_issues(
         for issue in payload
         if "pull_request" not in issue
     ]
-
 
 def find_issue_number(
     issues,
@@ -506,24 +583,21 @@ def ensure_epg_labels(
     repository: str,
     token: str,
 ) -> None:
-    labels = github_json(
+    labels = github_paginated_list(
         (
             f"{api_url}/repos/{repository}"
-            "/labels?per_page=100"
+            "/labels"
         ),
         token,
     )
 
-    if not isinstance(labels, list):
-        raise RuntimeError(
-            "GitHub labels response "
-            "must be a list"
-        )
-
     existing = {
         label.get("name")
         for label in labels
-        if isinstance(label, dict)
+        if isinstance(
+            label,
+            dict,
+        )
     }
 
     for label in EPG_OUTAGE_LABELS:
@@ -539,7 +613,6 @@ def ensure_epg_labels(
             method="POST",
             payload=label,
         )
-
 
 def create_epg_issue(
     *,
@@ -634,21 +707,14 @@ def has_issue_comment_marker(
     issue_number: int,
     marker: str,
 ) -> bool:
-    comments = github_json(
+    comments = github_paginated_list(
         (
             f"{api_url}/repos/{repository}"
             f"/issues/{issue_number}"
-            "/comments?per_page=100"
+            "/comments"
         ),
         token,
-        method="GET",
     )
-
-    if not isinstance(
-        comments,
-        list,
-    ):
-        return False
 
     for comment in comments:
         if not isinstance(
@@ -668,7 +734,6 @@ def has_issue_comment_marker(
             return True
 
     return False
-
 
 def comment_epg_issue(
     *,
