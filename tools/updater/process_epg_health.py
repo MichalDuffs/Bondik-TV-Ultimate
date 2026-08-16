@@ -186,6 +186,8 @@ def github_request(
                 and attempt < max_attempts
             ):
 
+                delay = None
+
                 if retry_after is not None:
                     try:
                         delay = max(
@@ -193,9 +195,12 @@ def github_request(
                             int(retry_after),
                         )
                     except ValueError:
-                        delay = attempt
+                        pass
 
-                elif primary_rate_limit:
+                if (
+                    delay is None
+                    and primary_rate_limit
+                ):
                     reset = (
                         response_headers.get(
                             "X-RateLimit-Reset"
@@ -212,9 +217,9 @@ def github_request(
                         TypeError,
                         ValueError,
                     ):
-                        delay = attempt
+                        pass
 
-                else:
+                if delay is None:
                     delay = attempt
 
                 exc.close()
