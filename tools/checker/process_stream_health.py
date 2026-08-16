@@ -15,6 +15,21 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
+TOOLS_DIR = (
+    Path(__file__).resolve().parents[1]
+)
+
+if str(TOOLS_DIR) not in sys.path:
+    sys.path.insert(
+        0,
+        str(TOOLS_DIR),
+    )
+
+from github_api import (
+    github_request as _shared_github_request,
+)
+
+
 FAILURE_RE = re.compile(r"^❌ (.+) \[stable\]$")
 SEPARATOR = "=" * 60
 
@@ -55,236 +70,15 @@ def github_request(
     method: str = "GET",
     payload=None,
 ) -> bytes:
-    data = None
-
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-    }
-
-    if payload is not None:
-        data = json.dumps(
-            payload,
-            ensure_ascii=False,
-        ).encode("utf-8")
-
-        headers["Content-Type"] = "application/json"
-
-    request = urllib.request.Request(
+    return _shared_github_request(
         url,
-        data=data,
-        headers=headers,
+        token,
         method=method,
+        payload=payload,
+        opener=OPENER,
+        sleep=time.sleep,
+        now=time.time,
     )
-
-    retryable_statuses = {
-        408,
-        429,
-        500,
-        502,
-        503,
-        504,
-    }
-
-    max_attempts = 3
-    max_retry_delay = 300
-    max_total_retry_delay = 300
-    total_retry_delay = 0
-
-    retry_safe_method = (
-        method.upper() in {"GET", "HEAD"}
-    )
-
-    for attempt in range(
-        1,
-        max_attempts + 1,
-    ):
-        try:
-            with OPENER.open(
-                request,
-                timeout=30,
-            ) as response:
-                return response.read()
-
-        except urllib.error.HTTPError as exc:
-            response_headers = (
-                exc.headers or {}
-            )
-
-            remaining = response_headers.get(
-                "X-RateLimit-Remaining"
-            )
-
-            retry_after = (
-                response_headers.get(
-                    "Retry-After"
-                )
-            )
-
-            try:
-                details = exc.read().decode(
-                    "utf-8",
-                    errors="replace",
-                ).strip()
-
-            except (
-                OSError,
-                ValueError,
-            ):
-                details = (
-                    "<response body unavailable>"
-                )
-
-            details_lower = details.lower()
-
-            primary_rate_limit = (
-                exc.code in {403, 429}
-                and remaining == "0"
-            )
-
-            secondary_rate_limit = (
-                exc.code == 403
-                and (
-                    retry_after is not None
-                    or (
-                        "secondary rate limit"
-                        in details_lower
-                    )
-                )
-            )
-
-            rate_limit_retry = (
-                exc.code == 429
-                or primary_rate_limit
-                or secondary_rate_limit
-            )
-
-            retryable = (
-                rate_limit_retry
-                or (
-                    retry_safe_method
-                    and exc.code
-                    in retryable_statuses
-                )
-            )
-
-            if (
-                retryable
-                and attempt < max_attempts
-            ):
-
-                delay = None
-
-                if retry_after is not None:
-                    try:
-                        delay = max(
-                            0,
-                            int(retry_after),
-                        )
-                    except ValueError:
-                        pass
-
-                if (
-                    delay is None
-                    and primary_rate_limit
-                ):
-                    reset = (
-                        response_headers.get(
-                            "X-RateLimit-Reset"
-                        )
-                    )
-
-                    try:
-                        delay = max(
-                            0,
-                            int(reset)
-                            - int(time.time()),
-                        )
-                    except (
-                        TypeError,
-                        ValueError,
-                    ):
-                        pass
-
-                if delay is None:
-                    if rate_limit_retry:
-                        delay = (
-                            60
-                            * (
-                                2
-                                ** (attempt - 1)
-                            )
-                        )
-                    else:
-                        delay = attempt
-
-                if delay > max_retry_delay:
-                    exc.close()
-
-                    raise RuntimeError(
-                        "GitHub API retry delay "
-                        f"{delay}s exceeds safety "
-                        f"limit {max_retry_delay}s"
-                    ) from exc
-
-                next_total_retry_delay = (
-                    total_retry_delay
-                    + delay
-                )
-
-                if (
-                    next_total_retry_delay
-                    > max_total_retry_delay
-                ):
-                    exc.close()
-
-                    raise RuntimeError(
-                        "GitHub API retry delay budget "
-                        f"{next_total_retry_delay}s "
-                        "exceeds safety limit "
-                        f"{max_total_retry_delay}s"
-                    ) from exc
-
-                total_retry_delay = (
-                    next_total_retry_delay
-                )
-
-                exc.close()
-
-                time.sleep(
-                    delay
-                )
-
-                continue
-
-            exc.close()
-
-            raise RuntimeError(
-                "GitHub API returned "
-                f"HTTP {exc.code}: {details}"
-            ) from exc
-
-        except urllib.error.URLError as exc:
-            if (
-                retry_safe_method
-                and attempt < max_attempts
-            ):
-                time.sleep(
-                    attempt
-                )
-                continue
-
-            raise RuntimeError(
-                "GitHub API request failed: "
-                f"{exc.reason}"
-            ) from exc
-
-    raise RuntimeError(
-        "GitHub API request failed "
-        "after retries"
-    )
-
 
 def github_json(url: str, token: str, *, method: str = "GET", payload=None):
     raw = github_request(url, token, method=method, payload=payload)
