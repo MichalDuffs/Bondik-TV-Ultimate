@@ -81,6 +81,32 @@ channels:
       website: "https://tvbrno1.cz/"
       notes: "Public HLS stream. Verified by targeted Bondik checker."
 
+  - id: "v1-cz"
+    name: "Východočeská TV V1"
+    country: "CZ"
+    language: "cs"
+    category: "general"
+    provider: "vctv"
+
+    stream:
+      url: "https://stream.polar.cz/vctv/vctvlive-1/playlist.m3u8"
+      format: "hls"
+      quality: "unknown"
+
+    epg:
+      id: null
+      enabled: false
+
+    logo:
+      url: null
+      local: null
+
+    status: "testing"
+
+    metadata:
+      website: "https://vzpravy.cz/"
+      notes: "Candidate public HLS stream. Pending targeted Bondik verification."
+
   - id: "ocko-cz"
     name: "Óčko"
     country: "CZ"
