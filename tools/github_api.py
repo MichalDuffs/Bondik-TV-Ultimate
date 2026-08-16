@@ -46,9 +46,12 @@ class SafeRedirectHandler(
         headers,
         newurl,
     ):
-        parsed_new_url = urllib.parse.urlparse(
-            newurl
-        )
+        try:
+            parsed_new_url = urllib.parse.urlparse(
+                newurl
+            )
+        except ValueError:
+            return None
 
         if (
             parsed_new_url.username is not None
