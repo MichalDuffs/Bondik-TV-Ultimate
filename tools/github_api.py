@@ -56,6 +56,16 @@ class SafeRedirectHandler(
         ):
             return None
 
+        parsed_old_url = urllib.parse.urlparse(
+            req.full_url
+        )
+
+        if (
+            parsed_old_url.scheme.lower() == "https"
+            and parsed_new_url.scheme.lower() != "https"
+        ):
+            return None
+
         redirected = (
             super().redirect_request(
                 req,

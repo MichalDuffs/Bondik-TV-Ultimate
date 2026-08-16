@@ -45,7 +45,7 @@ class GitHubRedirectOriginTests(
     unittest.TestCase
 ):
 
-    def check_https_downgrade_strips_auth(
+    def check_https_downgrade_is_rejected(
         self,
         module,
     ):
@@ -67,27 +67,21 @@ class GitHubRedirectOriginTests(
             "http://api.github.test/target",
         )
 
-        self.assertIsNotNone(
+        self.assertIsNone(
             redirected
         )
 
-        self.assertIsNone(
-            redirected.get_header(
-                "Authorization"
-            )
-        )
-
-    def test_stream_https_downgrade_strips_auth(
+    def test_stream_https_downgrade_is_rejected(
         self,
     ):
-        self.check_https_downgrade_strips_auth(
+        self.check_https_downgrade_is_rejected(
             stream_health
         )
 
-    def test_epg_https_downgrade_strips_auth(
+    def test_epg_https_downgrade_is_rejected(
         self,
     ):
-        self.check_https_downgrade_strips_auth(
+        self.check_https_downgrade_is_rejected(
             epg_health
         )
 
