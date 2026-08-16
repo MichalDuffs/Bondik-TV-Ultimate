@@ -1,7 +1,7 @@
-#EXTM3U
+#EXTM3U x-tvg-url="https://epgshare01.online/epgshare01/epg_ripper_CZ1.xml.gz"
 # Bondik TV Ultimate - Provider: vctv
 # Generated automatically from channels/channels.yaml
 # Quality checked by Bondik
 
-#EXTINF:-1 tvg-name="Východočeská TV V1" group-title="CZ",Východočeská TV V1
+#EXTINF:-1 tvg-name="Východočeská TV V1" group-title="CZ" tvg-id="V1.cz",Východočeská TV V1
 https://stream.polar.cz/vctv/vctvlive-1/playlist.m3u8
