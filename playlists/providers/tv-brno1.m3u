@@ -1,0 +1,7 @@
+#EXTM3U
+# Bondik TV Ultimate - Provider: tv-brno1
+# Generated automatically from channels/channels.yaml
+# Quality checked by Bondik
+
+#EXTINF:-1 tvg-name="TV Brno 1" group-title="CZ",TV Brno 1
+https://stream.polar.cz/tvbrno1/tvbrno1live-1/playlist.m3u8
