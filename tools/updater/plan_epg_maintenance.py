@@ -2,7 +2,7 @@
 """Create a report-only plan for improving EPG coverage.
 
 The planner never edits channels.yaml. It downloads configured XMLTV sources,
-looks at channels whose EPG is disabled, and proposes only exact normalized
+looks at stable channels whose EPG is disabled, and proposes only exact normalized
 matches. Ambiguous or fuzzy cases stay in manual review.
 """
 
@@ -264,6 +264,17 @@ def choose_source(
     return matching[0], None
 
 
+def is_stable_channel(channel: dict) -> bool:
+    """Return True only for channels explicitly marked stable."""
+
+    return (
+        str(channel.get("status", ""))
+        .strip()
+        .casefold()
+        == "stable"
+    )
+
+
 def plan_maintenance(
     channels: list,
     sources: dict[str, dict],
@@ -275,6 +286,7 @@ def plan_maintenance(
     source_errors = source_errors or {}
     proposals = []
     unresolved = []
+    skipped = []
     already_enabled = 0
 
     for channel in channels:
@@ -299,17 +311,30 @@ def plan_maintenance(
         country = str(
             channel.get("country", "")
         ).strip()
-
-        source_id, source_reason = choose_source(
-            channel,
-            sources,
-        )
+        status = str(
+            channel.get("status", "")
+        ).strip()
 
         base = {
             "channel_id": channel_id,
             "channel_name": channel_name,
             "country": country,
         }
+
+        if not is_stable_channel(channel):
+            skipped.append(
+                {
+                    **base,
+                    "status": status or None,
+                    "reason": "channel-not-stable",
+                }
+            )
+            continue
+
+        source_id, source_reason = choose_source(
+            channel,
+            sources,
+        )
 
         if source_reason:
             unresolved.append(
@@ -385,8 +410,10 @@ def plan_maintenance(
         "already_enabled": already_enabled,
         "proposal_count": len(proposals),
         "unresolved_count": len(unresolved),
+        "skipped_count": len(skipped),
         "proposals": proposals,
         "unresolved": unresolved,
+        "skipped": skipped,
     }
 
 
@@ -398,6 +425,7 @@ def render_summary(report: dict) -> str:
         "",
         f"- EPG already enabled: {report['already_enabled']}",
         f"- Safe exact proposals: {report['proposal_count']}",
+        f"- Skipped non-stable: {report.get('skipped_count', 0)}",
         f"- Manual review: {report['unresolved_count']}",
     ]
 
@@ -421,6 +449,28 @@ def render_summary(report: dict) -> str:
                 f"{item['channel_name']} → "
                 f"`{item['epg_id']}` "
                 f"({item['source']})"
+            )
+
+    skipped = report.get(
+        "skipped",
+        [],
+    )
+
+    if skipped:
+        lines.extend(
+            [
+                "",
+                "## Skipped non-stable channels",
+                "",
+            ]
+        )
+
+        for item in skipped:
+            status = item.get("status") or "missing"
+            lines.append(
+                "- "
+                f"{item['channel_name']}: "
+                f"status `{status}`"
             )
 
     unresolved = report.get(
@@ -498,6 +548,9 @@ def main() -> int:
             isinstance(epg, dict)
             and epg.get("enabled") is True
         ):
+            continue
+
+        if not is_stable_channel(channel):
             continue
 
         source_id, _ = choose_source(

@@ -59,6 +59,7 @@ class EpgMaintenancePlannerTests(unittest.TestCase):
                 "id": "praha-tv-cz",
                 "name": "Praha TV",
                 "country": "CZ",
+                "status": "stable",
                 "epg": {
                     "id": None,
                     "enabled": False,
@@ -104,6 +105,7 @@ class EpgMaintenancePlannerTests(unittest.TestCase):
                 "id": "demo-cz",
                 "name": "Demo TV",
                 "country": "CZ",
+                "status": "stable",
                 "epg": {
                     "enabled": False,
                 },
@@ -140,6 +142,91 @@ class EpgMaintenancePlannerTests(unittest.TestCase):
         self.assertEqual(
             report["unresolved"][0]["reason"],
             "ambiguous-exact-match",
+        )
+
+    def test_testing_channel_is_skipped(self):
+        channels = [
+            {
+                "id": "praha-tv-cz",
+                "name": "Praha TV",
+                "country": "CZ",
+                "status": "testing",
+                "epg": {
+                    "enabled": False,
+                },
+            }
+        ]
+
+        report = planner.plan_maintenance(
+            channels,
+            {
+                "epgshare-cz": {
+                    "country": "CZ",
+                }
+            },
+            {
+                "epgshare-cz": [
+                    {
+                        "id": "PRAHA.TV.cz",
+                        "names": ["Praha TV"],
+                    }
+                ]
+            },
+        )
+
+        self.assertEqual(
+            report["proposal_count"],
+            0,
+        )
+        self.assertEqual(
+            report["unresolved_count"],
+            0,
+        )
+        self.assertEqual(
+            report["skipped_count"],
+            1,
+        )
+        self.assertEqual(
+            report["skipped"][0]["reason"],
+            "channel-not-stable",
+        )
+        self.assertEqual(
+            report["skipped"][0]["status"],
+            "testing",
+        )
+
+    def test_missing_status_is_skipped(self):
+        channels = [
+            {
+                "id": "demo-cz",
+                "name": "Demo TV",
+                "country": "CZ",
+                "epg": {
+                    "enabled": False,
+                },
+            }
+        ]
+
+        report = planner.plan_maintenance(
+            channels,
+            {
+                "epgshare-cz": {
+                    "country": "CZ",
+                }
+            },
+            {},
+        )
+
+        self.assertEqual(
+            report["skipped_count"],
+            1,
+        )
+        self.assertIsNone(
+            report["skipped"][0]["status"]
+        )
+        self.assertEqual(
+            report["unresolved_count"],
+            0,
         )
 
     def test_enabled_epg_is_left_untouched(self):
