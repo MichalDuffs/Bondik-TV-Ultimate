@@ -15,7 +15,7 @@ https://stream.polar.cz/tvbrno1/tvbrno1live-1/playlist.m3u8
 #EXTINF:-1 tvg-name="Východočeská TV V1" group-title="CZ" tvg-id="V1.cz",Východočeská TV V1
 https://stream.polar.cz/vctv/vctvlive-1/playlist.m3u8
 
-#EXTINF:-1 tvg-name="Jihočeská televize" group-title="CZ",Jihočeská televize
+#EXTINF:-1 tvg-name="Jihočeská televize" group-title="CZ" tvg-id="Jihočeská.televize.cz",Jihočeská televize
 https://vysilani.zaktv.cz/broadcast/hls/jtv/index.m3u8
 
 #EXTINF:-1 tvg-name="Óčko" group-title="CZ" tvg-id="Óčko.cz",Óčko
