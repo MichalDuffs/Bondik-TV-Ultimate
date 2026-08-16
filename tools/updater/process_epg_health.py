@@ -565,54 +565,80 @@ def find_previous_health_state(
             artifact
         )
 
-    if not candidates:
-        return {}
-
-    previous = max(
-        candidates,
+    candidates.sort(
         key=lambda artifact: artifact.get(
             "created_at",
             "",
         ),
+        reverse=True,
     )
 
-    archive = github_request(
-        (
-            f"{api_url}/repos/{repository}"
-            "/actions/artifacts/"
-            f"{previous['id']}/zip"
-        ),
-        token,
-    )
+    for previous in candidates:
+        artifact_id = previous.get("id")
 
-    with zipfile.ZipFile(
-        io.BytesIO(archive)
-    ) as zip_file:
+        if not isinstance(
+            artifact_id,
+            int,
+        ):
+            continue
+
         try:
-            state_bytes = zip_file.read(
-                "epg-health-state.json"
+            archive = github_request(
+                (
+                    f"{api_url}/repos/{repository}"
+                    "/actions/artifacts/"
+                    f"{artifact_id}/zip"
+                ),
+                token,
             )
-        except KeyError:
-            return {}
 
-    try:
-        return parse_streak_state(
-            state_bytes.decode(
-                "utf-8-sig",
-                errors="replace",
+            with zipfile.ZipFile(
+                io.BytesIO(
+                    archive
+                )
+            ) as zip_file:
+                try:
+                    state_bytes = zip_file.read(
+                        "epg-health-state.json"
+                    )
+
+                except KeyError:
+                    print(
+                        "⚠️ EPG artifact "
+                        f"#{artifact_id} has no "
+                        "health state - trying "
+                        "older artifact."
+                    )
+                    continue
+
+        except zipfile.BadZipFile:
+            print(
+                "⚠️ EPG artifact "
+                f"#{artifact_id} is corrupt - "
+                "trying older artifact."
             )
-        )
+            continue
 
-    except (
-        json.JSONDecodeError,
-        ValueError,
-    ) as exc:
-        print(
-            "⚠️ Previous EPG state invalid - "
-            f"baseline used: {exc}"
-        )
+        try:
+            return parse_streak_state(
+                state_bytes.decode(
+                    "utf-8-sig",
+                    errors="replace",
+                )
+            )
 
-        return {}
+        except (
+            json.JSONDecodeError,
+            ValueError,
+        ) as exc:
+            print(
+                "⚠️ Previous EPG state invalid "
+                f"in artifact #{artifact_id} - "
+                "trying older artifact: "
+                f"{exc}"
+            )
+
+    return {}
 
 
 def build_history(

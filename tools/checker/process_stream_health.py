@@ -398,68 +398,163 @@ def find_previous_health_data(
     candidates = []
 
     for artifact in artifacts:
-        workflow_run = artifact.get("workflow_run") or {}
+        workflow_run = (
+            artifact.get("workflow_run")
+            or {}
+        )
 
-        if artifact.get("expired", False):
+        if artifact.get(
+            "expired",
+            False,
+        ):
             continue
 
         if workflow_run.get("id") == run_id:
             continue
 
-        if not artifact.get("name", "").startswith("stream-check-"):
+        if not artifact.get(
+            "name",
+            "",
+        ).startswith("stream-check-"):
             continue
 
-        candidates.append(artifact)
+        candidates.append(
+            artifact
+        )
 
-    if not candidates:
-        return None, {}
-
-    previous = max(
-        candidates,
-        key=lambda artifact: artifact.get("created_at", ""),
+    candidates.sort(
+        key=lambda artifact: artifact.get(
+            "created_at",
+            "",
+        ),
+        reverse=True,
     )
 
-    archive_bytes = github_request(
-        f"{api_url}/repos/{repository}/actions/artifacts/{previous['id']}/zip",
-        token,
-    )
+    for previous in candidates:
+        artifact_id = previous.get("id")
 
-    with zipfile.ZipFile(io.BytesIO(archive_bytes)) as archive:
+        if not isinstance(
+            artifact_id,
+            int,
+        ):
+            continue
+
         try:
-            report_bytes = archive.read("stream-check-report.txt")
-            previous_report = report_bytes.decode(
-                "utf-8-sig",
-                errors="replace",
+            archive_bytes = github_request(
+                (
+                    f"{api_url}/repos/{repository}"
+                    "/actions/artifacts/"
+                    f"{artifact_id}/zip"
+                ),
+                token,
             )
-        except KeyError:
-            previous_report = ""
 
-        try:
-            state_bytes = archive.read("stream-health-state.json")
-        except KeyError:
-            previous_streaks = {
-                channel: 1
-                for channel in extract_failures(previous_report)
-            }
-        else:
+            with zipfile.ZipFile(
+                io.BytesIO(
+                    archive_bytes
+                )
+            ) as archive:
+                try:
+                    report_bytes = archive.read(
+                        "stream-check-report.txt"
+                    )
+
+                    previous_report = (
+                        report_bytes.decode(
+                            "utf-8-sig",
+                            errors="replace",
+                        )
+                    )
+
+                    has_report = True
+
+                except KeyError:
+                    previous_report = ""
+                    has_report = False
+
+                try:
+                    state_bytes = archive.read(
+                        "stream-health-state.json"
+                    )
+
+                    has_state = True
+
+                except KeyError:
+                    state_bytes = None
+                    has_state = False
+
+        except zipfile.BadZipFile:
+            print(
+                "⚠️ Stream artifact "
+                f"#{artifact_id} is corrupt - "
+                "trying older artifact."
+            )
+            continue
+
+        if not has_report and not has_state:
+            print(
+                "⚠️ Stream artifact "
+                f"#{artifact_id} contains no "
+                "usable health data - "
+                "trying older artifact."
+            )
+            continue
+
+        if has_state:
             try:
-                previous_streaks = parse_streak_state(
-                    state_bytes.decode(
-                        "utf-8-sig",
-                        errors="replace",
+                previous_streaks = (
+                    parse_streak_state(
+                        state_bytes.decode(
+                            "utf-8-sig",
+                            errors="replace",
+                        )
                     )
                 )
-            except (json.JSONDecodeError, ValueError) as exc:
+
+            except (
+                json.JSONDecodeError,
+                ValueError,
+            ) as exc:
+                if not has_report:
+                    print(
+                        "⚠️ Previous stream state "
+                        "invalid and report missing "
+                        f"in artifact #{artifact_id} "
+                        f"- trying older artifact: "
+                        f"{exc}"
+                    )
+                    continue
+
                 print(
-                    "⚠️ Previous streak state invalid - "
-                    f"falling back to report: {exc}"
+                    "⚠️ Previous streak state "
+                    "invalid - falling back "
+                    f"to report: {exc}"
                 )
+
                 previous_streaks = {
                     channel: 1
-                    for channel in extract_failures(previous_report)
+                    for channel
+                    in extract_failures(
+                        previous_report
+                    )
                 }
 
-    return previous_report, previous_streaks
+        else:
+            previous_streaks = {
+                channel: 1
+                for channel
+                in extract_failures(
+                    previous_report
+                )
+            }
+
+        return (
+            previous_report,
+            previous_streaks,
+        )
+
+    return None, {}
+
 
 def build_history(
     current_failed: set[str],
