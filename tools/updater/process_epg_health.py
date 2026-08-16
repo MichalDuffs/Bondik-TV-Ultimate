@@ -169,10 +169,19 @@ def github_request(
                 )
             )
 
-            details = exc.read().decode(
-                "utf-8",
-                errors="replace",
-            ).strip()
+            try:
+                details = exc.read().decode(
+                    "utf-8",
+                    errors="replace",
+                ).strip()
+
+            except (
+                OSError,
+                ValueError,
+            ):
+                details = (
+                    "<response body unavailable>"
+                )
 
             details_lower = details.lower()
 
