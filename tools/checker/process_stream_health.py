@@ -109,25 +109,32 @@ def github_request(
                 "X-RateLimit-Remaining"
             )
 
+            retry_after = (
+                response_headers.get(
+                    "Retry-After"
+                )
+            )
+
             primary_rate_limit = (
                 exc.code == 403
                 and remaining == "0"
             )
 
+            secondary_rate_limit = (
+                exc.code == 403
+                and retry_after is not None
+            )
+
             retryable = (
                 exc.code in retryable_statuses
                 or primary_rate_limit
+                or secondary_rate_limit
             )
 
             if (
                 retryable
                 and attempt < max_attempts
             ):
-                retry_after = (
-                    response_headers.get(
-                        "Retry-After"
-                    )
-                )
 
                 if retry_after is not None:
                     try:
