@@ -59,6 +59,11 @@ class SafeRedirectHandler(
         if not parsed_new_url.hostname:
             return None
 
+        try:
+            parsed_new_url.port
+        except ValueError:
+            return None
+
         parsed_old_url = urllib.parse.urlparse(
             req.full_url
         )
