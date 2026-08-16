@@ -10,6 +10,35 @@ import urllib.request
 MAX_HOSTNAME_DECODE_ROUNDS = 10
 
 
+def _url_has_credentials(
+    parsed_url,
+) -> bool:
+    if (
+        parsed_url.username is not None
+        or parsed_url.password is not None
+    ):
+        return True
+
+    decoded_netloc = parsed_url.netloc
+
+    for _ in range(
+        MAX_HOSTNAME_DECODE_ROUNDS
+    ):
+        if "@" in decoded_netloc:
+            return True
+
+        next_netloc = urllib.parse.unquote(
+            decoded_netloc
+        )
+
+        if next_netloc == decoded_netloc:
+            return False
+
+        decoded_netloc = next_netloc
+
+    return "@" in decoded_netloc
+
+
 def _hostname_has_whitespace(
     hostname: str,
 ) -> bool:
@@ -91,9 +120,8 @@ class SafeRedirectHandler(
         except ValueError:
             return None
 
-        if (
-            parsed_new_url.username is not None
-            or parsed_new_url.password is not None
+        if _url_has_credentials(
+            parsed_new_url
         ):
             return None
 
@@ -209,9 +237,8 @@ def github_request(
             "GitHub API URL has invalid port"
         ) from exc
 
-    if (
-        parsed_url.username is not None
-        or parsed_url.password is not None
+    if _url_has_credentials(
+        parsed_url
     ):
         raise RuntimeError(
             "GitHub API URL must not contain credentials"
