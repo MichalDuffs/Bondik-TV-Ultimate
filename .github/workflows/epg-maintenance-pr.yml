@@ -1,0 +1,141 @@
+name: Bondik TV EPG Maintenance PR
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: bondik-epg-maintenance-pr
+  cancel-in-progress: false
+
+jobs:
+  prepare-pr:
+    name: Prepare EPG Maintenance Draft PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Plan EPG maintenance
+        run: |
+          python tools/updater/plan_epg_maintenance.py
+          cat epg-maintenance-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Inspect proposal
+        id: proposal
+        shell: bash
+        run: |
+          PATCH="epg-maintenance-proposals.patch"
+
+          if [ ! -f "$PATCH" ]; then
+            echo "EPG maintenance patch was not generated."
+            exit 1
+          fi
+
+          if [ ! -s "$PATCH" ]; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "✅ Bondik approved: no safe EPG proposal, no PR created." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "🛡️ Safe EPG proposal found; validating before Draft PR." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Validate proposal in temporary workspace
+        if: steps.proposal.outputs.has_changes == 'true'
+        shell: bash
+        run: |
+          git apply --check epg-maintenance-proposals.patch
+          git apply epg-maintenance-proposals.patch
+
+          python tools/checker/check_channels.py --no-network
+          python tools/generator/generate_playlists.py
+          python -m unittest discover -s tools/checker/tests -p "test_*.py" -v
+          git diff --check
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "✅ Proposal validation passed." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create Draft PR
+        if: steps.proposal.outputs.has_changes == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BRANCH="automation/epg-maintenance-${GITHUB_RUN_ID}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b "$BRANCH"
+          git add channels/channels.yaml playlists
+
+          if git diff --cached --quiet; then
+            echo "Proposal produced no commit-worthy changes."
+            exit 1
+          fi
+
+          git commit -m "Apply safe EPG maintenance proposals"
+          git push --set-upstream origin "$BRANCH"
+
+          cat > /tmp/epg-pr-body.md <<'BODY'
+          ## 🐾 Bondik EPG Maintenance
+
+          This Draft PR was created from a manually triggered maintenance run.
+
+          Safety gates passed before publication:
+          - stable channels only
+          - one exact normalized EPG match only
+          - `git apply --check`
+          - channel metadata validation
+          - playlist regeneration
+          - full automated test suite
+          - `git diff --check`
+
+          No direct changes were made to `main`.
+
+          **Human/Bondik review is required before merge.** 🦮🛡️
+          BODY
+
+          PR_URL="$(
+            gh pr create \
+              --draft \
+              --base main \
+              --head "$BRANCH" \
+              --title "EPG maintenance proposals" \
+              --body-file /tmp/epg-pr-body.md
+          )"
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "✅ Draft PR created: $PR_URL" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload EPG maintenance proposal artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: epg-maintenance-pr-${{ github.run_id }}-attempt-${{ github.run_attempt }}
+          path: |
+            epg-maintenance-report.json
+            epg-maintenance-summary.md
+            epg-maintenance-proposals.patch
+          retention-days: 30
+          if-no-files-found: error
