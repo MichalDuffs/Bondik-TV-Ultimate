@@ -109,32 +109,6 @@ channels:
       website: "https://vzpravy.cz/"
       notes: "Public HLS stream. Verified by targeted Bondik checker."
 
-  - id: "prima-cool-cz"
-    name: "Prima COOL"
-    country: "CZ"
-    language: "cs"
-    category: "entertainment"
-    provider: "prima"
-
-    stream:
-      url: "https://prima-ott-live.ssl.cdn.cra.cz/channels/prima_cool/playlist/cze/live_hd.m3u8?offsetSeconds=0&url=0"
-      format: "hls"
-      quality: "unknown"
-
-    epg:
-      id: null
-      enabled: false
-
-    logo:
-      url: null
-      local: null
-
-    status: "testing"
-
-    metadata:
-      website: "https://cool.iprima.cz/vysilani"
-      notes: "Candidate public HLS reported by technical IPTV sources. Awaiting targeted Bondik checker."
-
   - id: "ocko-cz"
     name: "Óčko"
     country: "CZ"
