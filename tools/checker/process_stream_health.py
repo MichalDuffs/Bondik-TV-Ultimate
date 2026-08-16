@@ -116,7 +116,7 @@ def github_request(
             )
 
             primary_rate_limit = (
-                exc.code == 403
+                exc.code in {403, 429}
                 and remaining == "0"
             )
 
