@@ -39,7 +39,7 @@ def _url_has_credentials(
     return "@" in decoded_netloc
 
 
-def _hostname_has_whitespace(
+def _hostname_has_unsafe_characters(
     hostname: str,
 ) -> bool:
     decoded_hostname = hostname
@@ -53,7 +53,10 @@ def _hostname_has_whitespace(
 
         if next_hostname == decoded_hostname:
             return any(
-                character.isspace()
+                (
+                    character.isspace()
+                    or character in "/\\"
+                )
                 for character in decoded_hostname
             )
 
@@ -69,7 +72,10 @@ def _hostname_has_whitespace(
         )
 
     return any(
-        character.isspace()
+        (
+            character.isspace()
+            or character in "/\\"
+        )
         for character in decoded_hostname
     )
 
@@ -129,15 +135,15 @@ class SafeRedirectHandler(
             return None
 
         try:
-            hostname_has_whitespace = (
-                _hostname_has_whitespace(
+            hostname_has_unsafe_characters = (
+                _hostname_has_unsafe_characters(
                     parsed_new_url.hostname
                 )
             )
         except ValueError:
             return None
 
-        if hostname_has_whitespace:
+        if hostname_has_unsafe_characters:
             return None
 
         try:
@@ -215,8 +221,8 @@ def github_request(
         )
 
     try:
-        hostname_has_whitespace = (
-            _hostname_has_whitespace(
+        hostname_has_unsafe_characters = (
+            _hostname_has_unsafe_characters(
                 parsed_url.hostname
             )
         )
@@ -225,7 +231,7 @@ def github_request(
             "GitHub API URL has invalid hostname"
         ) from exc
 
-    if hostname_has_whitespace:
+    if hostname_has_unsafe_characters:
         raise RuntimeError(
             "GitHub API URL has invalid hostname"
         )
