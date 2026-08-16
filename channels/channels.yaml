@@ -48,11 +48,11 @@ channels:
       url: null
       local: null
 
-    status: "testing"
+    status: "stable"
 
     metadata:
       website: "https://prahatv.eu/"
-      notes: "Candidate HLS extracted from official Praha TV website. Awaiting targeted Bondik checker."
+      notes: "Public HLS extracted from official Praha TV website. Verified by targeted Bondik checker."
 
   - id: "tv-brno1-cz"
     name: "TV Brno 1"

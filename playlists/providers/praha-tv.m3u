@@ -1,0 +1,7 @@
+#EXTM3U
+# Bondik TV Ultimate - Provider: praha-tv
+# Generated automatically from channels/channels.yaml
+# Quality checked by Bondik
+
+#EXTINF:-1 tvg-name="Praha TV" group-title="CZ",Praha TV
+https://1977134029.rsc.cdn77.org/1977134029/index.m3u8
