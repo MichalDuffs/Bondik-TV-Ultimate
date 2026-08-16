@@ -1,7 +1,7 @@
-#EXTM3U
+#EXTM3U x-tvg-url="https://epgshare01.online/epgshare01/epg_ripper_CZ1.xml.gz"
 # Bondik TV Ultimate - Provider: tv-brno1
 # Generated automatically from channels/channels.yaml
 # Quality checked by Bondik
 
-#EXTINF:-1 tvg-name="TV Brno 1" group-title="CZ",TV Brno 1
+#EXTINF:-1 tvg-name="TV Brno 1" group-title="CZ" tvg-id="TV.Brno.1.cz",TV Brno 1
 https://stream.polar.cz/tvbrno1/tvbrno1live-1/playlist.m3u8
