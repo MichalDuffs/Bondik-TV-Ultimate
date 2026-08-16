@@ -101,13 +101,69 @@ def github_request(
                 return response.read()
 
         except urllib.error.HTTPError as exc:
-            if (
+            response_headers = (
+                exc.headers or {}
+            )
+
+            remaining = response_headers.get(
+                "X-RateLimit-Remaining"
+            )
+
+            primary_rate_limit = (
+                exc.code == 403
+                and remaining == "0"
+            )
+
+            retryable = (
                 exc.code in retryable_statuses
+                or primary_rate_limit
+            )
+
+            if (
+                retryable
                 and attempt < max_attempts
             ):
-                time.sleep(
-                    attempt
+                retry_after = (
+                    response_headers.get(
+                        "Retry-After"
+                    )
                 )
+
+                if retry_after is not None:
+                    try:
+                        delay = max(
+                            0,
+                            int(retry_after),
+                        )
+                    except ValueError:
+                        delay = attempt
+
+                elif primary_rate_limit:
+                    reset = (
+                        response_headers.get(
+                            "X-RateLimit-Reset"
+                        )
+                    )
+
+                    try:
+                        delay = max(
+                            0,
+                            int(reset)
+                            - int(time.time()),
+                        )
+                    except (
+                        TypeError,
+                        ValueError,
+                    ):
+                        delay = attempt
+
+                else:
+                    delay = attempt
+
+                time.sleep(
+                    delay
+                )
+
                 continue
 
             details = exc.read().decode(
