@@ -95,6 +95,11 @@ def github_request(
             "GitHub API requests require HTTPS"
         )
 
+    if not parsed_url.hostname:
+        raise RuntimeError(
+            "GitHub API URL requires hostname"
+        )
+
     data = None
 
     headers = {
