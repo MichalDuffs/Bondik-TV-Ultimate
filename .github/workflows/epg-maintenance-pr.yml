@@ -56,9 +56,13 @@ jobs:
             exit 0
           fi
 
+          PATCH_HASH="$(sha256sum "$PATCH" | awk '{print $1}')"
+
           echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          echo "patch_hash=$PATCH_HASH" >> "$GITHUB_OUTPUT"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "🛡️ Safe EPG proposal found; validating before Draft PR." >> "$GITHUB_STEP_SUMMARY"
+          echo "🔐 Proposal fingerprint: \`${PATCH_HASH:0:12}\`" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Validate proposal in temporary workspace
         if: steps.proposal.outputs.has_changes == 'true'
@@ -80,8 +84,30 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          PATCH_HASH: ${{ steps.proposal.outputs.patch_hash }}
         run: |
-          BRANCH="automation/epg-maintenance-${GITHUB_RUN_ID}"
+          BRANCH="automation/epg-maintenance-${PATCH_HASH:0:12}"
+
+          EXISTING_PR="$(
+            gh pr list \
+              --state open \
+              --base main \
+              --head "$BRANCH" \
+              --json url \
+              --jq '.[0].url // ""'
+          )"
+
+          if [ -n "$EXISTING_PR" ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "♻️ Identical EPG proposal already has an open Draft PR: $EXISTING_PR" >> "$GITHUB_STEP_SUMMARY"
+            echo "✅ No duplicate branch or PR created." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+            echo "Branch '$BRANCH' already exists without an open PR; refusing to overwrite it."
+            exit 1
+          fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
