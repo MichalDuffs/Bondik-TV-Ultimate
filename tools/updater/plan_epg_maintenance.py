@@ -9,6 +9,7 @@ matches. Ambiguous or fuzzy cases stay in manual review.
 from __future__ import annotations
 
 import argparse
+import difflib
 import gzip
 import json
 import sys
@@ -24,6 +25,7 @@ EPG_SOURCES_FILE = REPO_ROOT / "epg" / "sources.yaml"
 
 DEFAULT_REPORT = Path("epg-maintenance-report.json")
 DEFAULT_SUMMARY = Path("epg-maintenance-summary.md")
+DEFAULT_PATCH = Path("epg-maintenance-proposals.patch")
 
 
 def parse_arguments():
@@ -37,6 +39,11 @@ def parse_arguments():
         "--summary",
         type=Path,
         default=DEFAULT_SUMMARY,
+    )
+    parser.add_argument(
+        "--patch",
+        type=Path,
+        default=DEFAULT_PATCH,
     )
     return parser.parse_args()
 
@@ -275,6 +282,149 @@ def is_stable_channel(channel: dict) -> bool:
     )
 
 
+def build_proposed_channels_text(
+    original_text: str,
+    proposals: list[dict],
+) -> str:
+    """Return channels.yaml text with safe proposals applied in memory only."""
+
+    if not proposals:
+        return original_text
+
+    lines = original_text.splitlines(
+        keepends=True
+    )
+
+    for proposal in proposals:
+        channel_id = str(
+            proposal["channel_id"]
+        )
+        epg_id = str(
+            proposal["epg_id"]
+        )
+        source_id = str(
+            proposal["source"]
+        )
+
+        channel_start = None
+        channel_end = len(lines)
+
+        id_markers = (
+            f'  - id: "{channel_id}"',
+            f"  - id: '{channel_id}'",
+            f"  - id: {channel_id}",
+        )
+
+        for index, line in enumerate(lines):
+            if line.rstrip("\r\n") in id_markers:
+                channel_start = index
+                break
+
+        if channel_start is None:
+            raise ValueError(
+                "Cannot build EPG patch: "
+                f"channel '{channel_id}' not found"
+            )
+
+        for index in range(
+            channel_start + 1,
+            len(lines),
+        ):
+            if lines[index].startswith(
+                "  - id: "
+            ):
+                channel_end = index
+                break
+
+        epg_start = None
+        epg_end = channel_end
+
+        for index in range(
+            channel_start + 1,
+            channel_end,
+        ):
+            if lines[index].rstrip(
+                "\r\n"
+            ) == "    epg:":
+                epg_start = index
+                break
+
+        if epg_start is None:
+            raise ValueError(
+                "Cannot build EPG patch: "
+                f"channel '{channel_id}' has no epg block"
+            )
+
+        for index in range(
+            epg_start + 1,
+            channel_end,
+        ):
+            line = lines[index]
+
+            if not line.strip():
+                epg_end = index
+                break
+
+            if not line.startswith("      "):
+                epg_end = index
+                break
+
+        newline = (
+            "\r\n"
+            if lines[epg_start].endswith("\r\n")
+            else "\n"
+        )
+
+        replacement = [
+            f"    epg:{newline}",
+            (
+                "      id: "
+                f"{json.dumps(epg_id, ensure_ascii=False)}"
+                f"{newline}"
+            ),
+            (
+                "      source: "
+                f"{json.dumps(source_id, ensure_ascii=False)}"
+                f"{newline}"
+            ),
+            f"      enabled: true{newline}",
+        ]
+
+        lines[
+            epg_start:epg_end
+        ] = replacement
+
+    return "".join(lines)
+
+
+def build_proposed_patch(
+    original_text: str,
+    proposals: list[dict],
+) -> str:
+    """Build a git-apply-compatible unified diff without editing the repo."""
+
+    if not proposals:
+        return ""
+
+    proposed_text = build_proposed_channels_text(
+        original_text,
+        proposals,
+    )
+
+    return "".join(
+        difflib.unified_diff(
+            original_text.splitlines(
+                keepends=True
+            ),
+            proposed_text.splitlines(
+                keepends=True
+            ),
+            fromfile="a/channels/channels.yaml",
+            tofile="b/channels/channels.yaml",
+        )
+    )
+
+
 def plan_maintenance(
     channels: list,
     sources: dict[str, dict],
@@ -509,6 +659,10 @@ def main() -> int:
     )
 
     try:
+        channels_text = CHANNELS_FILE.read_text(
+            encoding="utf-8"
+        )
+
         channels_data = load_yaml(
             CHANNELS_FILE
         )
@@ -600,6 +754,22 @@ def main() -> int:
         .isoformat()
     )
     report["source_errors"] = source_errors
+
+    patch_text = build_proposed_patch(
+        channels_text,
+        report["proposals"],
+    )
+
+    args.patch.write_text(
+        patch_text,
+        encoding="utf-8",
+        newline="\n",
+    )
+
+    report["patch_generated"] = bool(
+        patch_text
+    )
+    report["patch_file"] = str(args.patch)
 
     args.report.write_text(
         json.dumps(

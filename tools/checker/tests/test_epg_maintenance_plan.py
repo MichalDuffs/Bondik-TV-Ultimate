@@ -229,6 +229,87 @@ class EpgMaintenancePlannerTests(unittest.TestCase):
             0,
         )
 
+    def test_proposed_patch_updates_only_epg_block(self):
+        original = """version: 1
+
+channels:
+  - id: "demo-cz"
+    name: "Demo TV"
+    country: "CZ"
+    status: "stable"
+
+    stream:
+      url: "https://example.test/live.m3u8"
+      format: "hls"
+
+    epg:
+      id: null
+      enabled: false
+
+    logo:
+      url: null
+"""
+
+        patch = planner.build_proposed_patch(
+            original,
+            [
+                {
+                    "channel_id": "demo-cz",
+                    "channel_name": "Demo TV",
+                    "country": "CZ",
+                    "source": "epgshare-cz",
+                    "epg_id": "Demo.TV.cz",
+                    "match": "exact-normalized-name",
+                }
+            ],
+        )
+
+        self.assertIn(
+            "--- a/channels/channels.yaml",
+            patch,
+        )
+        self.assertIn(
+            "+++ b/channels/channels.yaml",
+            patch,
+        )
+        self.assertIn(
+            '-      id: null',
+            patch,
+        )
+        self.assertIn(
+            '+      id: "Demo.TV.cz"',
+            patch,
+        )
+        self.assertIn(
+            '+      source: "epgshare-cz"',
+            patch,
+        )
+        self.assertIn(
+            '-      enabled: false',
+            patch,
+        )
+        self.assertIn(
+            '+      enabled: true',
+            patch,
+        )
+        self.assertNotIn(
+            '-      url: "https://example.test/live.m3u8"',
+            patch,
+        )
+
+    def test_proposed_patch_is_empty_without_proposals(self):
+        original = """version: 1
+channels: []
+"""
+
+        self.assertEqual(
+            planner.build_proposed_patch(
+                original,
+                [],
+            ),
+            "",
+        )
+
     def test_enabled_epg_is_left_untouched(self):
         channels = [
             {

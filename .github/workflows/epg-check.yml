@@ -94,5 +94,6 @@ jobs:
             epg-health-state.json
             epg-maintenance-report.json
             epg-maintenance-summary.md
+            epg-maintenance-proposals.patch
           retention-days: 30
           if-no-files-found: error
