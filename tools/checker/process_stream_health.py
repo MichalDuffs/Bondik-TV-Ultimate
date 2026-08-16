@@ -630,6 +630,66 @@ Bondik will keep monitoring the stream automatically.
     return True
 
 
+
+def comment_stream_recovery(
+    *,
+    api_url,
+    repository,
+    token,
+    server_url,
+    run_id,
+    sha,
+    channel,
+    streak,
+    issue_number,
+) -> bool:
+    marker = (
+        "<!-- bondik-stream:"
+        f"recovery:run:{run_id} -->"
+    )
+
+    if has_issue_comment_marker(
+        api_url=api_url,
+        repository=repository,
+        token=token,
+        issue_number=issue_number,
+        marker=marker,
+    ):
+        return False
+
+    body = f"""## ✅ Bondík Stream Recovery
+
+The stream **{channel}** has recovered.
+
+- Run: {server_url}/{repository}/actions/runs/{run_id}
+- Commit: `{sha}`
+- Status: ✅ stream recovered
+- Previous failure streak: ×{streak}
+
+Bondík confirmed that the stream is healthy again.
+The outage issue will now be closed automatically.
+
+---
+🐾 Bondik TV Ultimate
+
+{marker}
+"""
+
+    github_json(
+        (
+            f"{api_url}/repos/{repository}"
+            f"/issues/{issue_number}/comments"
+        ),
+        token,
+        method="POST",
+        payload={
+            "body": body,
+        },
+    )
+
+    return True
+
+
 def close_issue(*, api_url, repository, token, issue_number):
     github_json(
         f"{api_url}/repos/{repository}/issues/{issue_number}",
@@ -649,8 +709,10 @@ def manage_issues(
     repeated,
     recovered,
     streaks=None,
+    previous_streaks=None,
 ):
     streaks = streaks or {}
+    previous_streaks = previous_streaks or {}
     if not repeated and not recovered:
         print("No issue action required.")
         return
@@ -715,13 +777,56 @@ def manage_issues(
         if issue_number is None:
             print(f"No open issue found for recovered stream {channel}.")
             continue
+        previous_streak = previous_streaks.get(
+            channel
+        )
+
+        if (
+            isinstance(
+                previous_streak,
+                int,
+            )
+            and previous_streak > 0
+        ):
+            recovery_added = comment_stream_recovery(
+                api_url=api_url,
+                repository=repository,
+                token=token,
+                server_url=server_url,
+                run_id=run_id,
+                sha=sha,
+                channel=channel,
+                streak=previous_streak,
+                issue_number=issue_number,
+            )
+
+            if recovery_added:
+                print(
+                    "Added stream recovery report "
+                    f"to issue #{issue_number} "
+                    f"for {channel} "
+                    f"(previous streak "
+                    f"×{previous_streak})."
+                )
+            else:
+                print(
+                    "Stream recovery report already "
+                    f"recorded for {channel} "
+                    f"(#{issue_number}, "
+                    f"previous streak "
+                    f"×{previous_streak})."
+                )
+
         close_issue(
             api_url=api_url,
             repository=repository,
             token=token,
             issue_number=issue_number,
         )
-        print(f"Closed issue #{issue_number} - {channel} recovered.")
+        print(
+            f"Closed issue #{issue_number} "
+            f"- {channel} recovered."
+        )
         open_issues = [
             issue for issue in open_issues if issue.get("number") != issue_number
         ]
@@ -797,6 +902,7 @@ def main() -> int:
             repeated=repeated,
             recovered=recovered,
             streaks=current_streaks,
+            previous_streaks=previous_streaks,
         )
 
     except Exception as exc:
