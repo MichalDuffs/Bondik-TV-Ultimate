@@ -1,0 +1,7 @@
+#EXTM3U
+# Bondik TV Ultimate - Provider: vctv
+# Generated automatically from channels/channels.yaml
+# Quality checked by Bondik
+
+#EXTINF:-1 tvg-name="Východočeská TV V1" group-title="CZ",Východočeská TV V1
+https://stream.polar.cz/vctv/vctvlive-1/playlist.m3u8

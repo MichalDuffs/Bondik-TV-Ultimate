@@ -101,11 +101,11 @@ channels:
       url: null
       local: null
 
-    status: "testing"
+    status: "stable"
 
     metadata:
       website: "https://vzpravy.cz/"
-      notes: "Candidate public HLS stream. Pending targeted Bondik verification."
+      notes: "Public HLS stream. Verified by targeted Bondik checker."
 
   - id: "ocko-cz"
     name: "Óčko"
