@@ -150,6 +150,10 @@ def github_request(
         parsed_url.hostname
     )
 
+    decoded_hostname = urllib.parse.unquote(
+        decoded_hostname
+    )
+
     if any(
         character.isspace()
         for character in decoded_hostname
