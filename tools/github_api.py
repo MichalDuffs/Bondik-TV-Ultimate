@@ -46,6 +46,16 @@ class SafeRedirectHandler(
         headers,
         newurl,
     ):
+        parsed_new_url = urllib.parse.urlparse(
+            newurl
+        )
+
+        if (
+            parsed_new_url.username is not None
+            or parsed_new_url.password is not None
+        ):
+            return None
+
         redirected = (
             super().redirect_request(
                 req,
