@@ -122,8 +122,9 @@ channels:
       quality: "unknown"
 
     epg:
-      id: null
-      enabled: false
+      id: "Jihočeská.televize.cz"
+      source: "epgshare-cz"
+      enabled: true
 
     logo:
       url: null
