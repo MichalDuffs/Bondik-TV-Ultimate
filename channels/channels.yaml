@@ -109,6 +109,32 @@ channels:
       website: "https://vzpravy.cz/"
       notes: "Public HLS stream. Verified by targeted Bondik checker."
 
+  - id: "jtv-cz"
+    name: "Jihoceska televize"
+    country: "CZ"
+    language: "cs"
+    category: "general"
+    provider: "jtv"
+
+    stream:
+      url: "https://vysilani.zaktv.cz/broadcast/hls/jtv/index.m3u8"
+      format: "hls"
+      quality: "unknown"
+
+    epg:
+      id: null
+      enabled: false
+
+    logo:
+      url: null
+      local: null
+
+    status: "testing"
+
+    metadata:
+      website: "https://www.jihoceskatelevize.cz/"
+      notes: "Public HLS candidate. Playlist and fresh media segment verified locally. Awaiting targeted Bondik checker."
+
   - id: "ocko-cz"
     name: "Óčko"
     country: "CZ"
