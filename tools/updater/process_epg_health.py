@@ -210,16 +210,22 @@ def github_request(
                 else:
                     delay = attempt
 
+                exc.close()
+
                 time.sleep(
                     delay
                 )
 
                 continue
 
-            details = exc.read().decode(
-                "utf-8",
-                errors="replace",
-            ).strip()
+            try:
+                details = exc.read().decode(
+                    "utf-8",
+                    errors="replace",
+                ).strip()
+
+            finally:
+                exc.close()
 
             raise RuntimeError(
                 "GitHub API returned "
