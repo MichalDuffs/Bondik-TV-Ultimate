@@ -573,6 +573,9 @@ def find_previous_health_state(
         reverse=True,
     )
 
+    last_download_error = None
+    download_succeeded = False
+
     for previous in candidates:
         artifact_id = previous.get("id")
 
@@ -592,6 +595,21 @@ def find_previous_health_state(
                 token,
             )
 
+            download_succeeded = True
+
+        except RuntimeError as exc:
+            last_download_error = exc
+
+            print(
+                "⚠️ EPG artifact "
+                f"#{artifact_id} download failed - "
+                "trying older artifact: "
+                f"{exc}"
+            )
+
+            continue
+
+        try:
             with zipfile.ZipFile(
                 io.BytesIO(
                     archive
@@ -609,6 +627,7 @@ def find_previous_health_state(
                         "health state - trying "
                         "older artifact."
                     )
+
                     continue
 
         except zipfile.BadZipFile:
@@ -617,6 +636,7 @@ def find_previous_health_state(
                 f"#{artifact_id} is corrupt - "
                 "trying older artifact."
             )
+
             continue
 
         try:
@@ -637,6 +657,13 @@ def find_previous_health_state(
                 "trying older artifact: "
                 f"{exc}"
             )
+
+    if (
+        candidates
+        and not download_succeeded
+        and last_download_error is not None
+    ):
+        raise last_download_error
 
     return {}
 

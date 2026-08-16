@@ -430,6 +430,9 @@ def find_previous_health_data(
         reverse=True,
     )
 
+    last_download_error = None
+    download_succeeded = False
+
     for previous in candidates:
         artifact_id = previous.get("id")
 
@@ -449,6 +452,21 @@ def find_previous_health_data(
                 token,
             )
 
+            download_succeeded = True
+
+        except RuntimeError as exc:
+            last_download_error = exc
+
+            print(
+                "⚠️ Stream artifact "
+                f"#{artifact_id} download failed - "
+                "trying older artifact: "
+                f"{exc}"
+            )
+
+            continue
+
+        try:
             with zipfile.ZipFile(
                 io.BytesIO(
                     archive_bytes
@@ -489,6 +507,7 @@ def find_previous_health_data(
                 f"#{artifact_id} is corrupt - "
                 "trying older artifact."
             )
+
             continue
 
         if not has_report and not has_state:
@@ -498,6 +517,7 @@ def find_previous_health_data(
                 "usable health data - "
                 "trying older artifact."
             )
+
             continue
 
         if has_state:
@@ -520,9 +540,10 @@ def find_previous_health_data(
                         "⚠️ Previous stream state "
                         "invalid and report missing "
                         f"in artifact #{artifact_id} "
-                        f"- trying older artifact: "
+                        "- trying older artifact: "
                         f"{exc}"
                     )
+
                     continue
 
                 print(
@@ -552,6 +573,13 @@ def find_previous_health_data(
             previous_report,
             previous_streaks,
         )
+
+    if (
+        candidates
+        and not download_succeeded
+        and last_download_error is not None
+    ):
+        raise last_download_error
 
     return None, {}
 
