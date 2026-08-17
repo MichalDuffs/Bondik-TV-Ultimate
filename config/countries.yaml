@@ -69,6 +69,10 @@ countries:
     flag: "🇨🇦"
     language: "en"
 
+  - code: TR
+    name: "Turkey"
+    flag: "🇹🇷"
+    language: "tr"
   - code: WORLD
     name: "International"
     flag: "🌍"

@@ -398,3 +398,21 @@ channels:
     metadata:
       website: "https://www.lifetv.sk/"
       notes: "Public LifeTV internet stream. Hunter deep-HLS verified; provenance reviewed."
+
+  - id: "trt-eba-ortaokul-tr"
+    name: "TRT EBA Ortaokul"
+    country: "TR"
+    language: "tr"
+    category: "education"
+    provider: "trt"
+
+    stream:
+      url: "https://tv-e-okul01.medya.trt.com.tr/master.m3u8"
+      format: "hls"
+      quality: "unknown"
+
+    status: "testing"
+
+    metadata:
+      website: "https://www.eba.gov.tr/trt-ebatv"
+      notes: "Official TRT/EBA educational television candidate. Hunter deep-HLS verified; provenance reviewed."
