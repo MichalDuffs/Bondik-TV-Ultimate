@@ -446,3 +446,48 @@ channels:
     metadata:
       website: "https://etbon.eus/"
       notes: "Official EITB internet television candidate. Hunter deep-HLS verified to media segment; provenance reviewed."
+
+  - id: "tele-elx-es"
+    name: "Tele Elx"
+    country: "ES"
+    language: "es"
+    category: "general"
+    provider: "teleelx"
+    stream:
+      url: "https://tvdirecto.teleelx.es/stream/teleelx.m3u8"
+      format: "hls"
+      quality: "unknown"
+    status: "testing"
+    metadata:
+      website: "https://teleelx.es/directo/"
+      notes: "Official/public Tele Elx internet stream. Hunter deep-HLS verified; first-party provenance reviewed."
+
+  - id: "france24-french-fr"
+    name: "France 24 French"
+    country: "FR"
+    language: "fr"
+    category: "news"
+    provider: "france24"
+    stream:
+      url: "https://live.france24.com/hls/live/2037179-b/F24_FR_HI_HLS/master_5000.m3u8"
+      format: "hls"
+      quality: "unknown"
+    status: "testing"
+    metadata:
+      website: "https://www.france24.com/"
+      notes: "Official France 24 French internet stream candidate. First-party france24.com HLS; Hunter deep-HLS verified; provenance reviewed."
+
+  - id: "france24-spanish-fr"
+    name: "France 24 Español"
+    country: "FR"
+    language: "es"
+    category: "news"
+    provider: "france24"
+    stream:
+      url: "https://live.france24.com/hls/live/2037220-b/F24_ES_HI_HLS/master_5000.m3u8"
+      format: "hls"
+      quality: "unknown"
+    status: "testing"
+    metadata:
+      website: "https://www.france24.com/"
+      notes: "Official France 24 Spanish-language internet stream candidate. First-party france24.com HLS; Hunter deep-HLS verified; provenance reviewed."
