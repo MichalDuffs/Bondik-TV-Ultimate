@@ -1,0 +1,5 @@
+# Bondik M3U Hunter v0.2 source list
+# One source per line.
+# Supports local M3U, direct playlist URL, GitHub blob URL, or GitHub repo URL.
+# Example:
+# https://github.com/iptv-org/iptv
