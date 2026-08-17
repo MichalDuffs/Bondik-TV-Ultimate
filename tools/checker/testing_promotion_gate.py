@@ -19,7 +19,7 @@ from typing import Any
 import yaml
 import check_channels as checker
 
-VERSION = "0.7"
+VERSION = "0.7.1"
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CHANNELS = REPO_ROOT / "channels" / "channels.yaml"
 DEFAULT_STATE = REPO_ROOT / "hunt-results" / "testing-promotion-state.json"
@@ -173,6 +173,7 @@ def main():
     now = utc_now()
     next_entries = {}
     rows = []
+    run_ok = True
     print(f"🐾 Bondik Testing Promotion Gate v{VERSION}")
     print(f"Rule: {args.required_passes} passes, {args.min_gap_hours:g}h minimum gap")
     print("="*60)
@@ -181,18 +182,54 @@ def main():
         name = str(channel.get("name",cid))
         errors = checker.validate_channel(channel,countries,categories,allowed_protocols,allowed_statuses)
         errors.extend(checker.validate_epg_source(channel,epg_sources))
+        metadata_only = False
+
         if errors:
             ok=False; message="metadata: "+"; ".join(errors)
         elif args.no_network:
-            ok=True; message="metadata OK (network skipped)"
+            ok=True
+            metadata_only=True
+            message="metadata OK (network skipped)"
         else:
             ok,message,attempt_used,failures = checker.check_stream_with_retries(
                 channel,timeout,args.attempts,args.retry_delay
             )
             if ok and attempt_used > 1:
                 message=f"{message} (recovered on attempt {attempt_used})"
-        entry = update_entry(previous_entries.get(cid),channel,ok=ok,message=message,
-                             observed_at=now,min_gap_hours=args.min_gap_hours)
+
+        run_ok = run_ok and ok
+
+        if metadata_only:
+            previous = dict(previous_entries.get(cid) or {})
+            fingerprint = stream_fingerprint(channel)
+
+            if (
+                previous.get("stream_fingerprint")
+                and previous.get("stream_fingerprint") != fingerprint
+            ):
+                previous = {}
+
+            entry = {
+                "id": cid,
+                "name": name,
+                "stream_url": stream_url(channel),
+                "stream_fingerprint": fingerprint,
+                "counted_passes": int(previous.get("counted_passes",0) or 0),
+                "last_result": str(previous.get("last_result","not-checked")),
+                "last_message": message,
+                "last_observed_at": isoformat_z(now),
+                "last_counted_pass_at": previous.get("last_counted_pass_at"),
+                "pass_counted_this_run": False,
+            }
+        else:
+            entry = update_entry(
+                previous_entries.get(cid),
+                channel,
+                ok=ok,
+                message=message,
+                observed_at=now,
+                min_gap_hours=args.min_gap_hours,
+            )
         next_entries[cid]=entry
         row = eligibility_row(channel,entry,required_passes=args.required_passes,now=now)
         rows.append(row)
@@ -224,7 +261,7 @@ def main():
     print(f"CSV:   {csv_path}")
     print(f"JSON:  {json_path}")
     print(f"MD:    {md_path}")
-    return 0 if all(r["last_result"]=="pass" for r in rows) else 1
+    return 0 if run_ok else 1
 
 if __name__ == "__main__":
     raise SystemExit(main())
