@@ -416,3 +416,33 @@ channels:
     metadata:
       website: "https://www.eba.gov.tr/trt-ebatv"
       notes: "Official TRT/EBA educational television candidate. Hunter deep-HLS verified; provenance reviewed."
+
+  - id: "etb1-on-es"
+    name: "ETB1 ON"
+    country: "ES"
+    language: "eu"
+    category: "general"
+    provider: "eitb"
+    stream:
+      url: "https://cdn1.etbon.eus/etb1on/index.m3u8"
+      format: "hls"
+      quality: "unknown"
+    status: "testing"
+    metadata:
+      website: "https://etbon.eus/"
+      notes: "Official EITB internet television candidate. Hunter deep-HLS verified to media segment; provenance reviewed."
+
+  - id: "etb2-on-es"
+    name: "ETB2 ON"
+    country: "ES"
+    language: "es"
+    category: "general"
+    provider: "eitb"
+    stream:
+      url: "https://cdn1.etbon.eus/etb2on/index.m3u8"
+      format: "hls"
+      quality: "unknown"
+    status: "testing"
+    metadata:
+      website: "https://etbon.eus/"
+      notes: "Official EITB internet television candidate. Hunter deep-HLS verified to media segment; provenance reviewed."
