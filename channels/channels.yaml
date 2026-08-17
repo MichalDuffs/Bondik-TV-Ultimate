@@ -338,3 +338,63 @@ channels:
     metadata:
       website: "https://www.joj.sk/"
       notes: "Official JOJ HLS stream. Verified by Bondik checker with required headers."
+
+  - id: "utv-cz"
+    name: "ÚTV"
+    country: "CZ"
+    language: "cs"
+    category: "general"
+    provider: "utv"
+    stream:
+      url: "https://vysilani.zaktv.cz/broadcast/hls/utv/index.m3u8"
+      format: "hls"
+      quality: "unknown"
+    status: "testing"
+    metadata:
+      website: "https://www.televizeutv.cz/"
+      notes: "Public internet television candidate. Hunter deep-HLS verified; provenance reviewed."
+
+  - id: "jc1-cz"
+    name: "JČ1"
+    country: "CZ"
+    language: "cs"
+    category: "general"
+    provider: "jc1"
+    stream:
+      url: "https://stream.jc1.cz/hls/jc1.m3u8"
+      format: "hls"
+      quality: "unknown"
+    status: "testing"
+    metadata:
+      website: "https://jc1.cz/"
+      notes: "Official/public JČ1 stream. Hunter deep-HLS verified."
+
+  - id: "retro-music-tv-cz"
+    name: "Retro Music Television"
+    country: "CZ"
+    language: "cs"
+    category: "music"
+    provider: "retro-music-tv"
+    stream:
+      url: "https://stream.mediawork.cz/retrotv/retrotvHQ1/playlist.m3u8"
+      format: "hls"
+      quality: "unknown"
+    status: "testing"
+    metadata:
+      website: "https://retromusic.cz/"
+      notes: "Public Retro Music Television stream. Hunter deep-HLS verified; provenance reviewed."
+
+  - id: "lifetv-sk"
+    name: "LifeTV"
+    country: "SK"
+    language: "sk"
+    category: "general"
+    provider: "lifetv"
+    stream:
+      url: "https://lifetv.mpks.sk/s.m3u8"
+      format: "hls"
+      quality: "unknown"
+    status: "testing"
+    metadata:
+      website: "https://www.lifetv.sk/"
+      notes: "Public LifeTV internet stream. Hunter deep-HLS verified; provenance reviewed."
