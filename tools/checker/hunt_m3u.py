@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-"""Bondik TV bulk M3U hunter v0.2.
+"""Bondik TV bulk M3U hunter v0.3.
 
-v0.2 adds robust EXTINF parsing, per-stream User-Agent/Referer support,
+v0.2 added robust EXTINF parsing, per-stream User-Agent/Referer support,
 and deeper HLS validation down to a reachable media segment/object.
+
+v0.3 adds country-aware candidate filtering while keeping the existing
+regex matcher available for additional fine-grained filtering.
 
 The tool checks URLs already present in supplied public/local playlists.
 It does not bypass authentication, DRM, geo-blocking, or access controls.
@@ -24,7 +27,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
 
-VERSION = "0.2"
+VERSION = "0.3"
 USER_AGENT = f"Bondik-TV-Ultimate-M3U-Hunter/{VERSION}"
 DEFAULT_TIMEOUT = 8.0
 DEFAULT_WORKERS = 20
@@ -94,6 +97,25 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS)
     parser.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT)
     parser.add_argument("--match")
+    parser.add_argument("--country",
+        action="append",
+        default=[],
+        metavar="CODE",
+        help="Filter channels by country code (for example CZ or SK). May be repeated.",
+    )
+    parser.add_argument(
+        "--known-source",
+        action="append",
+        default=[],
+        metavar="SOURCE",
+        help="Known Bondik playlist/source used to identify already known stream profiles. May be repeated.",
+    )
+
+    parser.add_argument(
+        "--new-only",
+        action="store_true",
+        help="Output and report only working stream profiles not present in known sources.",
+    )
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--out-dir", type=Path, default=Path("hunt-results"))
     return parser.parse_args()
@@ -356,6 +378,12 @@ def dedupe_channels(channels: Iterable[Channel]) -> list[Channel]:
         unique.append(channel)
     return unique
 
+def channel_profile_key(channel: Channel) -> tuple[str, str, str]:
+    return (
+        channel.url.strip(),
+        channel.user_agent.strip(),
+        channel.referer.strip(),
+    )
 
 def matches(channel: Channel, pattern: re.Pattern[str] | None) -> bool:
     if pattern is None:
@@ -365,6 +393,37 @@ def matches(channel: Channel, pattern: re.Pattern[str] | None) -> bool:
             [channel.name, channel.group, channel.tvg_id, channel.tvg_name]
         )
     ) is not None
+
+def source_country(source: str) -> str:
+    parsed = urllib.parse.urlparse(source)
+    path = parsed.path.casefold()
+
+    match = re.search(r"/streams/([a-z]{2})\.m3u8?$", path)
+    if match:
+        return match.group(1).upper()
+
+    match = re.search(r"/countries/([a-z]{2})\.m3u8?$", path)
+    if match:
+        return match.group(1).upper()
+
+    return ""
+
+
+def matches_country(channel: Channel, countries: set[str]) -> bool:
+    if not countries:
+        return True
+    return source_country(channel.source) in countries
+
+def load_known_profiles(sources: list[str], timeout: float) -> set[tuple[str, str, str]]:
+    known = set()
+
+    for source in sources:
+        for expanded_source in expand_sources([source], timeout):
+            text = load_playlist(expanded_source, timeout)
+            for channel in parse_m3u(text, expanded_source):
+                known.add(channel_profile_key(channel))
+
+    return known
 
 
 def looks_like_html(content_type: str, body: bytes) -> bool:
@@ -726,11 +785,32 @@ def main() -> int:
                 file=sys.stderr,
             )
 
+    countries = {
+        value.strip().upper()
+        for value in args.country
+        if value.strip()
+    }
+
+    try:
+        known_profiles = load_known_profiles(args.known_source, args.timeout)
+    except Exception as exc:
+        print(
+            f"ERROR: failed to load known source: {type(exc).__name__}: {exc}",
+            file=sys.stderr,
+        )
+        return 2
+
     channels = [
         channel
         for channel in dedupe_channels(collected)
         if matches(channel, pattern)
+        and matches_country(channel, countries)
+        and (
+            not args.new_only
+            or channel_profile_key(channel) not in known_profiles
+        )
     ]
+    
     if args.limit > 0:
         channels = channels[: args.limit]
 
@@ -778,6 +858,10 @@ def main() -> int:
     print(f"\n🐾 Bondik M3U Hunter v{VERSION}")
     print(f"Sources loaded: {len(expanded) - source_failures}")
     print(f"Source failures: {source_failures}")
+    if args.known_source:
+        print(f"Known profiles loaded: {len(known_profiles)}")
+    if args.new_only:
+        print(f"New profiles tested: {len(results)}")
     print(f"Unique profiles tested: {len(results)}")
     print(f"Working: {ok_count}")
     print(f"  Deep HLS verified: {deep_hls}")
