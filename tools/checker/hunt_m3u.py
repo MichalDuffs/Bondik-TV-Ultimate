@@ -103,6 +103,19 @@ def parse_args() -> argparse.Namespace:
         metavar="CODE",
         help="Filter channels by country code (for example CZ or SK). May be repeated.",
     )
+    parser.add_argument(
+        "--known-source",
+        action="append",
+        default=[],
+        metavar="SOURCE",
+        help="Known Bondik playlist/source used to identify already known stream profiles. May be repeated.",
+    )
+
+    parser.add_argument(
+        "--new-only",
+        action="store_true",
+        help="Output and report only working stream profiles not present in known sources.",
+    )
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--out-dir", type=Path, default=Path("hunt-results"))
     return parser.parse_args()
@@ -365,6 +378,12 @@ def dedupe_channels(channels: Iterable[Channel]) -> list[Channel]:
         unique.append(channel)
     return unique
 
+def channel_profile_key(channel: Channel) -> tuple[str, str, str]:
+    return (
+        channel.url.strip(),
+        channel.user_agent.strip(),
+        channel.referer.strip(),
+    )
 
 def matches(channel: Channel, pattern: re.Pattern[str] | None) -> bool:
     if pattern is None:
@@ -389,10 +408,22 @@ def source_country(source: str) -> str:
 
     return ""
 
+
 def matches_country(channel: Channel, countries: set[str]) -> bool:
     if not countries:
         return True
     return source_country(channel.source) in countries
+
+def load_known_profiles(sources: list[str], timeout: float) -> set[tuple[str, str, str]]:
+    known = set()
+
+    for source in sources:
+        for expanded_source in expand_sources([source], timeout):
+            text = load_playlist(expanded_source, timeout)
+            for channel in parse_m3u(text, expanded_source):
+                known.add(channel_profile_key(channel))
+
+    return known
 
 
 def looks_like_html(content_type: str, body: bytes) -> bool:
@@ -760,11 +791,24 @@ def main() -> int:
         if value.strip()
     }
 
+    try:
+        known_profiles = load_known_profiles(args.known_source, args.timeout)
+    except Exception as exc:
+        print(
+            f"ERROR: failed to load known source: {type(exc).__name__}: {exc}",
+            file=sys.stderr,
+        )
+        return 2
+
     channels = [
         channel
         for channel in dedupe_channels(collected)
         if matches(channel, pattern)
-    and matches_country(channel, countries)
+        and matches_country(channel, countries)
+        and (
+            not args.new_only
+            or channel_profile_key(channel) not in known_profiles
+        )
     ]
     
     if args.limit > 0:
