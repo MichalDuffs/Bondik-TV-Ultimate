@@ -6,6 +6,35 @@ Our priority is quality over quantity: a clean, transparent and maintainable IPT
 
 ---
 
+# 🐾 M3U Hunter v0.4
+
+M3U Hunter hromadně prohledává a ověřuje streamy z veřejných M3U zdrojů a GitHub repozitářů.
+
+Aktuální funkce:
+
+- 🌍 filtrování podle země (`--country CZ`, `--country SK`)
+- 🔎 hromadné ověřování stream profilů
+- 📺 hluboká HLS kontrola až na dostupný media segment
+- 🧹 deduplikace stream profilů
+- 🦴 porovnání s již známými streamy (`--known-source`)
+- 🆕 hledání pouze nových kandidátů (`--new-only`)
+- 🧠 persistentní historie mezi běhy (`--history-file`)
+- ✅ počítání úspěšných a neúspěšných kontrol
+- 🔁 sledování série úspěšných kontrol (`success_streak`)
+- 🏷️ hodnocení stability: `observing` → `promising` → `stable-candidate`
+
+`stable-candidate` znamená technicky stabilního kandidáta podle opakovaných kontrol.
+Neznamená automatické zařazení do stabilního playlistu — finální výběr stále podléhá Bondík QC.
+
+## 🇨🇿 Příklad CZ lovu s historií
+
+```powershell
+python tools/checker/hunt_m3u.py https://github.com/iptv-org/iptv `
+    --country CZ `
+    --history-file hunt-history.json `
+    --out-dir hunt-results
+---
+
 # Version 1.x - Foundation
 
 ## Repository
