@@ -12,6 +12,8 @@ across multiple hunter runs.
 
 v0.5 adds stability-based filtering of candidates from persistent history.
 
+v0.6 adds review export for stability-filtered candidates.
+
 The tool checks URLs already present in supplied public/local playlists.
 It does not bypass authentication, DRM, geo-blocking, or access controls.
 """
@@ -32,7 +34,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
 
-VERSION = "0.5"
+VERSION = "0.6"
 USER_AGENT = f"Bondik-TV-Ultimate-M3U-Hunter/{VERSION}"
 DEFAULT_TIMEOUT = 8.0
 DEFAULT_WORKERS = 20
@@ -129,6 +131,11 @@ def parse_args() -> argparse.Namespace:
         "--stability",
         choices=["observing", "promising", "stable-candidate"],
         help="Filter output by stability label from persistent history.",
+    )
+    parser.add_argument(
+    "--review-out",
+    type=Path,
+    help="Write stability-filtered candidates to a separate review M3U file.",
     )
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--out-dir", type=Path, default=Path("hunt-results"))
@@ -467,6 +474,28 @@ def stability_label(entry: dict) -> str:
     if streak >= 2:
         return "promising"
     return "observing"
+
+def matches_stability(
+    channel: Channel,
+    history: dict,
+    wanted: str | None,
+) -> bool:
+    if not wanted:
+        return True
+
+    key = " | ".join(
+        [
+            channel.url.strip(),
+            channel.user_agent.strip(),
+            channel.referer.strip(),
+        ]
+    )
+
+    entry = history.get(key)
+    if not entry:
+        return False
+
+    return entry.get("stability") == wanted
 
 def update_history(history: dict, results: list[Result]) -> dict:
     now = int(time.time())
@@ -810,6 +839,13 @@ def write_working_m3u(path: Path, results: list[Result]) -> None:
 
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
+def write_review_m3u(path: Path | None, results: list[Result]) -> None:
+    if path is None:
+        return
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    write_working_m3u(path, results)
+
 
 def expand_sources(sources: list[str], timeout: float) -> list[str]:
     expanded = []
@@ -881,6 +917,12 @@ def main() -> int:
         )
         return 2
 
+    try:
+        history = load_history(args.history_file)
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
+
     channels = [
         channel
         for channel in dedupe_channels(collected)
@@ -889,6 +931,7 @@ def main() -> int:
         and (
             not args.new_only
             or channel_profile_key(channel) not in known_profiles
+        and matches_stability(channel, history, args.stability)
         )
     ]
     
@@ -937,6 +980,7 @@ def main() -> int:
     write_csv(csv_path, results)
     write_json(json_path, results)
     write_working_m3u(m3u_path, results)
+    write_review_m3u(args.review_out, results)
 
     ok_count = sum(item.ok for item in results)
     deep_hls = sum(
@@ -958,6 +1002,8 @@ def main() -> int:
     print(f"CSV:  {csv_path}")
     print(f"JSON: {json_path}")
     print(f"M3U:  {m3u_path}")
+    if args.review_out:
+        print(f"Review M3U: {args.review_out}")
 
     return 0 if ok_count else 1
 
