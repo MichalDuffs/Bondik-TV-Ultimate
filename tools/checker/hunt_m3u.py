@@ -10,6 +10,8 @@ regex matcher available for additional fine-grained filtering.
 v0.4 adds persistent result history for tracking stream stability
 across multiple hunter runs.
 
+v0.5 adds stability-based filtering of candidates from persistent history.
+
 The tool checks URLs already present in supplied public/local playlists.
 It does not bypass authentication, DRM, geo-blocking, or access controls.
 """
@@ -30,7 +32,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
 
-VERSION = "0.4"
+VERSION = "0.5"
 USER_AGENT = f"Bondik-TV-Ultimate-M3U-Hunter/{VERSION}"
 DEFAULT_TIMEOUT = 8.0
 DEFAULT_WORKERS = 20
@@ -113,16 +115,20 @@ def parse_args() -> argparse.Namespace:
         metavar="SOURCE",
         help="Known Bondik playlist/source used to identify already known stream profiles. May be repeated.",
     )
-
     parser.add_argument(
         "--new-only",
         action="store_true",
         help="Output and report only working stream profiles not present in known sources.",
     )
     parser.add_argument(
-    "--history-file",
-    type=Path,
-    help="Persistent JSON history used to track stream results across hunter runs.",
+        "--history-file",
+        type=Path,
+        help="Persistent JSON history used to track stream results across hunter runs.",
+    )
+    parser.add_argument(
+        "--stability",
+        choices=["observing", "promising", "stable-candidate"],
+        help="Filter output by stability label from persistent history.",
     )
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--out-dir", type=Path, default=Path("hunt-results"))
