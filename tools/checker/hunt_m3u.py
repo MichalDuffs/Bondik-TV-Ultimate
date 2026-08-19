@@ -16,6 +16,8 @@ v0.6 adds review export for stability-filtered candidates.
 
 v0.7 adds human-readable QC review reporting for filtered candidates.
 
+v0.8 adds machine-readable promotion candidate export for manual QC approval.
+
 The tool checks URLs already present in supplied public/local playlists.
 It does not bypass authentication, DRM, geo-blocking, or access controls.
 """
@@ -36,7 +38,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
 
-VERSION = "0.7"
+VERSION = "0.8"
 USER_AGENT = f"Bondik-TV-Ultimate-M3U-Hunter/{VERSION}"
 DEFAULT_TIMEOUT = 8.0
 DEFAULT_WORKERS = 20
@@ -143,6 +145,11 @@ def parse_args() -> argparse.Namespace:
         "--review-report",
         type=Path,
         help="Write a human-readable QC review report for filtered candidates.",
+    )
+    parser.add_argument(
+    "--promotion-out",
+    type=Path,
+    help="Write machine-readable promotion candidates for manual QC approval.",
     )
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--out-dir", type=Path, default=Path("hunt-results"))
@@ -896,6 +903,64 @@ def write_review_report(
 
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
+def write_promotion_candidates(
+    path: Path | None,
+    results: list[Result],
+    history: dict,
+) -> None:
+    if path is None:
+        return
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    candidates = []
+
+    for result in results:
+        if not result.ok:
+            continue
+
+        key = " | ".join(
+            [
+                result.url.strip(),
+                result.user_agent.strip(),
+                result.referer.strip(),
+            ]
+        )
+        entry = history.get(key, {})
+
+        if entry.get("stability") != "stable-candidate":
+            continue
+
+        candidates.append(
+            {
+                "name": result.name,
+                "url": result.url,
+                "tvg_id": result.tvg_id,
+                "tvg_name": result.tvg_name,
+                "group": result.group,
+                "user_agent": result.user_agent,
+                "referer": result.referer,
+                "validation": result.validation,
+                "response_ms": result.response_ms,
+                "success_count": entry.get("success_count", 0),
+                "failure_count": entry.get("failure_count", 0),
+                "success_streak": entry.get("success_streak", 0),
+                "stability": entry.get("stability", "unknown"),
+                "decision": "manual-review",
+            }
+        )
+
+    payload = {
+        "hunter_version": VERSION,
+        "candidate_count": len(candidates),
+        "candidates": candidates,
+    }
+
+    path.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
 def expand_sources(sources: list[str], timeout: float) -> list[str]:
     expanded = []
     for source in sources:
@@ -1031,6 +1096,7 @@ def main() -> int:
     write_working_m3u(m3u_path, results)
     write_review_m3u(args.review_out, results)
     write_review_report(args.review_report, results, history)
+    write_promotion_candidates(args.promotion_out, results, history)
 
     ok_count = sum(item.ok for item in results)
     deep_hls = sum(
@@ -1056,6 +1122,8 @@ def main() -> int:
         print(f"Review M3U: {args.review_out}")
     if args.review_report:
         print(f"Review report: {args.review_report}")
+    if args.promotion_out:
+        print(f"Promotion candidates: {args.promotion_out}")
 
     return 0 if ok_count else 1
 
