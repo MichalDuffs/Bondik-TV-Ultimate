@@ -14,6 +14,8 @@ v0.5 adds stability-based filtering of candidates from persistent history.
 
 v0.6 adds review export for stability-filtered candidates.
 
+v0.7 adds human-readable QC review reporting for filtered candidates.
+
 The tool checks URLs already present in supplied public/local playlists.
 It does not bypass authentication, DRM, geo-blocking, or access controls.
 """
@@ -34,7 +36,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
 
-VERSION = "0.6"
+VERSION = "0.7"
 USER_AGENT = f"Bondik-TV-Ultimate-M3U-Hunter/{VERSION}"
 DEFAULT_TIMEOUT = 8.0
 DEFAULT_WORKERS = 20
@@ -134,8 +136,13 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
     "--review-out",
-    type=Path,
-    help="Write stability-filtered candidates to a separate review M3U file.",
+        type=Path,
+        help="Write stability-filtered candidates to a separate review M3U file.",
+    )
+    parser.add_argument(
+        "--review-report",
+        type=Path,
+        help="Write a human-readable QC review report for filtered candidates.",
     )
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--out-dir", type=Path, default=Path("hunt-results"))
@@ -846,6 +853,48 @@ def write_review_m3u(path: Path | None, results: list[Result]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     write_working_m3u(path, results)
 
+def write_review_report(
+    path: Path | None,
+    results: list[Result],
+    history: dict,
+) -> None:
+    if path is None:
+        return
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    lines = [
+        f"Bondik M3U Hunter v{VERSION} - QC Review Report",
+        "=" * 60,
+        "",
+    ]
+
+    for result in results:
+        key = " | ".join(
+            [
+                result.url.strip(),
+                result.user_agent.strip(),
+                result.referer.strip(),
+            ]
+        )
+        entry = history.get(key, {})
+
+        lines.extend(
+            [
+                f"Name: {result.name}",
+                f"Stability: {entry.get('stability', 'unknown')}",
+                f"Success count: {entry.get('success_count', 0)}",
+                f"Failure count: {entry.get('failure_count', 0)}",
+                f"Success streak: {entry.get('success_streak', 0)}",
+                f"Validation: {result.validation}",
+                f"Response: {result.response_ms} ms",
+                f"URL: {result.url}",
+                "Decision: REVIEW",
+                "-" * 60,
+            ]
+        )
+
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 def expand_sources(sources: list[str], timeout: float) -> list[str]:
     expanded = []
@@ -981,6 +1030,7 @@ def main() -> int:
     write_json(json_path, results)
     write_working_m3u(m3u_path, results)
     write_review_m3u(args.review_out, results)
+    write_review_report(args.review_report, results, history)
 
     ok_count = sum(item.ok for item in results)
     deep_hls = sum(
@@ -1004,6 +1054,8 @@ def main() -> int:
     print(f"M3U:  {m3u_path}")
     if args.review_out:
         print(f"Review M3U: {args.review_out}")
+    if args.review_report:
+        print(f"Review report: {args.review_report}")
 
     return 0 if ok_count else 1
 
