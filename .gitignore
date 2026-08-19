@@ -7,3 +7,5 @@ hunt-history.json
 hunt-review-*.m3u
 hunt-review-*.txt
 hunt-promotion-*.json
+hunt-decisions-*.json
+hunt-approved-*.m3u
