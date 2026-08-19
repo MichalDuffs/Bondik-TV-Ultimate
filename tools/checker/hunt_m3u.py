@@ -858,6 +858,10 @@ def main() -> int:
     print(f"\n🐾 Bondik M3U Hunter v{VERSION}")
     print(f"Sources loaded: {len(expanded) - source_failures}")
     print(f"Source failures: {source_failures}")
+    if args.known_source:
+        print(f"Known profiles loaded: {len(known_profiles)}")
+    if args.new_only:
+        print(f"New profiles tested: {len(results)}")
     print(f"Unique profiles tested: {len(results)}")
     print(f"Working: {ok_count}")
     print(f"  Deep HLS verified: {deep_hls}")
