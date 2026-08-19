@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-"""Bondik TV bulk M3U hunter v0.2.
+"""Bondik TV bulk M3U hunter v0.3.
 
-v0.2 adds robust EXTINF parsing, per-stream User-Agent/Referer support,
+v0.2 added robust EXTINF parsing, per-stream User-Agent/Referer support,
 and deeper HLS validation down to a reachable media segment/object.
+
+v0.3 adds country-aware candidate filtering while keeping the existing
+regex matcher available for additional fine-grained filtering.
 
 The tool checks URLs already present in supplied public/local playlists.
 It does not bypass authentication, DRM, geo-blocking, or access controls.
@@ -24,7 +27,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
 
-VERSION = "0.2"
+VERSION = "0.3"
 USER_AGENT = f"Bondik-TV-Ultimate-M3U-Hunter/{VERSION}"
 DEFAULT_TIMEOUT = 8.0
 DEFAULT_WORKERS = 20
@@ -94,6 +97,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS)
     parser.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT)
     parser.add_argument("--match")
+    parser.add_argument("--country",
+        action="append",
+        default=[],
+        metavar="CODE",
+        help="Filter channels by country code (for example CZ or SK). May be repeated.",
+    )
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--out-dir", type=Path, default=Path("hunt-results"))
     return parser.parse_args()
@@ -365,6 +374,25 @@ def matches(channel: Channel, pattern: re.Pattern[str] | None) -> bool:
             [channel.name, channel.group, channel.tvg_id, channel.tvg_name]
         )
     ) is not None
+
+def source_country(source: str) -> str:
+    parsed = urllib.parse.urlparse(source)
+    path = parsed.path.casefold()
+
+    match = re.search(r"/streams/([a-z]{2})\.m3u8?$", path)
+    if match:
+        return match.group(1).upper()
+
+    match = re.search(r"/countries/([a-z]{2})\.m3u8?$", path)
+    if match:
+        return match.group(1).upper()
+
+    return ""
+
+def matches_country(channel: Channel, countries: set[str]) -> bool:
+    if not countries:
+        return True
+    return source_country(channel.source) in countries
 
 
 def looks_like_html(content_type: str, body: bytes) -> bool:
@@ -726,11 +754,19 @@ def main() -> int:
                 file=sys.stderr,
             )
 
+    countries = {
+        value.strip().upper()
+        for value in args.country
+        if value.strip()
+    }
+
     channels = [
         channel
         for channel in dedupe_channels(collected)
         if matches(channel, pattern)
+    and matches_country(channel, countries)
     ]
+    
     if args.limit > 0:
         channels = channels[: args.limit]
 
