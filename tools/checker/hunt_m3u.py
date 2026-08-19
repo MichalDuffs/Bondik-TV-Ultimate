@@ -18,6 +18,8 @@ v0.7 adds human-readable QC review reporting for filtered candidates.
 
 v0.8 adds machine-readable promotion candidate export for manual QC approval.
 
+v0.9 adds manual QC decision input and approved-candidate proposal export.
+
 The tool checks URLs already present in supplied public/local playlists.
 It does not bypass authentication, DRM, geo-blocking, or access controls.
 """
@@ -38,7 +40,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
 
-VERSION = "0.8"
+VERSION = "0.9"
 USER_AGENT = f"Bondik-TV-Ultimate-M3U-Hunter/{VERSION}"
 DEFAULT_TIMEOUT = 8.0
 DEFAULT_WORKERS = 20
@@ -150,6 +152,16 @@ def parse_args() -> argparse.Namespace:
     "--promotion-out",
     type=Path,
     help="Write machine-readable promotion candidates for manual QC approval.",
+    )
+    parser.add_argument(
+    "--decision-file",
+    type=Path,
+    help="Read manual QC decisions for promotion candidates.",
+    )
+    parser.add_argument(
+    "--approved-out",
+    type=Path,
+    help="Write manually approved candidates to an M3U proposal.",
     )
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--out-dir", type=Path, default=Path("hunt-results"))
@@ -961,6 +973,44 @@ def write_promotion_candidates(
         encoding="utf-8",
     )
 
+def load_decisions(path: Path | None) -> dict[str, str]:
+    if path is None:
+        return {}
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"invalid decision file: {exc}") from exc
+
+    decisions = {}
+
+    for item in payload.get("candidates", []):
+        url = str(item.get("url", "")).strip()
+        decision = str(item.get("decision", "")).strip().casefold()
+
+        if url and decision in {"approve", "reject"}:
+            decisions[url] = decision
+
+    return decisions
+
+def write_approved_m3u(
+    path: Path | None,
+    results: list[Result],
+    decisions: dict[str, str],
+) -> None:
+    if path is None:
+        return
+
+    approved = [
+        result
+        for result in results
+        if result.ok
+        and decisions.get(result.url.strip()) == "approve"
+    ]
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    write_working_m3u(path, approved)
+
 def expand_sources(sources: list[str], timeout: float) -> list[str]:
     expanded = []
     for source in sources:
@@ -1087,6 +1137,12 @@ def main() -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
 
+    try:
+        decisions = load_decisions(args.decision_file)
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2    
+
     csv_path = args.out_dir / "results.csv"
     json_path = args.out_dir / "results.json"
     m3u_path = args.out_dir / "working.m3u"
@@ -1097,6 +1153,7 @@ def main() -> int:
     write_review_m3u(args.review_out, results)
     write_review_report(args.review_report, results, history)
     write_promotion_candidates(args.promotion_out, results, history)
+    write_approved_m3u(args.approved_out, results, decisions)
 
     ok_count = sum(item.ok for item in results)
     deep_hls = sum(
@@ -1120,6 +1177,8 @@ def main() -> int:
     print(f"M3U:  {m3u_path}")
     if args.review_out:
         print(f"Review M3U: {args.review_out}")
+    if args.approved_out:
+        print(f"Approved M3U: {args.approved_out}")       
     if args.review_report:
         print(f"Review report: {args.review_report}")
     if args.promotion_out:
