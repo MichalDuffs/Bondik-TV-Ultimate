@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-"""Bondik TV bulk M3U hunter v0.3.
+"""Bondik TV bulk M3U hunter v0.4.
 
 v0.2 added robust EXTINF parsing, per-stream User-Agent/Referer support,
 and deeper HLS validation down to a reachable media segment/object.
 
 v0.3 adds country-aware candidate filtering while keeping the existing
 regex matcher available for additional fine-grained filtering.
+
+v0.4 adds persistent result history for tracking stream stability
+across multiple hunter runs.
 
 The tool checks URLs already present in supplied public/local playlists.
 It does not bypass authentication, DRM, geo-blocking, or access controls.
@@ -27,7 +30,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
 
-VERSION = "0.3"
+VERSION = "0.4"
 USER_AGENT = f"Bondik-TV-Ultimate-M3U-Hunter/{VERSION}"
 DEFAULT_TIMEOUT = 8.0
 DEFAULT_WORKERS = 20
@@ -115,6 +118,11 @@ def parse_args() -> argparse.Namespace:
         "--new-only",
         action="store_true",
         help="Output and report only working stream profiles not present in known sources.",
+    )
+    parser.add_argument(
+    "--history-file",
+    type=Path,
+    help="Persistent JSON history used to track stream results across hunter runs.",
     )
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--out-dir", type=Path, default=Path("hunt-results"))
@@ -425,6 +433,73 @@ def load_known_profiles(sources: list[str], timeout: float) -> set[tuple[str, st
 
     return known
 
+def load_history(path: Path | None) -> dict:
+    if path is None or not path.exists():
+        return {}
+
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"invalid history file: {exc}") from exc
+
+def save_history(path: Path | None, history: dict) -> None:
+    if path is None:
+        return
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(history, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+def stability_label(entry: dict) -> str:
+    streak = int(entry.get("success_streak", 0))
+    failures = int(entry.get("failure_count", 0))
+
+    if streak >= 3 and failures == 0:
+        return "stable-candidate"
+    if streak >= 2:
+        return "promising"
+    return "observing"
+
+def update_history(history: dict, results: list[Result]) -> dict:
+    now = int(time.time())
+
+    for result in results:
+        key = " | ".join(
+            [
+                result.url.strip(),
+                result.user_agent.strip(),
+                result.referer.strip(),
+            ]
+        )
+
+        entry = history.setdefault(
+            key,
+            {
+                "name": result.name,
+                "success_count": 0,
+                "failure_count": 0,
+                "last_ok": None,
+                "last_seen": None,
+                "success_streak": 0,
+            },
+        )
+
+        entry["name"] = result.name
+        entry["last_seen"] = now
+        entry.setdefault("success_streak", 0)
+
+        if result.ok:
+            entry["success_count"] += 1
+            entry["success_streak"] += 1
+            entry["last_ok"] = now
+        else:
+            entry["failure_count"] += 1
+            entry["success_streak"] = 0
+        entry["stability"] = stability_label(entry)
+
+    return history
 
 def looks_like_html(content_type: str, body: bytes) -> bool:
     prefix = body.lstrip()[:256].lower()
@@ -840,6 +915,14 @@ def main() -> int:
 
     results.sort(key=lambda item: item.rank_key)
     args.out_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        history = load_history(args.history_file)
+        history = update_history(history, results)
+        save_history(args.history_file, history)
+    except ValueError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 2
 
     csv_path = args.out_dir / "results.csv"
     json_path = args.out_dir / "results.json"

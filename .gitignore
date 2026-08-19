@@ -3,3 +3,4 @@ __pycache__/
 
 hunt-results/
 hunt-results-*/
+hunt-history.json
