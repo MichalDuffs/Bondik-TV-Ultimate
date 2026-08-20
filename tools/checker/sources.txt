@@ -1,0 +1,7 @@
+# Bondik TV Stream Hunter - public CZ/SK playlist sources
+# Format: label|url
+
+iptv-org CZ|https://iptv-org.github.io/iptv/countries/cz.m3u
+iptv-org SK|https://iptv-org.github.io/iptv/countries/sk.m3u
+Free-TV CZ|https://raw.githubusercontent.com/Free-TV/IPTV/master/playlists/playlist_czech_republic.m3u8
+Free-TV SK|https://raw.githubusercontent.com/Free-TV/IPTV/master/playlists/playlist_slovakia.m3u8
