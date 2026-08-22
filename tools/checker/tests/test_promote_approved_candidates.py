@@ -1,4 +1,4 @@
-﻿import sys
+import sys
 import unittest
 from pathlib import Path
 
@@ -85,6 +85,96 @@ class PromotionRiskTests(unittest.TestCase):
         self.assertEqual(
             risks.count("raw-ip-host"),
             1,
+        )
+
+
+class ProvenanceTests(unittest.TestCase):
+
+    def valid_decision(self):
+        return {
+            "url": "https://example.com/live/index.m3u8",
+            "decision": "approve",
+            "provenance": {
+                "verified": True,
+                "website": "https://example.com/",
+                "evidence": [
+                    "https://example.com/live/",
+                ],
+                "note": "Official broadcaster page confirms the stream.",
+            },
+        }
+
+    def test_valid_provenance_is_accepted(self):
+        provenance, errors = promotion.validate_provenance(
+            self.valid_decision()
+        )
+
+        self.assertEqual(errors, [])
+        self.assertTrue(provenance["verified"])
+        self.assertEqual(
+            provenance["website"],
+            "https://example.com/",
+        )
+
+    def test_missing_provenance_is_rejected(self):
+        provenance, errors = promotion.validate_provenance(
+            {
+                "url": "https://example.com/live/index.m3u8",
+                "decision": "approve",
+            }
+        )
+
+        self.assertEqual(provenance, {})
+        self.assertIn("missing provenance object", errors)
+
+    def test_unverified_provenance_is_rejected(self):
+        decision = self.valid_decision()
+        decision["provenance"]["verified"] = False
+
+        _, errors = promotion.validate_provenance(decision)
+
+        self.assertIn("provenance not verified", errors)
+
+    def test_missing_evidence_is_rejected(self):
+        decision = self.valid_decision()
+        decision["provenance"]["evidence"] = []
+
+        _, errors = promotion.validate_provenance(decision)
+
+        self.assertIn("missing provenance evidence", errors)
+
+    def test_build_channel_preserves_provenance(self):
+        decision = self.valid_decision()
+
+        provenance, errors = promotion.validate_provenance(
+            decision
+        )
+
+        self.assertEqual(errors, [])
+
+        channel = promotion.build_channel(
+            {
+                "candidate_name": "Example TV",
+                "url": "https://example.com/live/index.m3u8",
+                "validation": "hls-segment",
+                "source": "https://example.org/source.m3u",
+                "tvg_id": "ExampleTV.cz",
+            },
+            "CZ",
+            "general",
+            provenance,
+        )
+
+        self.assertEqual(
+            channel["metadata"]["website"],
+            "https://example.com/",
+        )
+        self.assertTrue(
+            channel["metadata"]["provenance"]["verified"]
+        )
+        self.assertEqual(
+            channel["metadata"]["provenance"]["evidence"],
+            ["https://example.com/live/"],
         )
 
 
