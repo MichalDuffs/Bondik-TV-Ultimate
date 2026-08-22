@@ -1,189 +1,196 @@
 # 🗺️ Bondik TV Ultimate Roadmap
 
-This roadmap reflects the current state and long-term direction of Bondik TV Ultimate.
+Last refreshed: **2026-08-23**
 
-Our priority is quality over quantity: a clean, transparent and maintainable IPTV project built around verified public streams and simple automation.
+> **Quality over quantity.**
+
+Bondik TV Ultimate focuses on verified public streams, transparent review,
+simple operation and automation that never bypasses human quality control.
 
 ---
 
-# 🐾 M3U Hunter v0.4
+## 🐾 Current Quality Pipeline
 
-M3U Hunter hromadně prohledává a ověřuje streamy z veřejných M3U zdrojů a GitHub repozitářů.
+```text
+Public M3U sources
+        ↓
+M3U Hunter v0.9
+        ↓
+Candidate Gate v0.5.1
+        ↓
+Manual provenance review
+        ↓
+AUTO-PROMOTION v1.1
+        ↓
+status=testing
+        ↓
+Testing Promotion Gate v0.7.1
+        ↓
+3 counted passes / minimum 24h gap
+        ↓
+Manual stable approval
+        ↓
+STABLE PROMOTION v1.0
+        ↓
+status=stable
+        ↓
+Playlist Generator
+        ↓
+Public Bondik TV playlists
+```
 
-Aktuální funkce:
+No candidate can move directly from discovery into the stable public playlist.
 
-- 🌍 filtrování podle země (`--country CZ`, `--country SK`)
-- 🔎 hromadné ověřování stream profilů
-- 📺 hluboká HLS kontrola až na dostupný media segment
-- 🧹 deduplikace stream profilů
-- 🦴 porovnání s již známými streamy (`--known-source`)
-- 🆕 hledání pouze nových kandidátů (`--new-only`)
-- 🧠 persistentní historie mezi běhy (`--history-file`)
-- ✅ počítání úspěšných a neúspěšných kontrol
-- 🔁 sledování série úspěšných kontrol (`success_streak`)
-- 🏷️ hodnocení stability: `observing` → `promising` → `stable-candidate`
-
-`stable-candidate` znamená technicky stabilního kandidáta podle opakovaných kontrol.
-Neznamená automatické zařazení do stabilního playlistu — finální výběr stále podléhá Bondík QC.
-
-## 🇨🇿 Příklad CZ lovu s historií
-
-```powershell
-python tools/checker/hunt_m3u.py https://github.com/iptv-org/iptv `
-    --country CZ `
-    --history-file hunt-history.json `
-    --out-dir hunt-results
 ---
 
-# Version 1.x - Foundation
-
-## Repository
+## ✅ Foundation
 
 - [x] Repository structure
-- [x] Documentation baseline
-- [x] Assets structure
-- [x] Playlist structure
-- [x] Central channel database
+- [x] MIT license
+- [x] Central `channels/channels.yaml` database
 - [x] Configuration system
-- [ ] Complete graphics package
-- [ ] Complete documentation
+- [x] Country, category and provider playlists
+- [x] Ultimate playlist
+- [x] Stable-only public generation
+- [x] Bondík mascot logo and banner
+
+---
+
+## 🚜 Discovery
+
+### M3U Hunter v0.9
+
+- [x] Bulk M3U discovery
+- [x] Country filtering
+- [x] Known-source comparison
+- [x] New-only discovery
+- [x] Stream deduplication
+- [x] Deep HLS verification
+- [x] Persistent history and stability tracking
+- [x] Candidate export and manual decisions
+
+### Candidate Gate v0.5.1
+
+- [x] Existing-stream rejection
+- [x] Country/category inference
+- [x] Priority / review / parking buckets
+- [x] Candidate scoring
+- [x] Raw-IP, suspicious-restream and test-feed detection
+- [x] Reviewable JSON / CSV / M3U outputs
+
+---
+
+## 🛡️ Promotion
+
+### AUTO-PROMOTION v1.1
+
+- [x] DRY-RUN by default
+- [x] Explicit `--apply`
+- [x] Duplicate protection
+- [x] Country/category validation
+- [x] HTTPS, raw-IP, test-feed and parking Risk Gates
+- [x] Verified provenance required
+- [x] Official website and evidence URLs
+- [x] Manual QC note
+- [x] Never promotes directly to stable
+
+### Testing Promotion Gate v0.7.1
+
+- [x] Three counted passes by default
+- [x] Minimum 24-hour gap
+- [x] Failure resets progress
+- [x] Stream URL change resets progress
+- [x] Persistent state
+- [x] CSV / JSON / Markdown reports
+- [x] Advisory only
+
+### STABLE PROMOTION v1.0
+
+- [x] Manual approval required
+- [x] Promotion Gate eligibility required
+- [x] Required pass count enforced
+- [x] Last result must be pass
+- [x] Decision/report URL must match current URL
+- [x] Fresh report required
+- [x] Manual review note required
+- [x] DRY-RUN by default
+- [x] Explicit `--apply`
+
+---
+
+## 📡 Stream Health & EPG
+
+- [x] Stream checker and retry protection
+- [x] Scheduled health monitoring
+- [x] Cross-run history and failure streaks
+- [x] Recovery and repeated-outage detection
+- [x] Automatic GitHub Issue workflow
+- [x] EPG source registry and validation
+- [x] Scheduled EPG monitoring
+- [x] EPG maintenance tooling
+- [ ] Improve CZ/SK EPG coverage and mappings
+- [ ] Add more verified EPG sources
+
+---
+
+## 🇨🇿 🇸🇰 Curated Content
+
+Current priority is **quality CZ/SK coverage**, not maximum channel count.
+
+- [x] CZ/SK discovery pipeline
+- [x] Manual provenance workflow
+- [x] Testing lifecycle
+- [x] Stable promotion lifecycle
+- [ ] First production 3/3 → stable promotion
+- [ ] Expand verified Czech channels
+- [ ] Expand verified Slovak channels
+- [ ] Improve channel logos and EPG metadata
+- [ ] Remove obsolete sources
+
+---
+
+## 🧪 Quality
+
+- [x] Hunter tests
+- [x] Candidate Gate tests
+- [x] AUTO-PROMOTION and provenance tests
+- [x] Testing Promotion Gate tests
+- [x] STABLE PROMOTION tests
+- [x] Stream and EPG automation tests
+- [x] **289 automated tests passing**
+
+A working stream is not automatically trusted.
+
+A trusted testing stream is not automatically stable.
+
+---
+
+## 🚀 Release Readiness
+
+- [x] Central channel database
+- [x] Stable-only playlist generation
+- [x] Discovery and candidate-review pipeline
+- [x] Provenance-aware testing promotion
+- [x] Long-term testing gate
+- [x] Controlled stable promotion
+- [x] Automated test suite
+- [ ] First production 3/3 → stable promotion
+- [ ] Improve CZ/SK curated set
+- [ ] Improve logo and EPG coverage
+- [ ] Final documentation review
 - [ ] Stable public release
 
 ---
 
-# Version 2.x - Automation & Quality
-
-## Playlist Automation
-
-- [x] Playlist generator
-- [x] Country playlists
-- [x] Category playlists
-- [x] Provider playlists
-- [x] Ultimate playlist
-- [x] Generated playlist cleanup
-- [x] Metadata validation
-
-## Stream Health
-
-- [x] Stream checker
-- [x] Dead link detection
-- [x] Temporary failure retries
-- [x] Scheduled stream health checks
-- [x] Stream health reports
-- [x] Archived GitHub Actions reports
-- [x] Cross-run failure history
-- [x] Recovery detection
-- [x] Repeated outage detection
-- [x] Automatic GitHub Issue management
-- [x] Stream health automation refactor
-- [x] Automated monitoring test suite
-- [x] Persistent failure streak tracking
-- [x] Outage escalation comments
-- [x] Escalation comment throttling
-
-## EPG
-
-- [ ] Improve EPG coverage
-- [ ] Automatic EPG updates
-- [x] Validate EPG identifiers
-- [x] Automated EPG source health checks
-- [x] EPG source registry validation
-
----
-
-# Version 3.x - Content & Community
-
-## Content
-
-- [ ] Expand curated CZ/SK channel set
-- [ ] Expand country coverage
-- [ ] Expand category coverage
-- [ ] Improve channel logos
-- [ ] Improve EPG metadata
-- [ ] Continue quality-first stream verification
-
-## Community
+## 🌍 Future
 
 - [ ] Community contribution workflow
-- [ ] Contributor documentation
-- [ ] Translation support
-- [ ] Community playlists
 - [ ] Statistics dashboard
-
----
-
-# Version 4.x - Applications
-
-## Applications
-
-- [ ] Android application
-- [ ] Android TV application
-- [ ] Windows application
-- [ ] Linux support
-- [ ] Web application
-- [ ] Remote management
-
----
-
-# 🐾 Project Milestones
-
-## Phase 1 - Foundation
-
-- [x] Repository structure
-- [x] Documentation baseline
-- [x] Basic playlists
-- [x] Branding preparation
-- [x] Configuration architecture
-
-## Phase 2 - Content
-
-- [x] CZ/SK foundation
-- [x] Channel metadata structure
-- [ ] More verified channels
-- [ ] Better logo coverage
-- [ ] Better EPG coverage
-- [ ] Broader international coverage
-
-## Phase 3 - Automation
-
-- [x] Playlist generation
-- [x] Stream checker
-- [x] Scheduled health monitoring
-- [x] Retry protection
-- [x] Historical failure tracking
-- [x] Recovery detection
-- [x] Automated outage Issues
-- [x] Health reports and artifacts
-- [x] Maintainable stream health automation
-- [x] Automated monitoring test suite
-- [x] Persistent outage tracking and escalation
-- [x] Scheduled EPG health monitoring
-- [x] Automatic EPG maintenance
-
-## Phase 4 - Applications
-
-- [ ] Android app
-- [ ] Android TV app
-- [ ] Windows app
-- [ ] Linux support
+- [ ] Android / Android TV application
+- [ ] Windows / Linux application
 - [ ] Web interface
-- [ ] Remote management
 
----
-
-# 🚀 Long-Term Vision
-
-Bondik TV Ultimate aims to become a highly organized, transparent and community-friendly IPTV project.
-
-The project will remain focused on:
-
-- Quality over quantity
-- Publicly available streams
-- Simple installation and use
-- Reliable automated validation
-- Clean repository architecture
-- Open-source development
-- Free access without unnecessary complexity
+Applications come after the core playlist and QC pipeline is mature.
 
 ---
 
@@ -191,4 +198,4 @@ The project will remain focused on:
 
 **Open • Free • Community**
 
-> When Bondík can play it, everyone can play it.
+> **When Bondík can play it, everyone can play it.**

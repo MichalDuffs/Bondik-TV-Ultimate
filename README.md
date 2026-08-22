@@ -160,69 +160,11 @@
 
   Tested with 🐾 by Bondík.
 
-  </p># 📜 Changelog
+  </p>
 
-  All notable changes to **Bondik TV Ultimate** will be documented in this file.
+---
 
-  The format is based on **Keep a Changelog** and follows **Semantic Versioning (SemVer)**.
-
-  ---
-
-  # [1.0.0] - Initial Release
-
-  ## 🎉 Added
-
-  - Initial GitHub repository
-  - Professional repository structure
-  - README documentation
-  - Assets directory
-  - Playlists directory
-  - EPG directory
-  - Documentation directory
-  - GitHub workflows
-  - Project roadmap
-  - Community guidelines
-
-  ## 📺 Playlists
-
-  - Country playlists
-  - Category playlists
-  - Provider playlists
-  - Ultimate playlist
-
-  ## 🎨 Graphics
-
-  - Initial logo
-  - Banner
-  - Icons
-  - Screenshots
-
-  ## 📚 Documentation
-
-  - README
-  - CHANGELOG
-  - CONTRIBUTING
-  - SECURITY
-  - SUPPORT
-  - ROADMAP
-  - CREDITS
-
-  ---
-
-  # Upcoming
-
-  ## Planned
-
-  - Automatic playlist verification
-  - EPG improvements
-  - More providers
-  - Android application
-  - Project website
-  - Community translations
-
-  ---
-
-  ⭐ Dej projektu hvězdičku.
+⭐ Dej projektu hvězdičku.
 
  🍴 Forkni projekt.
 
@@ -232,7 +174,7 @@
 
  🦮 Staň se členem Bondik komunity.
 
- 
+
  🦮 Bondík říká:
 
  "Nefunguje nějaký kanál?
