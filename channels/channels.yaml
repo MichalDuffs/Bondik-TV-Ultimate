@@ -536,3 +536,25 @@ channels:
     metadata:
       website: "https://mocenok.sk/"
       notes: "Municipal television candidate. Hunter deep-HLS verified; provenance reviewed."
+
+  - id: plzen-tv-cz
+    name: Plzeň TV
+    country: CZ
+    language: cs
+    category: general
+    provider: plzen-tv
+    stream:
+      url: https://vysilani.zaktv.cz/broadcast/hls/ptv/index.m3u8
+      format: hls
+      quality: unknown
+    epg:
+      id: PlzenTV.cz@SD
+      source: null
+      enabled: false
+    logo:
+      url: null
+      local: null
+    status: testing
+    metadata:
+      website: null
+      notes: 'AUTO-PROMOTION v1: manually approved candidate. Inserted as testing; stable promotion still requires Bondik QC. Discovery source: https://iptv-org.github.io/iptv/countries/cz.m3u Stream host: vysilani.zaktv.cz'
