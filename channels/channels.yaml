@@ -491,3 +491,48 @@ channels:
     metadata:
       website: "https://www.france24.com/"
       notes: "Official France 24 Spanish-language internet stream candidate. First-party france24.com HLS; Hunter deep-HLS verified; provenance reviewed."
+
+  - id: "mtr-sk"
+    name: "MTR"
+    country: "SK"
+    language: "sk"
+    category: "general"
+    provider: "mtr"
+    stream:
+      url: "https://cdnsk003.panaccess.com/local/Ruzomberok/index.m3u8"
+      format: "hls"
+      quality: "FHD"
+    status: "testing"
+    metadata:
+      website: "https://www.mtr.sk/"
+      notes: "Official/public regional television candidate. Hunter deep-HLS verified; provenance reviewed."
+
+  - id: "tvt-sk"
+    name: "TVT"
+    country: "SK"
+    language: "sk"
+    category: "general"
+    provider: "tvt"
+    stream:
+      url: "https://5ca49f2417d90.streamlock.net/live/turzovka/playlist.m3u8"
+      format: "hls"
+      quality: "SD"
+    status: "testing"
+    metadata:
+      website: "https://www.tvt.sk/"
+      notes: "Turzovska televizia candidate. Hunter deep-HLS verified; provenance reviewed."
+
+  - id: "tv-mocenok-sk"
+    name: "Televizia Mocenok"
+    country: "SK"
+    language: "sk"
+    category: "general"
+    provider: "tv-mocenok"
+    stream:
+      url: "https://5ca49f2417d90.streamlock.net/mocenok/livestream/playlist.m3u8"
+      format: "hls"
+      quality: "HD"
+    status: "testing"
+    metadata:
+      website: "https://mocenok.sk/"
+      notes: "Municipal television candidate. Hunter deep-HLS verified; provenance reviewed."
