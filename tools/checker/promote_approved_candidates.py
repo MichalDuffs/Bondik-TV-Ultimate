@@ -1,5 +1,5 @@
-﻿#!/usr/bin/env python3
-"""Bondik TV AUTO-PROMOTION v1.
+#!/usr/bin/env python3
+"""Bondik TV AUTO-PROMOTION v1.1.
 
 Convert manually approved Hunter/Candidate Gate results into
 status=testing channel proposals.
@@ -27,7 +27,7 @@ from urllib.parse import urlparse
 import yaml
 
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -135,20 +135,95 @@ def configured_categories(payload: dict[str, Any]) -> set[str]:
     return result
 
 
-def approved_urls(payload: dict[str, Any]) -> set[str]:
-    result = set()
+def is_web_url(value: str) -> bool:
+    value = str(value).strip()
+
+    if not value:
+        return False
+
+    try:
+        parsed = urlparse(value)
+    except ValueError:
+        return False
+
+    return (
+        parsed.scheme.casefold() in {"http", "https"}
+        and bool(parsed.netloc)
+    )
+
+
+def approved_decisions(
+    payload: dict[str, Any],
+) -> dict[str, dict[str, Any]]:
+    """Return manually approved decision records indexed by stream URL."""
+    result: dict[str, dict[str, Any]] = {}
 
     for item in payload.get("candidates", []):
         if not isinstance(item, dict):
             continue
 
-        decision = str(item.get("decision", "")).strip().casefold()
+        decision = str(
+            item.get("decision", "")
+        ).strip().casefold()
+
         url = str(item.get("url", "")).strip()
 
         if decision == "approve" and url:
-            result.add(url)
+            result[url] = item
 
     return result
+
+
+def validate_provenance(
+    decision: dict[str, Any],
+) -> tuple[dict[str, Any], list[str]]:
+    """Validate and normalize manual provenance evidence."""
+    errors: list[str] = []
+
+    raw = decision.get("provenance")
+
+    if not isinstance(raw, dict):
+        return {}, ["missing provenance object"]
+
+    verified = raw.get("verified") is True
+    website = str(raw.get("website", "")).strip()
+    note = str(raw.get("note", "")).strip()
+
+    evidence_raw = raw.get("evidence", [])
+
+    if not verified:
+        errors.append("provenance not verified")
+
+    if not is_web_url(website):
+        errors.append("missing or invalid provenance website")
+
+    evidence: list[str] = []
+
+    if not isinstance(evidence_raw, list) or not evidence_raw:
+        errors.append("missing provenance evidence")
+    else:
+        for value in evidence_raw:
+            url = str(value).strip()
+
+            if not is_web_url(url):
+                errors.append(
+                    f"invalid provenance evidence URL: {url or 'empty'}"
+                )
+                continue
+
+            evidence.append(url)
+
+    if not note:
+        errors.append("missing provenance note")
+
+    normalized = {
+        "verified": verified,
+        "website": website,
+        "evidence": evidence,
+        "note": note,
+    }
+
+    return normalized, errors
 
 
 def existing_data(
@@ -267,6 +342,7 @@ def build_channel(
     candidate: dict[str, Any],
     country: str,
     category: str,
+    provenance: dict[str, Any],
 ) -> dict[str, Any]:
     name = str(
         candidate.get("candidate_name")
@@ -289,15 +365,10 @@ def build_channel(
         pass
 
     notes = (
-        "AUTO-PROMOTION v1: manually approved candidate. "
+        "AUTO-PROMOTION v1.1: manually approved candidate "
+        "with verified provenance evidence. "
         "Inserted as testing; stable promotion still requires Bondik QC."
     )
-
-    if source:
-        notes += f" Discovery source: {source}"
-
-    if host:
-        notes += f" Stream host: {host}"
 
     return {
         "id": channel_id,
@@ -322,8 +393,15 @@ def build_channel(
         },
         "status": "testing",
         "metadata": {
-            "website": None,
+            "website": provenance["website"],
             "notes": notes,
+            "provenance": {
+                "verified": True,
+                "evidence": provenance["evidence"],
+                "note": provenance["note"],
+                "discovery_source": source or None,
+                "stream_host": host or None,
+            },
         },
     }
 
@@ -373,7 +451,7 @@ def main() -> int:
     candidate_payload = load_json(args.candidates)
     decision_payload = load_json(args.decisions)
 
-    approved = approved_urls(decision_payload)
+    approved = approved_decisions(decision_payload)
 
     categories = configured_categories(categories_payload)
     countries = configured_countries(countries_payload)
@@ -402,6 +480,19 @@ def main() -> int:
             or candidate.get("name")
             or ""
         ).strip()
+
+        provenance, provenance_errors = validate_provenance(
+            approved[url]
+        )
+
+        if provenance_errors:
+            skipped.append(
+                (
+                    name or url or "unknown",
+                    "provenance: " + ", ".join(provenance_errors),
+                )
+            )
+            continue
 
         country = str(
             candidate.get("country_inferred") or ""
@@ -462,6 +553,7 @@ def main() -> int:
             candidate,
             country,
             category,
+            provenance,
         )
 
         channel_id = str(channel["id"])
