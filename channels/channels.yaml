@@ -558,3 +558,25 @@ channels:
     metadata:
       website: null
       notes: 'AUTO-PROMOTION v1: manually approved candidate. Inserted as testing; stable promotion still requires Bondik QC. Discovery source: https://iptv-org.github.io/iptv/countries/cz.m3u Stream host: vysilani.zaktv.cz'
+
+  - id: tv-panorama-sk
+    name: TV Panorama
+    country: SK
+    language: sk
+    category: general
+    provider: tv-panorama
+    stream:
+      url: https://public.live.rebit.tv/live/20750f0b-e12d-4915-a4c3-47c5db9ccbf6/main.m3u8
+      format: hls
+      quality: unknown
+    epg:
+      id: TVPanorama.sk@SD
+      source: null
+      enabled: false
+    logo:
+      url: null
+      local: null
+    status: testing
+    metadata:
+      website: null
+      notes: 'AUTO-PROMOTION v1: manually approved candidate. Inserted as testing; stable promotion still requires Bondik QC. Discovery source: https://iptv-org.github.io/iptv/countries/sk.m3u Stream host: public.live.rebit.tv'
