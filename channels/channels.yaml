@@ -667,3 +667,33 @@ channels:
         note: Official Mňau TV website identifies the broadcaster and provides an online broadcasting page.
         discovery_source: .\tools\discovery\results\qc-batch-01.m3u
         stream_host: 5ca49f2417d90.streamlock.net
+
+  - id: tv-nrsr-sk
+    name: TV NRSR
+    country: SK
+    language: sk
+    category: news
+    provider: tv-nrsr
+    stream:
+      url: https://n11.stv.livebox.sk/stv-tv/stv4.stream/playlist.m3u8
+      format: hls
+      quality: unknown
+    epg:
+      id: TVNRSR.sk@SD
+      source: null
+      enabled: false
+    logo:
+      url: null
+      local: null
+    status: testing
+    metadata:
+      website: https://tv.nrsr.sk/
+      notes: 'AUTO-PROMOTION v1.1: manually approved candidate with verified provenance evidence. Inserted as testing; stable promotion still requires Bondik QC.'
+      provenance:
+        verified: true
+        evidence:
+        - https://tv.nrsr.sk/
+        - https://www.nrsr.sk/web/
+        note: Official National Council of the Slovak Republic websites provide and document live online broadcasting of parliamentary proceedings. Stream is not 24/7.
+        discovery_source: .\tools\discovery\results\batch-06\working.m3u
+        stream_host: n11.stv.livebox.sk
