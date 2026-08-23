@@ -756,3 +756,33 @@ channels:
         note: Official Senzi live streaming page loads the lb.streaming.sk HLS feed. HTTPS variant was deep-HLS verified by Bondik Hunter.
         discovery_source: .\hunt-results\senzi-https.m3u
         stream_host: lb.streaming.sk
+
+  - id: tv-ruzinov-sk
+    name: TV Ružinov
+    country: SK
+    language: sk
+    category: news
+    provider: tv-ruzinov
+    stream:
+      url: https://lb.streaming.sk/tvruzinov/stream/playlist.m3u8
+      format: hls
+      quality: unknown
+    epg:
+      id: TVRuzinov.sk@SD
+      source: null
+      enabled: false
+    logo:
+      url: null
+      local: null
+    status: testing
+    metadata:
+      website: https://tvr.sk/
+      notes: 'AUTO-PROMOTION v1.1: manually approved candidate with verified provenance evidence. Inserted as testing; stable promotion still requires Bondik QC.'
+      provenance:
+        verified: true
+        evidence:
+        - https://tvr.sk/live-vysielanie/
+        - https://live.streaming.sk/tvruzinov/
+        note: Official TV Ružinov live page embeds the live.streaming.sk TV Ružinov player. HTTPS HLS stream was deep-HLS verified by Bondik Hunter.
+        discovery_source: .\hunt-results\tvruzinov-https.m3u
+        stream_host: lb.streaming.sk
