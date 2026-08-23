@@ -726,3 +726,33 @@ channels:
         note: Official website of the city of Dolny Kubin links to TV DK. Stream is not 24/7.
         discovery_source: .\tools\discovery\results\batch-06\working.m3u
         stream_host: 5ca49f2417d90.streamlock.net
+
+  - id: senzi-sk
+    name: Senzi
+    country: SK
+    language: sk
+    category: music
+    provider: senzi
+    stream:
+      url: https://lb.streaming.sk/senzi/stream/playlist.m3u8
+      format: hls
+      quality: unknown
+    epg:
+      id: Senzi.sk@SD
+      source: null
+      enabled: false
+    logo:
+      url: null
+      local: null
+    status: testing
+    metadata:
+      website: https://senzi.sk/
+      notes: 'AUTO-PROMOTION v1.1: manually approved candidate with verified provenance evidence. Inserted as testing; stable promotion still requires Bondik QC.'
+      provenance:
+        verified: true
+        evidence:
+        - https://senzi.sk/senzi_televizia_vysielamie_live_stream.html
+        - https://live.streaming.sk/senzi/
+        note: Official Senzi live streaming page loads the lb.streaming.sk HLS feed. HTTPS variant was deep-HLS verified by Bondik Hunter.
+        discovery_source: .\hunt-results\senzi-https.m3u
+        stream_host: lb.streaming.sk
