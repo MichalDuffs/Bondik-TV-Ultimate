@@ -580,3 +580,61 @@ channels:
     metadata:
       website: null
       notes: 'AUTO-PROMOTION v1: manually approved candidate. Inserted as testing; stable promotion still requires Bondik QC. Discovery source: https://iptv-org.github.io/iptv/countries/sk.m3u Stream host: public.live.rebit.tv'
+
+  - id: elektrika-tv-cz
+    name: Elektrika TV
+    country: CZ
+    language: cs
+    category: science
+    provider: elektrika-tv
+    stream:
+      url: https://rtmp.elektrika.cz/live/myStream.sdp/playlist.m3u8
+      format: hls
+      quality: unknown
+    epg:
+      id: ElektrikaTV.cz@SD
+      source: null
+      enabled: false
+    logo:
+      url: null
+      local: null
+    status: testing
+    metadata:
+      website: https://elektrika.tv/
+      notes: 'AUTO-PROMOTION v1.1: manually approved candidate with verified provenance evidence. Inserted as testing; stable promotion still requires Bondik QC.'
+      provenance:
+        verified: true
+        evidence:
+        - https://elektrika.tv/
+        note: Official Elektrika.TV website provides and identifies its live television stream.
+        discovery_source: .\tools\discovery\results\qc-batch-01.m3u
+        stream_host: rtmp.elektrika.cz
+
+  - id: dvtv-extra-cz
+    name: DVTV Extra
+    country: CZ
+    language: cs
+    category: news
+    provider: dvtv-extra
+    stream:
+      url: https://antik.streaming.tivio.studio/channels/IxLi19VRasgu94bIaXbH/index.m3u8
+      format: hls
+      quality: unknown
+    epg:
+      id: DVTVExtra.cz@SD
+      source: null
+      enabled: false
+    logo:
+      url: null
+      local: null
+    status: testing
+    metadata:
+      website: https://www.dvtv.cz/
+      notes: 'AUTO-PROMOTION v1.1: manually approved candidate with verified provenance evidence. Inserted as testing; stable promotion still requires Bondik QC.'
+      provenance:
+        verified: true
+        evidence:
+        - https://www.dvtv.cz/dvtv/videos/PlYVTrimZ4b7eMHnu465
+        note: Official DVTV website confirms the DVTV Extra television station.
+        discovery_source: .\tools\discovery\results\qc-batch-01.m3u
+        stream_host: antik.streaming.tivio.studio
