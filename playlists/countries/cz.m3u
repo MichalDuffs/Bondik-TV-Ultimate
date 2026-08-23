@@ -26,3 +26,12 @@ https://ocko-live.ssl.cdn.cra.cz/channels/ocko_gold/playlist.m3u8
 
 #EXTINF:-1 tvg-name="Óčko Expres" group-title="CZ" tvg-id="Óčko.Expres.cz",Óčko Expres
 https://ocko-live.ssl.cdn.cra.cz/channels/ocko_expres/playlist.m3u8
+
+#EXTINF:-1 tvg-name="ÚTV" group-title="CZ",ÚTV
+https://vysilani.zaktv.cz/broadcast/hls/utv/index.m3u8
+
+#EXTINF:-1 tvg-name="JČ1" group-title="CZ",JČ1
+https://stream.jc1.cz/hls/jc1.m3u8
+
+#EXTINF:-1 tvg-name="Retro Music Television" group-title="CZ",Retro Music Television
+https://stream.mediawork.cz/retrotv/retrotvHQ1/playlist.m3u8

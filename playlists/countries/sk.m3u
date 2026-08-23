@@ -14,3 +14,6 @@ https://live.cdn.joj.sk/live/andromeda/plus-1080.m3u8
 
 #EXTINF:-1 tvg-name="WAU" group-title="SK" tvg-id="Wau.HD.sk",WAU
 https://live.cdn.joj.sk/live/andromeda/wau-1080.m3u8
+
+#EXTINF:-1 tvg-name="LifeTV" group-title="SK",LifeTV
+https://lifetv.mpks.sk/s.m3u8

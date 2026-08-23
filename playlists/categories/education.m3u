@@ -2,3 +2,6 @@
 # Bondik TV Ultimate - Category: Education
 # Generated automatically from channels/channels.yaml
 # Quality checked by Bondik
+
+#EXTINF:-1 tvg-name="TRT EBA Ortaokul" group-title="TR",TRT EBA Ortaokul
+https://tv-e-okul01.medya.trt.com.tr/master.m3u8

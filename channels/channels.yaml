@@ -349,7 +349,7 @@ channels:
       url: "https://vysilani.zaktv.cz/broadcast/hls/utv/index.m3u8"
       format: "hls"
       quality: "unknown"
-    status: "testing"
+    status: "stable"
     metadata:
       website: "https://www.televizeutv.cz/"
       notes: "Public internet television candidate. Hunter deep-HLS verified; provenance reviewed."
@@ -364,7 +364,7 @@ channels:
       url: "https://stream.jc1.cz/hls/jc1.m3u8"
       format: "hls"
       quality: "unknown"
-    status: "testing"
+    status: "stable"
     metadata:
       website: "https://jc1.cz/"
       notes: "Official/public JČ1 stream. Hunter deep-HLS verified."
@@ -379,7 +379,7 @@ channels:
       url: "https://stream.mediawork.cz/retrotv/retrotvHQ1/playlist.m3u8"
       format: "hls"
       quality: "unknown"
-    status: "testing"
+    status: "stable"
     metadata:
       website: "https://retromusic.cz/"
       notes: "Public Retro Music Television stream. Hunter deep-HLS verified; provenance reviewed."
@@ -394,7 +394,7 @@ channels:
       url: "https://lifetv.mpks.sk/s.m3u8"
       format: "hls"
       quality: "unknown"
-    status: "testing"
+    status: "stable"
     metadata:
       website: "https://www.lifetv.sk/"
       notes: "Public LifeTV internet stream. Hunter deep-HLS verified; provenance reviewed."
@@ -411,7 +411,7 @@ channels:
       format: "hls"
       quality: "unknown"
 
-    status: "testing"
+    status: "stable"
 
     metadata:
       website: "https://www.eba.gov.tr/trt-ebatv"
@@ -427,7 +427,7 @@ channels:
       url: "https://cdn1.etbon.eus/etb1on/index.m3u8"
       format: "hls"
       quality: "unknown"
-    status: "testing"
+    status: "stable"
     metadata:
       website: "https://etbon.eus/"
       notes: "Official EITB internet television candidate. Hunter deep-HLS verified to media segment; provenance reviewed."
@@ -442,7 +442,7 @@ channels:
       url: "https://cdn1.etbon.eus/etb2on/index.m3u8"
       format: "hls"
       quality: "unknown"
-    status: "testing"
+    status: "stable"
     metadata:
       website: "https://etbon.eus/"
       notes: "Official EITB internet television candidate. Hunter deep-HLS verified to media segment; provenance reviewed."
@@ -457,7 +457,7 @@ channels:
       url: "https://tvdirecto.teleelx.es/stream/teleelx.m3u8"
       format: "hls"
       quality: "unknown"
-    status: "testing"
+    status: "stable"
     metadata:
       website: "https://teleelx.es/directo/"
       notes: "Official/public Tele Elx internet stream. Hunter deep-HLS verified; first-party provenance reviewed."
@@ -472,7 +472,7 @@ channels:
       url: "https://live.france24.com/hls/live/2037179-b/F24_FR_HI_HLS/master_5000.m3u8"
       format: "hls"
       quality: "unknown"
-    status: "testing"
+    status: "stable"
     metadata:
       website: "https://www.france24.com/"
       notes: "Official France 24 French internet stream candidate. First-party france24.com HLS; Hunter deep-HLS verified; provenance reviewed."
@@ -487,7 +487,7 @@ channels:
       url: "https://live.france24.com/hls/live/2037220-b/F24_ES_HI_HLS/master_5000.m3u8"
       format: "hls"
       quality: "unknown"
-    status: "testing"
+    status: "stable"
     metadata:
       website: "https://www.france24.com/"
       notes: "Official France 24 Spanish-language internet stream candidate. First-party france24.com HLS; Hunter deep-HLS verified; provenance reviewed."

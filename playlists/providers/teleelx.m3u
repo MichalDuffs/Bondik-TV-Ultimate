@@ -1,0 +1,7 @@
+#EXTM3U
+# Bondik TV Ultimate - Provider: teleelx
+# Generated automatically from channels/channels.yaml
+# Quality checked by Bondik
+
+#EXTINF:-1 tvg-name="Tele Elx" group-title="ES",Tele Elx
+https://tvdirecto.teleelx.es/stream/teleelx.m3u8

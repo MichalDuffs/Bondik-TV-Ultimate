@@ -1,0 +1,7 @@
+#EXTM3U
+# Bondik TV Ultimate - Provider: utv
+# Generated automatically from channels/channels.yaml
+# Quality checked by Bondik
+
+#EXTINF:-1 tvg-name="ÚTV" group-title="CZ",ÚTV
+https://vysilani.zaktv.cz/broadcast/hls/utv/index.m3u8

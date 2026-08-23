@@ -1,0 +1,7 @@
+#EXTM3U
+# Bondik TV Ultimate - Provider: lifetv
+# Generated automatically from channels/channels.yaml
+# Quality checked by Bondik
+
+#EXTINF:-1 tvg-name="LifeTV" group-title="SK",LifeTV
+https://lifetv.mpks.sk/s.m3u8

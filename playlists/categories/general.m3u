@@ -20,3 +20,21 @@ https://vysilani.zaktv.cz/broadcast/hls/jtv/index.m3u8
 
 #EXTINF:-1 tvg-name="JOJ" group-title="SK" tvg-id="JOJ.HD.sk",JOJ
 https://live.cdn.joj.sk/live/joj.m3u8
+
+#EXTINF:-1 tvg-name="ÚTV" group-title="CZ",ÚTV
+https://vysilani.zaktv.cz/broadcast/hls/utv/index.m3u8
+
+#EXTINF:-1 tvg-name="JČ1" group-title="CZ",JČ1
+https://stream.jc1.cz/hls/jc1.m3u8
+
+#EXTINF:-1 tvg-name="LifeTV" group-title="SK",LifeTV
+https://lifetv.mpks.sk/s.m3u8
+
+#EXTINF:-1 tvg-name="ETB1 ON" group-title="ES",ETB1 ON
+https://cdn1.etbon.eus/etb1on/index.m3u8
+
+#EXTINF:-1 tvg-name="ETB2 ON" group-title="ES",ETB2 ON
+https://cdn1.etbon.eus/etb2on/index.m3u8
+
+#EXTINF:-1 tvg-name="Tele Elx" group-title="ES",Tele Elx
+https://tvdirecto.teleelx.es/stream/teleelx.m3u8

@@ -1,0 +1,7 @@
+#EXTM3U
+# Bondik TV Ultimate - Provider: retro-music-tv
+# Generated automatically from channels/channels.yaml
+# Quality checked by Bondik
+
+#EXTINF:-1 tvg-name="Retro Music Television" group-title="CZ",Retro Music Television
+https://stream.mediawork.cz/retrotv/retrotvHQ1/playlist.m3u8

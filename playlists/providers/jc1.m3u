@@ -1,0 +1,7 @@
+#EXTM3U
+# Bondik TV Ultimate - Provider: jc1
+# Generated automatically from channels/channels.yaml
+# Quality checked by Bondik
+
+#EXTINF:-1 tvg-name="JČ1" group-title="CZ",JČ1
+https://stream.jc1.cz/hls/jc1.m3u8
