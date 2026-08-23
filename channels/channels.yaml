@@ -697,3 +697,32 @@ channels:
         note: Official National Council of the Slovak Republic websites provide and document live online broadcasting of parliamentary proceedings. Stream is not 24/7.
         discovery_source: .\tools\discovery\results\batch-06\working.m3u
         stream_host: n11.stv.livebox.sk
+
+  - id: tv-dk-sk
+    name: TV DK
+    country: SK
+    language: sk
+    category: news
+    provider: tv-dk
+    stream:
+      url: https://5ca49f2417d90.streamlock.net/live/dolnykubin1/playlist.m3u8
+      format: hls
+      quality: unknown
+    epg:
+      id: TVDK.sk@SD
+      source: null
+      enabled: false
+    logo:
+      url: null
+      local: null
+    status: testing
+    metadata:
+      website: https://www.dolnykubin.sk/
+      notes: 'AUTO-PROMOTION v1.1: manually approved candidate with verified provenance evidence. Inserted as testing; stable promotion still requires Bondik QC.'
+      provenance:
+        verified: true
+        evidence:
+        - https://www.dolnykubin.sk/
+        note: Official website of the city of Dolny Kubin links to TV DK. Stream is not 24/7.
+        discovery_source: .\tools\discovery\results\batch-06\working.m3u
+        stream_host: 5ca49f2417d90.streamlock.net
