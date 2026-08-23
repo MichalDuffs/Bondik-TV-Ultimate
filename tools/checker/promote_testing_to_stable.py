@@ -342,7 +342,7 @@ def promote_status_in_text(
         if not plain.startswith("  - id: "):
             continue
 
-        current_id = plain[len("  - id: "):].strip()
+        current_id = plain[len("  - id: "):].strip().strip('"').strip("'")
 
         if start is not None:
             end = index
@@ -359,7 +359,11 @@ def promote_status_in_text(
     for index in range(start, end):
         plain = lines[index].rstrip("\r\n")
 
-        if plain == "    status: testing":
+        if plain in {
+            "    status: testing",
+            '    status: "testing"',
+            "    status: 'testing'",
+        }:
             if lines[index].endswith("\r\n"):
                 ending = "\r\n"
             elif lines[index].endswith("\n"):
@@ -368,7 +372,8 @@ def promote_status_in_text(
                 ending = ""
 
             lines[index] = (
-                "    status: stable" + ending
+                plain.replace("testing", "stable", 1)
+                + ending
             )
 
             return "".join(lines)
@@ -567,3 +572,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

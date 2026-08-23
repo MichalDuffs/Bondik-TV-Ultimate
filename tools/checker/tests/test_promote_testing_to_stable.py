@@ -187,5 +187,29 @@ class StablePromotionTests(unittest.TestCase):
         )
 
 
+    def test_status_replacement_supports_quoted_id_and_status(self):
+        source = (
+            'channels:\n'
+            '  - id: "example-tv-cz"\n'
+            '    name: "Example TV"\n'
+            '    status: "testing"\n'
+        )
+
+        result = stable.promote_status_in_text(
+            source,
+            "example-tv-cz",
+        )
+
+        self.assertIn(
+            '  - id: "example-tv-cz"\n',
+            result,
+        )
+
+        self.assertIn(
+            '    status: "stable"\n',
+            result,
+        )
+
 if __name__ == "__main__":
     unittest.main()
+
