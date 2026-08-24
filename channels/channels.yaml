@@ -822,3 +822,33 @@ channels:
     metadata:
       website: null
       notes: "Licensed Czech 24/7 football-focused sports channel operated by Tivio Studio a.s. HTTPS stream deep-HLS verified to media segment by Bondik Hunter."
+
+  - id: "tv-noe-cz"
+    name: "TV Noe"
+    country: "CZ"
+    language: "cs"
+    category: "general"
+    provider: "tv-noe"
+    stream:
+      url: "https://n105.quickmedia.tv/noetv/live/noetv/Ifd4_1_4/chunks_dvr_timeshift-0-7200.m3u8"
+      format: "hls"
+      quality: "unknown"
+    status: "testing"
+    metadata:
+      website: "https://www.tvnoe.cz/"
+      notes: "Public TV Noe HLS candidate discovered via iptv-org. Hunter deep-HLS verified to media segment; keep in testing pending provenance and stability observation."
+
+  - id: "tv-noe-plus-cz"
+    name: "TV Noe+"
+    country: "CZ"
+    language: "cs"
+    category: "general"
+    provider: "tv-noe"
+    stream:
+      url: "https://n105.quickmedia.tv/noetvplus/live/noetvplus/Shz3_1_1/chunks_dvr_timeshift-0-7200.m3u8"
+      format: "hls"
+      quality: "unknown"
+    status: "testing"
+    metadata:
+      website: "https://www.tvnoe.cz/"
+      notes: "Public TV Noe+ HLS candidate discovered via iptv-org. Hunter deep-HLS verified to media segment; keep in testing pending provenance and stability observation."
