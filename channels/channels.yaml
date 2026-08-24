@@ -786,3 +786,21 @@ channels:
         note: Official TV Ružinov live page embeds the live.streaming.sk TV Ružinov player. HTTPS HLS stream was deep-HLS verified by Bondik Hunter.
         discovery_source: .\hunt-results\tvruzinov-https.m3u
         stream_host: lb.streaming.sk
+
+  - id: "kviff-tv-cz"
+    name: "KVIFF TV"
+    country: "CZ"
+    language: "cs"
+    category: "movies"
+    provider: "kviff-tv"
+
+    stream:
+      url: "https://antik.streaming.tivio.studio/channels/HC7JIqyyvQMl0mnqbbnI/index.m3u8"
+      format: "hls"
+      quality: "unknown"
+
+    status: "testing"
+
+    metadata:
+      website: "https://kviff.tv/"
+      notes: "KVIFF.TV linear stream. Hunter deep-HLS verified to media segment; provenance reviewed. Keep in testing for stability/seasonality observation."
