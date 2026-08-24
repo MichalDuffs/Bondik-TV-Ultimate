@@ -1,0 +1,7 @@
+#EXTM3U
+# Bondik TV Ultimate - Provider: tvt
+# Generated automatically from channels/channels.yaml
+# Quality checked by Bondik
+
+#EXTINF:-1 tvg-name="TVT" group-title="SK",TVT
+https://5ca49f2417d90.streamlock.net/live/turzovka/playlist.m3u8

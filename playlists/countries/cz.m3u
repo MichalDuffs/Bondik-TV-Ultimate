@@ -35,3 +35,9 @@ https://stream.jc1.cz/hls/jc1.m3u8
 
 #EXTINF:-1 tvg-name="Retro Music Television" group-title="CZ",Retro Music Television
 https://stream.mediawork.cz/retrotv/retrotvHQ1/playlist.m3u8
+
+#EXTINF:-1 tvg-name="Plzeň TV" group-title="CZ",Plzeň TV
+https://vysilani.zaktv.cz/broadcast/hls/ptv/index.m3u8
+
+#EXTINF:-1 tvg-name="Elektrika TV" group-title="CZ",Elektrika TV
+https://rtmp.elektrika.cz/live/myStream.sdp/playlist.m3u8

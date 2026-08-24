@@ -38,3 +38,15 @@ https://cdn1.etbon.eus/etb2on/index.m3u8
 
 #EXTINF:-1 tvg-name="Tele Elx" group-title="ES",Tele Elx
 https://tvdirecto.teleelx.es/stream/teleelx.m3u8
+
+#EXTINF:-1 tvg-name="MTR" group-title="SK",MTR
+https://cdnsk003.panaccess.com/local/Ruzomberok/index.m3u8
+
+#EXTINF:-1 tvg-name="TVT" group-title="SK",TVT
+https://5ca49f2417d90.streamlock.net/live/turzovka/playlist.m3u8
+
+#EXTINF:-1 tvg-name="Televizia Mocenok" group-title="SK",Televizia Mocenok
+https://5ca49f2417d90.streamlock.net/mocenok/livestream/playlist.m3u8
+
+#EXTINF:-1 tvg-name="Plzeň TV" group-title="CZ",Plzeň TV
+https://vysilani.zaktv.cz/broadcast/hls/ptv/index.m3u8

@@ -1,0 +1,7 @@
+#EXTM3U
+# Bondik TV Ultimate - Provider: tv-dk
+# Generated automatically from channels/channels.yaml
+# Quality checked by Bondik
+
+#EXTINF:-1 tvg-name="TV DK" group-title="SK",TV DK
+https://5ca49f2417d90.streamlock.net/live/dolnykubin1/playlist.m3u8
