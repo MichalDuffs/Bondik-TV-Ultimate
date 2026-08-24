@@ -68,3 +68,24 @@ https://live.france24.com/hls/live/2037179-b/F24_FR_HI_HLS/master_5000.m3u8
 
 #EXTINF:-1 tvg-name="France 24 Español" group-title="FR",France 24 Español
 https://live.france24.com/hls/live/2037220-b/F24_ES_HI_HLS/master_5000.m3u8
+
+#EXTINF:-1 tvg-name="MTR" group-title="SK",MTR
+https://cdnsk003.panaccess.com/local/Ruzomberok/index.m3u8
+
+#EXTINF:-1 tvg-name="TVT" group-title="SK",TVT
+https://5ca49f2417d90.streamlock.net/live/turzovka/playlist.m3u8
+
+#EXTINF:-1 tvg-name="Televizia Mocenok" group-title="SK",Televizia Mocenok
+https://5ca49f2417d90.streamlock.net/mocenok/livestream/playlist.m3u8
+
+#EXTINF:-1 tvg-name="Plzeň TV" group-title="CZ",Plzeň TV
+https://vysilani.zaktv.cz/broadcast/hls/ptv/index.m3u8
+
+#EXTINF:-1 tvg-name="Elektrika TV" group-title="CZ",Elektrika TV
+https://rtmp.elektrika.cz/live/myStream.sdp/playlist.m3u8
+
+#EXTINF:-1 tvg-name="TV DK" group-title="SK",TV DK
+https://5ca49f2417d90.streamlock.net/live/dolnykubin1/playlist.m3u8
+
+#EXTINF:-1 tvg-name="TV Ružinov" group-title="SK",TV Ružinov
+https://lb.streaming.sk/tvruzinov/stream/playlist.m3u8

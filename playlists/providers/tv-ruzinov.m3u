@@ -1,0 +1,7 @@
+#EXTM3U
+# Bondik TV Ultimate - Provider: tv-ruzinov
+# Generated automatically from channels/channels.yaml
+# Quality checked by Bondik
+
+#EXTINF:-1 tvg-name="TV Ružinov" group-title="SK",TV Ružinov
+https://lb.streaming.sk/tvruzinov/stream/playlist.m3u8

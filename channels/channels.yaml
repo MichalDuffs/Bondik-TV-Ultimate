@@ -502,7 +502,7 @@ channels:
       url: "https://cdnsk003.panaccess.com/local/Ruzomberok/index.m3u8"
       format: "hls"
       quality: "FHD"
-    status: "testing"
+    status: "stable"
     metadata:
       website: "https://www.mtr.sk/"
       notes: "Official/public regional television candidate. Hunter deep-HLS verified; provenance reviewed."
@@ -517,7 +517,7 @@ channels:
       url: "https://5ca49f2417d90.streamlock.net/live/turzovka/playlist.m3u8"
       format: "hls"
       quality: "SD"
-    status: "testing"
+    status: "stable"
     metadata:
       website: "https://www.tvt.sk/"
       notes: "Turzovska televizia candidate. Hunter deep-HLS verified; provenance reviewed."
@@ -532,7 +532,7 @@ channels:
       url: "https://5ca49f2417d90.streamlock.net/mocenok/livestream/playlist.m3u8"
       format: "hls"
       quality: "HD"
-    status: "testing"
+    status: "stable"
     metadata:
       website: "https://mocenok.sk/"
       notes: "Municipal television candidate. Hunter deep-HLS verified; provenance reviewed."
@@ -554,10 +554,10 @@ channels:
     logo:
       url: null
       local: null
-    status: testing
+    status: "stable"
     metadata:
       website: null
-      notes: 'AUTO-PROMOTION v1: manually approved candidate. Inserted as testing; stable promotion still requires Bondik QC. Discovery source: https://iptv-org.github.io/iptv/countries/cz.m3u Stream host: vysilani.zaktv.cz'
+      notes: "Public Plzen TV HLS stream. Hunter deep-HLS verified; provenance reviewed; promoted after repeated Bondik QC."
 
   - id: tv-panorama-sk
     name: TV Panorama
@@ -598,10 +598,10 @@ channels:
     logo:
       url: null
       local: null
-    status: testing
+    status: "stable"
     metadata:
       website: https://elektrika.tv/
-      notes: 'AUTO-PROMOTION v1.1: manually approved candidate with verified provenance evidence. Inserted as testing; stable promotion still requires Bondik QC.'
+      notes: "Public Elektrika TV HLS stream. Hunter deep-HLS verified; provenance reviewed; promoted after repeated Bondik QC."
       provenance:
         verified: true
         evidence:
@@ -715,10 +715,10 @@ channels:
     logo:
       url: null
       local: null
-    status: testing
+    status: "stable"
     metadata:
       website: https://www.dolnykubin.sk/
-      notes: 'AUTO-PROMOTION v1.1: manually approved candidate with verified provenance evidence. Inserted as testing; stable promotion still requires Bondik QC.'
+      notes: "Public TV DK regional stream. Hunter deep-HLS verified; provenance reviewed; promoted after repeated Bondik QC."
       provenance:
         verified: true
         evidence:
@@ -774,10 +774,10 @@ channels:
     logo:
       url: null
       local: null
-    status: testing
+    status: "stable"
     metadata:
       website: https://tvr.sk/
-      notes: 'AUTO-PROMOTION v1.1: manually approved candidate with verified provenance evidence. Inserted as testing; stable promotion still requires Bondik QC.'
+      notes: "Public TV Ruzinov regional stream. Hunter deep-HLS verified; provenance reviewed; promoted after repeated Bondik QC."
       provenance:
         verified: true
         evidence:

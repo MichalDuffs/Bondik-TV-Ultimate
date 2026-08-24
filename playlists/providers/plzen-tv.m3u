@@ -1,0 +1,7 @@
+#EXTM3U
+# Bondik TV Ultimate - Provider: plzen-tv
+# Generated automatically from channels/channels.yaml
+# Quality checked by Bondik
+
+#EXTINF:-1 tvg-name="Plzeň TV" group-title="CZ",Plzeň TV
+https://vysilani.zaktv.cz/broadcast/hls/ptv/index.m3u8
