@@ -804,3 +804,21 @@ channels:
     metadata:
       website: "https://kviff.tv/"
       notes: "KVIFF.TV linear stream. Hunter deep-HLS verified to media segment; provenance reviewed. Keep in testing for stability/seasonality observation."
+
+  - id: "ballcasterz-cz"
+    name: "Ballcasterz"
+    country: "CZ"
+    language: "cs"
+    category: "sport"
+    provider: "tivio-studio"
+
+    stream:
+      url: "https://antik.streaming.tivio.studio/channels/yXDwkH0CbFfkhU7ZnHlT/index.m3u8"
+      format: "hls"
+      quality: "unknown"
+
+    status: "testing"
+
+    metadata:
+      website: null
+      notes: "Licensed Czech 24/7 football-focused sports channel operated by Tivio Studio a.s. HTTPS stream deep-HLS verified to media segment by Bondik Hunter."
