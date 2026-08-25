@@ -11,7 +11,7 @@ import urllib.request
 from pathlib import Path
 
 
-VERSION = "0.8.0"
+VERSION = "0.9.0"
 
 METADATA_URL = "https://iptv-org.github.io/api/channels.json"
 
@@ -820,12 +820,12 @@ def category_cap_allows(
     )
 
 
-def select_diverse_top(
+def select_diverse_top_entries(
     rows: list[dict],
     count: int,
     max_score_gap: int = 10,
     max_per_category: int = 2,
-) -> list[dict]:
+) -> list[tuple[dict, str]]:
     if count <= 0 or not rows:
         return []
 
@@ -834,7 +834,6 @@ def select_diverse_top(
         len(rows),
     )
 
-    # Pure-score TOP determines the quality baseline.
     baseline_cutoff = numeric(
         rows[baseline_count - 1],
         "bagtop_score",
@@ -847,13 +846,12 @@ def select_diverse_top(
     )
 
     remaining = list(rows)
-    selected: list[dict] = []
+    selected: list[tuple[dict, str]] = []
     selected_ids: set[int] = set()
     category_counts: dict[str, int] = {}
 
     # Pass 1:
-    # One strong candidate from each category.
-    # Diversity never bypasses the v0.6 quality floor.
+    # Strong representative from each category family.
     for row in remaining:
         score = numeric(
             row,
@@ -876,8 +874,11 @@ def select_diverse_top(
         ):
             continue
 
-        selected.append(row)
+        selected.append(
+            (row, "diversity")
+        )
         selected_ids.add(id(row))
+
         category_counts[category] = (
             category_counts.get(category, 0)
             + 1
@@ -887,8 +888,8 @@ def select_diverse_top(
             return selected
 
     # Pass 2:
-    # Fill from normal ranking, but never exceed
-    # the configured category cap.
+    # Fill remaining places by normal score ranking
+    # while preserving the category-family cap.
     for row in remaining:
         if id(row) in selected_ids:
             continue
@@ -902,8 +903,11 @@ def select_diverse_top(
         ):
             continue
 
-        selected.append(row)
+        selected.append(
+            (row, "score-fill")
+        )
         selected_ids.add(id(row))
+
         category_counts[category] = (
             category_counts.get(category, 0)
             + 1
@@ -915,6 +919,45 @@ def select_diverse_top(
     return selected
 
 
+def select_diverse_top(
+    rows: list[dict],
+    count: int,
+    max_score_gap: int = 10,
+    max_per_category: int = 2,
+) -> list[dict]:
+    return [
+        row
+        for row, _reason
+        in select_diverse_top_entries(
+            rows,
+            count,
+            max_score_gap,
+            max_per_category,
+        )
+    ]
+
+
+def select_top_entries(
+    rows: list[dict],
+    count: int,
+    strategy: str,
+    diversity_score_gap: int = 10,
+    max_per_category: int = 2,
+) -> list[tuple[dict, str]]:
+    if strategy == "diverse":
+        return select_diverse_top_entries(
+            rows,
+            count,
+            diversity_score_gap,
+            max_per_category,
+        )
+
+    return [
+        (row, "score")
+        for row in rows[:count]
+    ]
+
+
 def select_top(
     rows: list[dict],
     count: int,
@@ -922,15 +965,68 @@ def select_top(
     diversity_score_gap: int = 10,
     max_per_category: int = 2,
 ) -> list[dict]:
-    if strategy == "diverse":
-        return select_diverse_top(
+    return [
+        row
+        for row, _reason
+        in select_top_entries(
             rows,
             count,
+            strategy,
             diversity_score_gap,
             max_per_category,
         )
+    ]
 
-    return rows[:count]
+
+def annotated_top_row(
+    row: dict,
+    rank: int,
+    reason: str,
+) -> dict:
+    annotated = dict(row)
+
+    annotated[
+        "bagtop_top_rank"
+    ] = rank
+
+    annotated[
+        "bagtop_top_reason"
+    ] = reason
+
+    annotated[
+        "bagtop_top_family"
+    ] = top_category(row)
+
+    return annotated
+
+
+def select_top_with_reasons(
+    rows: list[dict],
+    count: int,
+    strategy: str,
+    diversity_score_gap: int = 10,
+    max_per_category: int = 2,
+) -> list[dict]:
+    entries = select_top_entries(
+        rows,
+        count,
+        strategy,
+        diversity_score_gap,
+        max_per_category,
+    )
+
+    return [
+        annotated_top_row(
+            row,
+            rank,
+            reason,
+        )
+        for rank, (row, reason)
+        in enumerate(
+            entries,
+            start=1,
+        )
+    ]
 
 
 def output_sort_key(row: dict):
@@ -1094,7 +1190,7 @@ def main():
             args.top,
         )
 
-    top = select_top(
+    top = select_top_with_reasons(
         goodies,
         top_count,
         args.top_strategy,
@@ -1148,6 +1244,7 @@ def main():
             f"{args.max_per_category}"
         ),
         "- Category grouping: family",
+        "- TOP selection ledger: enabled",
         "",
         f"- Input candidates: {len(rows)}",
         f"- Raw GOODIES streams: {len(goodies_raw)}",
@@ -1214,6 +1311,9 @@ def main():
             if args.max_per_category == 0
             else str(args.max_per_category)
         )
+    )
+    print(
+        "TOP selection ledger  : enabled"
     )
     print("-" * 68)
     print(

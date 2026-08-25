@@ -915,3 +915,157 @@ def test_score_strategy_still_ignores_category_family_cap():
     )
 
     assert len(result) == 3
+
+
+def test_score_selection_ledger_marks_score():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "Movie A",
+            "bagtop_category": "movies",
+            "bagtop_score": "99",
+        },
+    ]
+
+    result = bagtop.select_top_with_reasons(
+        rows,
+        2,
+        "score",
+    )
+
+    assert [
+        row["bagtop_top_reason"]
+        for row in result
+    ] == [
+        "score",
+        "score",
+    ]
+
+
+def test_selection_ledger_adds_rank():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "Kids A",
+            "bagtop_category": "kids",
+            "bagtop_score": "99",
+        },
+    ]
+
+    result = bagtop.select_top_with_reasons(
+        rows,
+        2,
+        "score",
+    )
+
+    assert [
+        row["bagtop_top_rank"]
+        for row in result
+    ] == [1, 2]
+
+
+def test_diverse_selection_ledger_marks_first_pass():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "Kids A",
+            "bagtop_category": "kids",
+            "bagtop_score": "99",
+        },
+    ]
+
+    result = bagtop.select_top_with_reasons(
+        rows,
+        2,
+        "diverse",
+    )
+
+    assert [
+        row["bagtop_top_reason"]
+        for row in result
+    ] == [
+        "diversity",
+        "diversity",
+    ]
+
+
+def test_diverse_selection_ledger_marks_score_fill():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "Music B",
+            "bagtop_category": "music",
+            "bagtop_score": "99",
+        },
+        {
+            "candidate_name": "Kids A",
+            "bagtop_category": "kids",
+            "bagtop_score": "98",
+        },
+    ]
+
+    result = bagtop.select_top_with_reasons(
+        rows,
+        3,
+        "diverse",
+        max_per_category=2,
+    )
+
+    assert [
+        row["candidate_name"]
+        for row in result
+    ] == [
+        "Music A",
+        "Kids A",
+        "Music B",
+    ]
+
+    assert [
+        row["bagtop_top_reason"]
+        for row in result
+    ] == [
+        "diversity",
+        "diversity",
+        "score-fill",
+    ]
+
+
+def test_selection_ledger_uses_family_without_mutating_source():
+    rows = [
+        {
+            "candidate_name": "Cinema A",
+            "bagtop_category": "cinema",
+            "bagtop_score": "100",
+        },
+    ]
+
+    result = bagtop.select_top_with_reasons(
+        rows,
+        1,
+        "score",
+    )
+
+    assert (
+        result[0]["bagtop_top_family"]
+        == "movies"
+    )
+
+    assert "bagtop_top_rank" not in rows[0]
+    assert "bagtop_top_reason" not in rows[0]
+    assert "bagtop_top_family" not in rows[0]
