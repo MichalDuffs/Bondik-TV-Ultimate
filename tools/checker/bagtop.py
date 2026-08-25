@@ -11,7 +11,7 @@ import urllib.request
 from pathlib import Path
 
 
-VERSION = "0.5.0"
+VERSION = "0.6.0"
 
 METADATA_URL = "https://iptv-org.github.io/api/channels.json"
 
@@ -138,6 +138,16 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--diversity-score-gap",
+        type=int,
+        default=10,
+        help=(
+            "Maximum score drop allowed when diversity replaces "
+            "a pure-score TOP candidate. Default: 10."
+        ),
+    )
+
+    parser.add_argument(
         "--channel-metadata",
         type=Path,
         help=(
@@ -189,6 +199,11 @@ def parse_args():
     if args.channel_metadata is not None and args.refresh_metadata:
         parser.error(
             "--channel-metadata cannot be combined with --refresh-metadata"
+        )
+
+    if args.diversity_score_gap < 0:
+        parser.error(
+            "--diversity-score-gap must be >= 0"
         )
 
     return args
@@ -722,19 +737,48 @@ def write_csv(
 def select_diverse_top(
     rows: list[dict],
     count: int,
+    max_score_gap: int = 10,
 ) -> list[dict]:
-    if count <= 0:
+    if count <= 0 or not rows:
         return []
+
+    baseline_count = min(
+        count,
+        len(rows),
+    )
+
+    # Pure-score TOP determines the quality baseline.
+    baseline_cutoff = numeric(
+        rows[baseline_count - 1],
+        "bagtop_score",
+        0,
+    )
+
+    minimum_diverse_score = (
+        baseline_cutoff
+        - max_score_gap
+    )
 
     remaining = list(rows)
     selected: list[dict] = []
     used_categories: set[str] = set()
 
     # Pass 1:
-    # take the highest-scoring candidate from each category.
+    # Prefer different categories, but only when their
+    # quality remains close enough to the pure-score TOP.
     for row in remaining:
+        score = numeric(
+            row,
+            "bagtop_score",
+            0,
+        )
+
+        if score < minimum_diverse_score:
+            continue
+
         category = str(
-            row.get("bagtop_category") or "unknown"
+            row.get("bagtop_category")
+            or "unknown"
         ).casefold()
 
         if category in used_categories:
@@ -747,7 +791,7 @@ def select_diverse_top(
             return selected
 
     # Pass 2:
-    # fill remaining positions using normal ranking.
+    # Fill remaining positions using normal score ranking.
     selected_ids = {
         id(row)
         for row in selected
@@ -769,11 +813,13 @@ def select_top(
     rows: list[dict],
     count: int,
     strategy: str,
+    diversity_score_gap: int = 10,
 ) -> list[dict]:
     if strategy == "diverse":
         return select_diverse_top(
             rows,
             count,
+            diversity_score_gap,
         )
 
     return rows[:count]
@@ -938,6 +984,7 @@ def main():
         goodies,
         top_count,
         args.top_strategy,
+        args.diversity_score_gap,
     )
 
     write_csv(
@@ -977,6 +1024,10 @@ def main():
         f"- Metadata source: {metadata_source}",
         f"- Metadata records: {len(metadata)}",
         f"- TOP strategy: {args.top_strategy}",
+        (
+            "- Diversity score gap: "
+            f"{args.diversity_score_gap}"
+        ),
         "",
         f"- Input candidates: {len(rows)}",
         f"- Raw GOODIES streams: {len(goodies_raw)}",
@@ -1031,6 +1082,10 @@ def main():
     )
     print(
         f"TOP strategy          : {args.top_strategy}"
+    )
+    print(
+        "Diversity score gap   : "
+        f"{args.diversity_score_gap}"
     )
     print("-" * 68)
     print(
