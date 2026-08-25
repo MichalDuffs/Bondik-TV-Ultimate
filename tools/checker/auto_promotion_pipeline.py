@@ -640,19 +640,45 @@ def show_approval_queue(path: Path) -> int:
             or "pending"
         )
 
+        provenance = item.get("provenance")
+
+        if isinstance(provenance, dict):
+            provenance_level = (
+                str(provenance.get("level", "")).strip()
+                or "unverified"
+            )
+            provenance_verified = (
+                provenance.get("verified") is True
+            )
+        else:
+            provenance_level = "missing"
+            provenance_verified = False
+
+        verification_label = (
+            "VERIFIED"
+            if provenance_verified
+            else "NOT VERIFIED"
+        )
+
         print(
             f"{index}. {name} | {country} | "
             f"{category} | score={score} | "
             f"{decision.upper()}"
         )
 
+        print(
+            f"   provenance: "
+            f"{provenance_level.upper()} / "
+            f"{verification_label}"
+        )
+
         if host:
-            print(f"   host : {host}")
+            print(f"   host      : {host}")
 
         if flags:
-            print(f"   flags: {flags}")
+            print(f"   flags     : {flags}")
 
-        print(f"   url  : {url}")
+        print(f"   url       : {url}")
 
     return 0
 
