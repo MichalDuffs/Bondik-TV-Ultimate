@@ -160,6 +160,81 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def print_candidate_review_dashboard(csv_path: Path) -> None:
+    if not csv_path.exists():
+        print()
+        print("? Candidate review dashboard unavailable: review.csv not found.")
+        return
+
+    import csv
+
+    with csv_path.open(
+        "r",
+        encoding="utf-8-sig",
+        newline="",
+    ) as handle:
+        rows = list(csv.DictReader(handle))
+
+    new_items = []
+    alternatives = []
+
+    for row in rows:
+        name = str(row.get("candidate_name", "")).strip()
+        country = str(row.get("country_inferred", "")).strip()
+        category = str(row.get("category_inferred", "")).strip() or "unknown"
+        score = str(row.get("bondik_score", "")).strip()
+        host = str(row.get("stream_host", "")).strip()
+        existing = str(row.get("existing_channel_id", "")).strip()
+        flags = str(row.get("review_flags", "")).strip()
+
+        item = {
+            "name": name,
+            "country": country,
+            "category": category,
+            "score": score,
+            "host": host,
+            "existing": existing,
+            "flags": flags,
+        }
+
+        if existing:
+            alternatives.append(item)
+        else:
+            new_items.append(item)
+
+    print()
+    print("=" * 72)
+    print("?? Bondik Candidate Review Dashboard")
+    print("=" * 72)
+    print(f"NEW CANDIDATES : {len(new_items)}")
+    print(f"ALTERNATIVES   : {len(alternatives)}")
+
+    if new_items:
+        print()
+        print("New candidates:")
+
+        for item in new_items:
+            print(
+                f"?? {item['name']} "
+                f"({item['country']} / {item['category']}) "
+                f"score={item['score']}"
+            )
+            print(f"   host : {item['host']}")
+            print(f"   flags: {item['flags']}")
+
+    if alternatives:
+        print()
+        print("Existing-channel alternatives:")
+
+        for item in alternatives:
+            print(
+                f"?? {item['name']} "
+                f"-> existing={item['existing']} "
+                f"score={item['score']}"
+            )
+            print(f"   flags: {item['flags']}")
+
+
 def print_promotion_dashboard(report_path: Path = PROMOTION_REPORT) -> None:
     if not report_path.exists():
         print()
@@ -335,6 +410,10 @@ def main() -> int:
                 "ERROR: Candidate Gate output not found: "
                 f"{generated_candidates}"
             )
+
+        print_candidate_review_dashboard(
+            args.candidate_out_dir / "review.csv"
+        )
 
     if not args.skip_testing_import:
         candidates_path = args.candidates or generated_candidates

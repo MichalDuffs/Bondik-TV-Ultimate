@@ -103,3 +103,53 @@ def test_generate_playlists_flag_is_in_help():
 
     assert result.returncode == 0
     assert "--generate-playlists" in result.stdout
+def test_candidate_review_dashboard_groups_new_and_alternatives(
+    tmp_path,
+    capsys,
+):
+    import csv
+
+    review = tmp_path / "review.csv"
+
+    rows = [
+        {
+            "candidate_name": "New TV",
+            "country_inferred": "CZ",
+            "category_inferred": "news",
+            "bondik_score": "70",
+            "stream_host": "new.example",
+            "existing_channel_id": "",
+            "review_flags": "manual-provenance-review",
+        },
+        {
+            "candidate_name": "Existing TV",
+            "country_inferred": "SK",
+            "category_inferred": "",
+            "bondik_score": "40",
+            "stream_host": "alt.example",
+            "existing_channel_id": "existing-tv-sk",
+            "review_flags": "possible-existing-channel-alternative",
+        },
+    ]
+
+    with review.open(
+        "w",
+        encoding="utf-8-sig",
+        newline="",
+    ) as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=rows[0].keys(),
+        )
+        writer.writeheader()
+        writer.writerows(rows)
+
+    pipeline.print_candidate_review_dashboard(review)
+
+    out = capsys.readouterr().out
+
+    assert "NEW CANDIDATES : 1" in out
+    assert "ALTERNATIVES   : 1" in out
+    assert "New TV" in out
+    assert "Existing TV" in out
+    assert "existing-tv-sk" in out
