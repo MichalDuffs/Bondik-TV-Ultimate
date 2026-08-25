@@ -255,3 +255,133 @@ def test_nsfw_metadata_is_parked():
         )
         == "parking"
     )
+
+
+def test_metadata_source_uses_existing_cache(
+    tmp_path,
+    monkeypatch,
+):
+    cache = tmp_path / "channels.json"
+    cache.write_text(
+        "[]",
+        encoding="utf-8",
+    )
+
+    downloads = []
+
+    monkeypatch.setattr(
+        bagtop,
+        "download_channel_metadata",
+        lambda path: downloads.append(path),
+    )
+
+    path, mode = bagtop.resolve_metadata_source(
+        channel_metadata=None,
+        metadata_cache=cache,
+        refresh_metadata=False,
+        no_metadata=False,
+    )
+
+    assert path == cache
+    assert mode == "cache"
+    assert downloads == []
+
+
+def test_metadata_source_downloads_missing_cache(
+    tmp_path,
+    monkeypatch,
+):
+    cache = tmp_path / "channels.json"
+
+    def fake_download(path):
+        path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+        path.write_text(
+            '[{"id":"Example.test"}]',
+            encoding="utf-8",
+        )
+
+    monkeypatch.setattr(
+        bagtop,
+        "download_channel_metadata",
+        fake_download,
+    )
+
+    path, mode = bagtop.resolve_metadata_source(
+        channel_metadata=None,
+        metadata_cache=cache,
+        refresh_metadata=False,
+        no_metadata=False,
+    )
+
+    assert path == cache
+    assert mode == "downloaded"
+    assert cache.exists()
+
+
+def test_metadata_refresh_failure_uses_cache(
+    tmp_path,
+    monkeypatch,
+):
+    cache = tmp_path / "channels.json"
+    cache.write_text(
+        '[{"id":"Cached.test"}]',
+        encoding="utf-8",
+    )
+
+    def failing_download(path):
+        raise OSError("network down")
+
+    monkeypatch.setattr(
+        bagtop,
+        "download_channel_metadata",
+        failing_download,
+    )
+
+    path, mode = bagtop.resolve_metadata_source(
+        channel_metadata=None,
+        metadata_cache=cache,
+        refresh_metadata=True,
+        no_metadata=False,
+    )
+
+    assert path == cache
+    assert mode == "cache-fallback"
+
+
+def test_explicit_metadata_beats_cache(
+    tmp_path,
+):
+    explicit = tmp_path / "explicit.json"
+    explicit.write_text(
+        "[]",
+        encoding="utf-8",
+    )
+
+    cache = tmp_path / "cache.json"
+
+    path, mode = bagtop.resolve_metadata_source(
+        channel_metadata=explicit,
+        metadata_cache=cache,
+        refresh_metadata=False,
+        no_metadata=False,
+    )
+
+    assert path == explicit
+    assert mode == "explicit"
+
+
+def test_no_metadata_disables_metadata(
+    tmp_path,
+):
+    path, mode = bagtop.resolve_metadata_source(
+        channel_metadata=None,
+        metadata_cache=tmp_path / "channels.json",
+        refresh_metadata=False,
+        no_metadata=True,
+    )
+
+    assert path is None
+    assert mode == "disabled"

@@ -7,10 +7,19 @@ import csv
 import json
 import math
 import re
+import urllib.request
 from pathlib import Path
 
 
-VERSION = "0.3.0"
+VERSION = "0.4.0"
+
+METADATA_URL = "https://iptv-org.github.io/api/channels.json"
+
+DEFAULT_METADATA_CACHE = Path(
+    "hunt-results/metadata/iptv-org-channels.json"
+)
+
+METADATA_TIMEOUT_SECONDS = 20
 
 GOODIES = {
     "movies",
@@ -121,12 +130,158 @@ def parse_args():
         "--channel-metadata",
         type=Path,
         help=(
-            "Optional iptv-org channels.json metadata file. "
-            "Exact tvg-id metadata is preferred over fuzzy name inference."
+            "Explicit channels.json metadata file. "
+            "When supplied, automatic metadata cache handling is disabled."
         ),
     )
 
-    return parser.parse_args()
+    parser.add_argument(
+        "--metadata-cache",
+        type=Path,
+        default=DEFAULT_METADATA_CACHE,
+        help=(
+            "Automatic iptv-org metadata cache path. "
+            f"Default: {DEFAULT_METADATA_CACHE}"
+        ),
+    )
+
+    parser.add_argument(
+        "--refresh-metadata",
+        action="store_true",
+        help=(
+            "Refresh the automatic metadata cache from iptv-org. "
+            "If refresh fails and a cache already exists, use the cache."
+        ),
+    )
+
+    parser.add_argument(
+        "--no-metadata",
+        action="store_true",
+        help=(
+            "Disable metadata completely and use only local "
+            "category inference."
+        ),
+    )
+
+    args = parser.parse_args()
+
+    if args.no_metadata and args.channel_metadata is not None:
+        parser.error(
+            "--no-metadata cannot be combined with --channel-metadata"
+        )
+
+    if args.no_metadata and args.refresh_metadata:
+        parser.error(
+            "--no-metadata cannot be combined with --refresh-metadata"
+        )
+
+    if args.channel_metadata is not None and args.refresh_metadata:
+        parser.error(
+            "--channel-metadata cannot be combined with --refresh-metadata"
+        )
+
+    return args
+
+
+def validate_metadata_payload(data: bytes) -> None:
+    raw = json.loads(
+        data.decode("utf-8-sig")
+    )
+
+    if not isinstance(raw, list):
+        raise ValueError(
+            "iptv-org metadata payload must be a JSON array"
+        )
+
+    if not raw:
+        raise ValueError(
+            "iptv-org metadata payload is empty"
+        )
+
+
+def download_channel_metadata(
+    cache_path: Path,
+) -> None:
+    cache_path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    temporary_path = cache_path.with_name(
+        cache_path.name + ".tmp"
+    )
+
+    request = urllib.request.Request(
+        METADATA_URL,
+        headers={
+            "User-Agent": (
+                f"Bondik-BAGTOP/{VERSION}"
+            )
+        },
+    )
+
+    try:
+        with urllib.request.urlopen(
+            request,
+            timeout=METADATA_TIMEOUT_SECONDS,
+        ) as response:
+            data = response.read()
+
+        validate_metadata_payload(data)
+
+        temporary_path.write_bytes(data)
+        temporary_path.replace(cache_path)
+
+    except Exception:
+        if temporary_path.exists():
+            temporary_path.unlink()
+
+        raise
+
+
+def resolve_metadata_source(
+    channel_metadata: Path | None,
+    metadata_cache: Path,
+    refresh_metadata: bool,
+    no_metadata: bool,
+) -> tuple[Path | None, str]:
+    if no_metadata:
+        return None, "disabled"
+
+    if channel_metadata is not None:
+        if not channel_metadata.exists():
+            raise FileNotFoundError(
+                f"metadata file not found: {channel_metadata}"
+            )
+
+        return channel_metadata, "explicit"
+
+    cache_exists = metadata_cache.exists()
+
+    if cache_exists and not refresh_metadata:
+        return metadata_cache, "cache"
+
+    try:
+        download_channel_metadata(
+            metadata_cache
+        )
+
+        return metadata_cache, "downloaded"
+
+    except Exception as exc:
+        if cache_exists:
+            print(
+                "?? Metadata refresh failed; "
+                "using existing cache: "
+                f"{exc}"
+            )
+
+            return metadata_cache, "cache-fallback"
+
+        raise RuntimeError(
+            "metadata download failed and no cache exists: "
+            f"{exc}"
+        ) from exc
 
 
 def load_channel_metadata(path: Path | None) -> dict[str, dict]:
@@ -586,8 +741,27 @@ def main():
             csv.DictReader(handle)
         )
 
-    metadata = load_channel_metadata(
-        args.channel_metadata
+    try:
+        metadata_path, metadata_mode = resolve_metadata_source(
+            channel_metadata=args.channel_metadata,
+            metadata_cache=args.metadata_cache,
+            refresh_metadata=args.refresh_metadata,
+            no_metadata=args.no_metadata,
+        )
+
+        metadata = load_channel_metadata(
+            metadata_path
+        )
+
+    except (OSError, ValueError, RuntimeError) as exc:
+        raise SystemExit(
+            f"BAGTOP metadata error: {exc}"
+        ) from exc
+
+    metadata_source = (
+        str(metadata_path)
+        if metadata_path is not None
+        else "-"
     )
 
     goodies_raw = []
@@ -724,6 +898,10 @@ def main():
     summary = [
         f"# Bondik BAGTOP v{VERSION}",
         "",
+        f"- Metadata mode: {metadata_mode}",
+        f"- Metadata source: {metadata_source}",
+        f"- Metadata records: {len(metadata)}",
+        "",
         f"- Input candidates: {len(rows)}",
         f"- Raw GOODIES streams: {len(goodies_raw)}",
         f"- Unique GOODIES channels: {len(goodies)}",
@@ -766,6 +944,16 @@ def main():
         f"🚜🔗 Bondik BAGTOP v{VERSION}"
     )
     print("=" * 68)
+    print(
+        f"Metadata mode         : {metadata_mode}"
+    )
+    print(
+        f"Metadata records      : {len(metadata)}"
+    )
+    print(
+        f"Metadata source       : {metadata_source}"
+    )
+    print("-" * 68)
     print(
         f"Input candidates      : {len(rows)}"
     )
