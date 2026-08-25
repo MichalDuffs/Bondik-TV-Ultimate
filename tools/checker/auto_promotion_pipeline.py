@@ -158,6 +158,12 @@ def parse_args() -> argparse.Namespace:
         help="Regenerate generated M3U playlists after promotion stages",
     )
 
+    parser.add_argument(
+        "--show-approval-queue",
+        action="store_true",
+        help="Show the current NEW-candidate approval queue and exit",
+    )
+
     return parser.parse_args()
 
 
@@ -398,6 +404,36 @@ def run_step(name: str, command: list[str]) -> None:
         )
 
 
+def show_approval_queue(path: Path) -> int:
+    if not path.exists():
+        print(f"ERROR: approval queue not found: {path}")
+        return 1
+
+    payload = json.loads(
+        path.read_text(encoding="utf-8-sig")
+    )
+
+    candidates = payload.get("candidates", [])
+
+    print()
+    print("=" * 72)
+    print("?? Bondik Approval Queue")
+    print("=" * 72)
+
+    if not candidates:
+        print("No pending candidates.")
+        return 0
+
+    for index, item in enumerate(candidates, start=1):
+        url = str(item.get("url", "")).strip()
+        decision = str(item.get("decision", "")).strip() or "pending"
+
+        print(f"{index}. {decision.upper()}")
+        print(f"   {url}")
+
+    return 0
+
+
 def main() -> int:
     args = parse_args()
 
@@ -407,6 +443,11 @@ def main() -> int:
     print(f"Testing apply : {args.apply_testing}")
     print(f"Stable apply  : {args.apply_stable}")
     print("=" * 72)
+
+    if args.show_approval_queue:
+        return show_approval_queue(
+            args.candidate_out_dir / "approval-queue.json"
+        )
 
     python = sys.executable
 

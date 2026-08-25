@@ -204,3 +204,30 @@ def test_candidate_approval_queue_contains_only_new_candidates(
             }
         ]
     }
+def test_show_approval_queue(tmp_path, capsys):
+    import json
+
+    queue = tmp_path / "approval-queue.json"
+
+    queue.write_text(
+        json.dumps(
+            {
+                "candidates": [
+                    {
+                        "url": "https://example.com/test.m3u8",
+                        "decision": "pending",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = pipeline.show_approval_queue(queue)
+
+    out = capsys.readouterr().out
+
+    assert result == 0
+    assert "Bondik Approval Queue" in out
+    assert "PENDING" in out
+    assert "https://example.com/test.m3u8" in out
