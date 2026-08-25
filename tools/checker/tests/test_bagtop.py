@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
@@ -642,3 +642,178 @@ def test_select_top_passes_diversity_score_gap():
         "Music A",
         "Music B",
     ]
+
+
+def test_category_cap_blocks_third_same_category():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "Music B",
+            "bagtop_category": "music",
+            "bagtop_score": "99",
+        },
+        {
+            "candidate_name": "Music C",
+            "bagtop_category": "music",
+            "bagtop_score": "98",
+        },
+        {
+            "candidate_name": "Movie A",
+            "bagtop_category": "movies",
+            "bagtop_score": "97",
+        },
+        {
+            "candidate_name": "Kids A",
+            "bagtop_category": "kids",
+            "bagtop_score": "96",
+        },
+    ]
+
+    result = bagtop.select_diverse_top(
+        rows,
+        5,
+        max_score_gap=10,
+        max_per_category=2,
+    )
+
+    names = [
+        row["candidate_name"]
+        for row in result
+    ]
+
+    assert "Music A" in names
+    assert "Music B" in names
+    assert "Music C" not in names
+    assert len(result) == 4
+
+
+def test_category_cap_allows_two_per_category():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "Movie A",
+            "bagtop_category": "movies",
+            "bagtop_score": "99",
+        },
+        {
+            "candidate_name": "Music B",
+            "bagtop_category": "music",
+            "bagtop_score": "98",
+        },
+        {
+            "candidate_name": "Movie B",
+            "bagtop_category": "movies",
+            "bagtop_score": "97",
+        },
+    ]
+
+    result = bagtop.select_diverse_top(
+        rows,
+        4,
+        max_score_gap=10,
+        max_per_category=2,
+    )
+
+    assert len(result) == 4
+
+
+def test_category_cap_one_keeps_only_unique_categories():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "Music B",
+            "bagtop_category": "music",
+            "bagtop_score": "99",
+        },
+        {
+            "candidate_name": "Kids A",
+            "bagtop_category": "kids",
+            "bagtop_score": "98",
+        },
+    ]
+
+    result = bagtop.select_diverse_top(
+        rows,
+        3,
+        max_score_gap=10,
+        max_per_category=1,
+    )
+
+    assert [
+        row["candidate_name"]
+        for row in result
+    ] == [
+        "Music A",
+        "Kids A",
+    ]
+
+
+def test_zero_category_cap_is_unlimited():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "Music B",
+            "bagtop_category": "music",
+            "bagtop_score": "99",
+        },
+        {
+            "candidate_name": "Music C",
+            "bagtop_category": "music",
+            "bagtop_score": "98",
+        },
+    ]
+
+    result = bagtop.select_diverse_top(
+        rows,
+        3,
+        max_score_gap=10,
+        max_per_category=0,
+    )
+
+    assert len(result) == 3
+
+
+def test_score_strategy_ignores_category_cap():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "Music B",
+            "bagtop_category": "music",
+            "bagtop_score": "99",
+        },
+        {
+            "candidate_name": "Music C",
+            "bagtop_category": "music",
+            "bagtop_score": "98",
+        },
+    ]
+
+    result = bagtop.select_top(
+        rows,
+        3,
+        "score",
+        diversity_score_gap=10,
+        max_per_category=1,
+    )
+
+    assert len(result) == 3
