@@ -262,6 +262,15 @@ def write_candidate_approval_queue(
             "host": str(
                 row.get("stream_host", "")
             ).strip(),
+            "tvg_id": str(
+                row.get("tvg_id", "")
+            ).strip(),
+            "validation": str(
+                row.get("validation", "")
+            ).strip(),
+            "response_ms": str(
+                row.get("response_ms", "")
+            ).strip(),
             "flags": str(
                 row.get("review_flags", "")
             ).strip(),
@@ -327,10 +336,115 @@ def write_candidate_approval_queue(
         f"{preserved_count}"
     )
 
+def review_cluster_key(row: dict) -> str:
+    tvg_id = str(row.get("tvg_id", "")).strip()
+
+    if tvg_id:
+        return f"tvg:{tvg_id.casefold()}"
+
+    url = str(row.get("url", "")).strip()
+
+    return f"url:{url}"
+
+
+def review_stream_rank(row: dict) -> tuple:
+    url = str(row.get("url", "")).strip().casefold()
+    validation = str(
+        row.get("validation", "")
+    ).strip().casefold()
+
+    try:
+        response_ms = int(
+            float(row.get("response_ms", "") or 999999)
+        )
+    except (TypeError, ValueError):
+        response_ms = 999999
+
+    try:
+        score = int(
+            float(row.get("bondik_score", "") or 0)
+        )
+    except (TypeError, ValueError):
+        score = 0
+
+    https_rank = 0 if url.startswith("https://") else 1
+    validation_rank = 0 if validation == "hls-segment" else 1
+
+    return (
+        https_rank,
+        validation_rank,
+        response_ms,
+        -score,
+        url,
+    )
+
+
+def build_review_clusters(rows: list[dict]) -> list[dict]:
+    grouped: dict[str, list[dict]] = {}
+
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+
+        if str(
+            row.get("existing_channel_id", "")
+        ).strip():
+            continue
+
+        key = review_cluster_key(row)
+
+        grouped.setdefault(key, []).append(row)
+
+    clusters = []
+
+    for key, variants in grouped.items():
+        ordered = sorted(
+            variants,
+            key=review_stream_rank,
+        )
+
+        recommended = ordered[0]
+
+        clusters.append(
+            {
+                "key": key,
+                "name": str(
+                    recommended.get(
+                        "candidate_name",
+                        "",
+                    )
+                ).strip(),
+                "country": str(
+                    recommended.get(
+                        "country_inferred",
+                        "",
+                    )
+                ).strip(),
+                "tvg_id": str(
+                    recommended.get(
+                        "tvg_id",
+                        "",
+                    )
+                ).strip(),
+                "recommended": recommended,
+                "alternates": ordered[1:],
+            }
+        )
+
+    clusters.sort(
+        key=lambda item: (
+            str(item["name"]).casefold(),
+            str(item["key"]),
+        )
+    )
+
+    return clusters
+
+
 def print_candidate_review_dashboard(csv_path: Path) -> None:
     if not csv_path.exists():
         print()
-        print("? Candidate review dashboard unavailable: review.csv not found.")
+        print("Candidate review dashboard unavailable: review.csv not found.")
         return
 
     import csv
@@ -342,65 +456,87 @@ def print_candidate_review_dashboard(csv_path: Path) -> None:
     ) as handle:
         rows = list(csv.DictReader(handle))
 
-    new_items = []
-    alternatives = []
+    alternatives = [
+        row
+        for row in rows
+        if str(
+            row.get("existing_channel_id", "")
+        ).strip()
+    ]
 
-    for row in rows:
-        name = str(row.get("candidate_name", "")).strip()
-        country = str(row.get("country_inferred", "")).strip()
-        category = str(row.get("category_inferred", "")).strip() or "unknown"
-        score = str(row.get("bondik_score", "")).strip()
-        host = str(row.get("stream_host", "")).strip()
-        existing = str(row.get("existing_channel_id", "")).strip()
-        flags = str(row.get("review_flags", "")).strip()
+    clusters = build_review_clusters(rows)
 
-        item = {
-            "name": name,
-            "country": country,
-            "category": category,
-            "score": score,
-            "host": host,
-            "existing": existing,
-            "flags": flags,
-        }
-
-        if existing:
-            alternatives.append(item)
-        else:
-            new_items.append(item)
+    stream_count = sum(
+        1 + len(cluster["alternates"])
+        for cluster in clusters
+    )
 
     print()
     print("=" * 72)
-    print("?? Bondik Candidate Review Dashboard")
+    print("Bondik Candidate Review Dashboard")
     print("=" * 72)
-    print(f"NEW CANDIDATES : {len(new_items)}")
-    print(f"ALTERNATIVES   : {len(alternatives)}")
+    print(f"REVIEW CASES : {len(clusters)}")
+    print(f"NEW STREAMS  : {stream_count}")
+    print(f"ALTERNATIVES : {len(alternatives)}")
 
-    if new_items:
+    if clusters:
         print()
-        print("New candidates:")
+        print("New review cases:")
 
-        for item in new_items:
-            print(
-                f"?? {item['name']} "
-                f"({item['country']} / {item['category']}) "
-                f"score={item['score']}"
+        for index, cluster in enumerate(
+            clusters,
+            start=1,
+        ):
+            recommended = cluster["recommended"]
+
+            name = (
+                cluster["name"]
+                or "Unknown"
             )
-            print(f"   host : {item['host']}")
-            print(f"   flags: {item['flags']}")
+            country = (
+                cluster["country"]
+                or "?"
+            )
+            tvg_id = (
+                cluster["tvg_id"]
+                or "no-tvg-id"
+            )
+
+            print()
+            print(
+                f"{index}. {name} "
+                f"({country}) "
+                f"[{1 + len(cluster['alternates'])} variant(s)]"
+            )
+            print(f"   tvg-id     : {tvg_id}")
+            print(
+                f"   recommended: "
+                f"{recommended.get('stream_host', '')} / "
+                f"{recommended.get('response_ms', '')} ms"
+            )
+            print(
+                f"   url        : "
+                f"{recommended.get('url', '')}"
+            )
+
+            for alt in cluster["alternates"]:
+                print(
+                    f"   alt        : "
+                    f"{alt.get('stream_host', '')} / "
+                    f"{alt.get('response_ms', '')} ms / "
+                    f"{alt.get('url', '')}"
+                )
 
     if alternatives:
         print()
         print("Existing-channel alternatives:")
 
-        for item in alternatives:
+        for row in alternatives:
             print(
-                f"?? {item['name']} "
-                f"-> existing={item['existing']} "
-                f"score={item['score']}"
+                f"- {row.get('candidate_name', '')} "
+                f"-> existing="
+                f"{row.get('existing_channel_id', '')}"
             )
-            print(f"   flags: {item['flags']}")
-
 
 def print_promotion_dashboard(report_path: Path = PROMOTION_REPORT) -> None:
     if not report_path.exists():
