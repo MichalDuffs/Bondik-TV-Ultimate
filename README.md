@@ -1,4 +1,4 @@
-# 📺 Bondik TV Ultimate
+﻿# đź“ş Bondik TV Ultimate
 
 <p align="center">
   <img src="assets/logo/bondik-tv-logo.png" width="500" alt="Bondik TV Ultimate Logo">
@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Quality before quantity.</strong><br>
-  Open • Free • Community • Verified IPTV
+  Open â€˘ Free â€˘ Community â€˘ Verified IPTV
 </p>
 
 <p align="center">
@@ -21,7 +21,7 @@
 
 ---
 
-## 🌍 Welcome
+## đźŚŤ Welcome
 
 **Bondik TV Ultimate** is a free and open-source IPTV playlist project focused on verified public streams, simple playlists and transparent quality control.
 
@@ -32,7 +32,7 @@ A trusted testing stream is not automatically stable.
 
 ---
 
-## ▶️ Quick Start
+## â–¶ď¸Ź Quick Start
 
 The main public playlist is:
 
@@ -44,85 +44,85 @@ Paste the URL into a compatible IPTV player.
 
 Public playlists are generated from channels that have reached **stable** status. Testing candidates stay out of the public playlist until they pass the quality process.
 
-- ⭐ [Ultimate playlist](playlists/ultimate.m3u)
-- 🌍 [Country playlists](playlists/countries/)
-- 🎬 [Category playlists](playlists/categories/)
-- 📡 [Provider playlists](playlists/providers/)
+- â­ [Ultimate playlist](playlists/ultimate.m3u)
+- đźŚŤ [Country playlists](playlists/countries/)
+- đźŽ¬ [Category playlists](playlists/categories/)
+- đź“ˇ [Provider playlists](playlists/providers/)
 
 ---
 
-## 🛡️ Quality Pipeline
+## đź›ˇď¸Ź Quality Pipeline
 
 ```text
 Public M3U sources
-        ↓
+        â†“
 M3U Hunter v0.9
-        ↓
+        â†“
 Candidate Gate v0.5.1
-        ↓
+        â†“
 Candidate ranking / audit
 BAGTOP v1.0
-        ↓
+        â†“
 Manual provenance review
-        ↓
+        â†“
 AUTO-PROMOTION v1.1
-        ↓
+        â†“
 status=testing
-        ↓
+        â†“
 Testing Promotion Gate v0.7.1
-        ↓
+        â†“
 3 counted passes / minimum 24h gap
-        ↓
+        â†“
 Manual stable review
-        ↓
+        â†“
 STABLE PROMOTION v1.0
-        ↓
+        â†“
 status=stable
-        ↓
+        â†“
 Playlist Generator
-        ↓
+        â†“
 Public Bondik TV playlists
 ```
 
 No candidate moves directly from discovery into the stable public playlist.
 
-Automation helps us find, test and organize channels — it does **not** bypass human quality control.
+Automation helps us find, test and organize channels â€” it does **not** bypass human quality control.
 
 ---
 
-## 🚜 Tooling
+## đźšś Tooling
 
-- 🔎 **M3U Hunter v0.9** — bulk discovery, country filtering, deep HLS verification and history
-- 🚦 **Candidate Gate v0.5.1** — scoring, deduplication and priority / review / parking buckets
-- 🚜 **BAGTOP v1.0** — quality ranking, diversity controls, category-family caps, full selection audit and run manifest
-- 🛡️ **AUTO-PROMOTION v1.1** — provenance and risk gates before a candidate can enter testing
-- 🧪 **Testing Promotion Gate v0.7.1** — spaced health passes with reset protection
-- ✅ **STABLE PROMOTION v1.0** — controlled human-approved move from testing to stable
-- 📡 **Stream health monitoring** — scheduled checks, outage streaks, recovery detection and issue automation
-- 📅 **EPG tooling** — source validation, monitoring and maintenance planning
-- 🤖 **GitHub Actions CI** — tests, metadata validation and playlist synchronization on every push / PR
+- đź”Ž **M3U Hunter v0.9** â€” bulk discovery, country filtering, deep HLS verification and history
+- đźš¦ **Candidate Gate v0.5.1** â€” scoring, deduplication and priority / review / parking buckets
+- đźšś **BAGTOP v1.0** â€” quality ranking, diversity controls, category-family caps, full selection audit and run manifest
+- đź›ˇď¸Ź **AUTO-PROMOTION v1.1** â€” provenance and risk gates before a candidate can enter testing
+- đź§Ş **Testing Promotion Gate v0.7.1** â€” spaced health passes with reset protection
+- âś… **STABLE PROMOTION v1.0** â€” controlled human-approved move from testing to stable
+- đź“ˇ **Stream health monitoring** â€” scheduled checks, outage streaks, recovery detection and issue automation
+- đź“… **EPG tooling** â€” source validation, monitoring and maintenance planning
+- đź¤– **GitHub Actions CI** â€” tests, metadata validation and playlist synchronization on every push / PR
 
 The checker suite contains **300+ automated regression tests**, and CI validates the repository before changes are considered healthy.
 
 ---
 
-## ✨ Features
+## âś¨ Features
 
-- ⭐ Stable-only Ultimate playlist
-- 🌍 Country playlists
-- 🎬 Category playlists
-- 📡 Provider playlists
-- 📅 EPG support
-- 🔎 Automated stream discovery
-- 🛡️ Provenance and risk gates
-- 🧪 Testing → stable lifecycle
-- 📊 Auditable candidate ranking
-- ❤️ Community driven
-- 🚀 Free and open source
+- â­ Stable-only Ultimate playlist
+- đźŚŤ Country playlists
+- đźŽ¬ Category playlists
+- đź“ˇ Provider playlists
+- đź“… EPG support
+- đź”Ž Automated stream discovery
+- đź›ˇď¸Ź Provenance and risk gates
+- đź§Ş Testing â†’ stable lifecycle
+- đź“Š Auditable candidate ranking
+- âť¤ď¸Ź Community driven
+- đźš€ Free and open source
 
 ---
 
-## 📂 Repository Structure
+## đź“‚ Repository Structure
 
 ```text
 assets/        branding and graphics
@@ -138,7 +138,7 @@ tools/         discovery, QC, promotion and generator tools
 
 ---
 
-## 📅 EPG & Stream Health
+## đź“… EPG & Stream Health
 
 Supported channels can include Electronic Program Guide metadata.
 
@@ -146,7 +146,7 @@ The project also contains scheduled stream and EPG monitoring, retry protection,
 
 ---
 
-## 📱 Supported Platforms
+## đź“± Supported Platforms
 
 M3U playlists can be used with compatible players on platforms such as:
 
@@ -163,80 +163,81 @@ Player support depends on the application and stream format.
 
 ---
 
-## 🗺️ Project Status
+## đź—şď¸Ź Project Status
 
 The core discovery and quality-control pipeline is already in place. Current work focuses on:
 
-- 🇨🇿 expanding verified Czech coverage
-- 🇸🇰 expanding verified Slovak coverage
-- 📅 improving CZ/SK EPG mappings
-- 🖼️ improving channel logos and metadata
-- ✅ exercising the full production testing → stable lifecycle
-- 📚 keeping documentation aligned with the tooling
+- đź‡¨đź‡ż expanding verified Czech coverage
+- đź‡¸đź‡° expanding verified Slovak coverage
+- đź“… improving CZ/SK EPG mappings
+- đź–Ľď¸Ź improving channel logos and metadata
+- âś… exercising the full production testing â†’ stable lifecycle
+- đź“š keeping documentation aligned with the tooling
 
 For the detailed plan see [ROADMAP.md](ROADMAP.md).  
 For recent changes see [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
-## 🦮 Naše filozofie
+## đź¦® NaĹˇe filozofie
 
-Nevytváříme projekt pro zisk.
+NevytvĂˇĹ™Ă­me projekt pro zisk.
 
-Vytváříme projekt, který bychom sami chtěli používat.
+VytvĂˇĹ™Ă­me projekt, kterĂ˝ bychom sami chtÄ›li pouĹľĂ­vat.
 
-**Open Source. Zdarma. Komunitní. S respektem k autorům obsahu.**
+**Open Source. Zdarma. KomunitnĂ­. S respektem k autorĹŻm obsahu.**
 
-> **Když to přehraje Bondík, přehraje to každý.**
+> **KdyĹľ to pĹ™ehraje BondĂ­k, pĹ™ehraje to kaĹľdĂ˝.**
 
 ---
 
-## 🤝 Contributing
+## đź¤ť Contributing
 
-Contributions are welcome — especially verified stream fixes, EPG improvements, documentation and reproducible bug reports.
+Contributions are welcome â€” especially verified stream fixes, EPG improvements, documentation and reproducible bug reports.
 
 Please read:
 
-- [CONTRIBUTING.md](CONTRIBUTING.md)
-- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- [CONTRIBUTING.md](.github/CONTRIBUTING.md)
+- [CODE_OF_CONDUCT.md](.github/CODE_OF_CONDUCT.md)
 
 ---
 
-## ℹ️ Content Notice
+## â„ąď¸Ź Content Notice
 
 Bondik TV Ultimate does not host television or video content. The project organizes playlist metadata and references publicly reachable stream URLs. Availability, ownership and distribution rights remain with the respective providers and rights holders.
 
 ---
 
-## 📜 License
+## đź“ś License
 
 This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-## ❤️ Special Thanks
+## âť¤ď¸Ź Special Thanks
 
 Thanks to everyone who supports the project and helps improve it.
 
 Special appreciation goes to our four-legged quality inspector:
 
-🐾 **Bondík — Chief Quality Officer (CQO)** 🦮
+đźľ **BondĂ­k â€” Chief Quality Officer (CQO)** đź¦®
 
 <p align="center">
-  Made with ❤️ by the Open Source community.<br>
-  Tested with 🐾 by Bondík.
+  Made with âť¤ď¸Ź by the Open Source community.<br>
+  Tested with đźľ by BondĂ­k.
 </p>
 
 ---
 
-⭐ Dej projektu hvězdičku.  
-🍴 Forkni projekt.  
-🤝 Přispěj.  
-📢 Sdílej Bondik TV Ultimate.  
-🦮 Staň se členem Bondik komunity.
+â­ Dej projektu hvÄ›zdiÄŤku.  
+đźŤ´ Forkni projekt.  
+đź¤ť PĹ™ispÄ›j.  
+đź“˘ SdĂ­lej Bondik TV Ultimate.  
+đź¦® StaĹ se ÄŤlenem Bondik komunity.
 
-### 🦮 Bondík říká:
+### đź¦® BondĂ­k Ĺ™Ă­kĂˇ:
 
-> „Nefunguje nějaký kanál? Nevadí. Pošli Pull Request. Já zatím pohlídám buřty.“
+> â€žNefunguje nÄ›jakĂ˝ kanĂˇl? NevadĂ­. PoĹˇli Pull Request. JĂˇ zatĂ­m pohlĂ­dĂˇm buĹ™ty.â€ś
 
-🐶🔥🌭
+đź¶đź”ĄđźŚ­
+

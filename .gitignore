@@ -9,3 +9,5 @@ hunt-review-*.txt
 hunt-promotion-*.json
 hunt-decisions-*.json
 hunt-approved-*.m3u
+
+.pytest_cache/
