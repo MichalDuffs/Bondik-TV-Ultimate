@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import math
 import re
 from pathlib import Path
 
 
-VERSION = "0.2.2"
+VERSION = "0.3.0"
 
 GOODIES = {
     "movies",
@@ -58,6 +59,37 @@ TVG_CATEGORY_OVERRIDES = {
 }
 
 
+# iptv-org metadata categories mapped into BAGTOP's deliberately
+# narrow content model. Categories not listed here stay in REVIEW.
+METADATA_CATEGORY_MAP = {
+    "movies": "movies",
+    "music": "music",
+    "kids": "kids",
+    "animation": "animation",
+    "documentary": "documentary",
+    "science": "science",
+    "cooking": "food",
+
+    "shop": "shopping",
+    "religious": "religion",
+    "business": "business",
+}
+
+# Parking categories win over GOODIES if metadata ever contains both.
+METADATA_CATEGORY_PRIORITY = (
+    "shop",
+    "religious",
+    "business",
+    "movies",
+    "music",
+    "kids",
+    "animation",
+    "documentary",
+    "science",
+    "cooking",
+)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description=f"Bondik BAGTOP v{VERSION}"
@@ -85,10 +117,95 @@ def parse_args():
         ),
     )
 
+    parser.add_argument(
+        "--channel-metadata",
+        type=Path,
+        help=(
+            "Optional iptv-org channels.json metadata file. "
+            "Exact tvg-id metadata is preferred over fuzzy name inference."
+        ),
+    )
+
     return parser.parse_args()
 
 
-def detect_category(row: dict) -> str:
+def load_channel_metadata(path: Path | None) -> dict[str, dict]:
+    if path is None:
+        return {}
+
+    with path.open(
+        encoding="utf-8-sig",
+    ) as handle:
+        raw = json.load(handle)
+
+    metadata: dict[str, dict] = {}
+
+    for channel in raw:
+        if not isinstance(channel, dict):
+            continue
+
+        channel_id = normalized_tvg_id(
+            channel.get("id") or ""
+        )
+
+        if channel_id:
+            metadata[channel_id] = channel
+
+    return metadata
+
+
+def metadata_for_row(
+    row: dict,
+    metadata: dict[str, dict],
+) -> dict | None:
+    tvg_id = normalized_tvg_id(
+        row.get("tvg_id") or ""
+    )
+
+    if not tvg_id:
+        return None
+
+    return metadata.get(tvg_id)
+
+
+def metadata_categories(entry: dict | None) -> list[str]:
+    if not entry:
+        return []
+
+    values = entry.get("categories") or []
+
+    if isinstance(values, str):
+        values = [values]
+
+    return [
+        str(value).strip().casefold()
+        for value in values
+        if str(value).strip()
+    ]
+
+
+def category_from_metadata(
+    row: dict,
+    metadata: dict[str, dict],
+) -> str:
+    entry = metadata_for_row(
+        row,
+        metadata,
+    )
+
+    categories = metadata_categories(entry)
+
+    for source_category in METADATA_CATEGORY_PRIORITY:
+        if source_category in categories:
+            return METADATA_CATEGORY_MAP[source_category]
+
+    return ""
+
+
+def detect_category(
+    row: dict,
+    metadata: dict[str, dict] | None = None,
+) -> str:
     tvg_id = normalized_tvg_id(
         row.get("tvg_id") or ""
     )
@@ -97,6 +214,14 @@ def detect_category(row: dict) -> str:
 
     if override:
         return override
+
+    metadata_category = category_from_metadata(
+        row,
+        metadata or {},
+    )
+
+    if metadata_category:
+        return metadata_category
 
     category = str(
         row.get("category_inferred") or ""
@@ -206,7 +331,14 @@ def numeric(
         return default
 
 
-def classify(row: dict, category: str) -> str:
+def classify(
+    row: dict,
+    category: str,
+    metadata_entry: dict | None = None,
+) -> str:
+    if metadata_entry and metadata_entry.get("is_nsfw") is True:
+        return "parking"
+
     if flag(row, "suspicious-restream-domain"):
         return "parking"
 
@@ -454,15 +586,29 @@ def main():
             csv.DictReader(handle)
         )
 
+    metadata = load_channel_metadata(
+        args.channel_metadata
+    )
+
     goodies_raw = []
     review = []
     parking = []
 
     for row in rows:
-        category = detect_category(row)
+        metadata_entry = metadata_for_row(
+            row,
+            metadata,
+        )
+
+        category = detect_category(
+            row,
+            metadata,
+        )
+
         bucket = classify(
             row,
             category,
+            metadata_entry,
         )
 
         enriched = dict(row)
@@ -470,6 +616,25 @@ def main():
         enriched[
             "bagtop_category"
         ] = category
+
+        enriched[
+            "bagtop_metadata_categories"
+        ] = ";".join(
+            metadata_categories(
+                metadata_entry
+            )
+        )
+
+        enriched[
+            "bagtop_metadata_nsfw"
+        ] = (
+            str(
+                bool(
+                    metadata_entry
+                    and metadata_entry.get("is_nsfw") is True
+                )
+            ).lower()
+        )
 
         enriched[
             "bagtop_score"
