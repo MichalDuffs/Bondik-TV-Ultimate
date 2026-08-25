@@ -148,8 +148,9 @@ def test_candidate_review_dashboard_groups_new_and_alternatives(
 
     out = capsys.readouterr().out
 
-    assert "NEW CANDIDATES : 1" in out
-    assert "ALTERNATIVES   : 1" in out
+    assert "REVIEW CASES : 1" in out
+    assert "NEW STREAMS  : 1" in out
+    assert "ALTERNATIVES : 1" in out
     assert "New TV" in out
     assert "Existing TV" in out
     assert "existing-tv-sk" in out
@@ -630,3 +631,4 @@ def test_approval_queue_preserves_review_state_by_exact_url(
     assert item["provenance"]["verified"] is False
     assert item["score"] == "77"
     assert item["host"] == "fresh.example"
+
