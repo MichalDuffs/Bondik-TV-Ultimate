@@ -11,7 +11,7 @@ import urllib.request
 from pathlib import Path
 
 
-VERSION = "0.6.0"
+VERSION = "0.7.0"
 
 METADATA_URL = "https://iptv-org.github.io/api/channels.json"
 
@@ -148,6 +148,17 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--max-per-category",
+        type=int,
+        default=2,
+        help=(
+            "Maximum number of TOP channels from one category "
+            "when using the diverse strategy. "
+            "0 disables the cap. Default: 2."
+        ),
+    )
+
+    parser.add_argument(
         "--channel-metadata",
         type=Path,
         help=(
@@ -204,6 +215,11 @@ def parse_args():
     if args.diversity_score_gap < 0:
         parser.error(
             "--diversity-score-gap must be >= 0"
+        )
+
+    if args.max_per_category < 0:
+        parser.error(
+            "--max-per-category must be >= 0"
         )
 
     return args
@@ -734,10 +750,32 @@ def write_csv(
         writer.writerows(rows)
 
 
+def top_category(row: dict) -> str:
+    return str(
+        row.get("bagtop_category")
+        or "unknown"
+    ).casefold()
+
+
+def category_cap_allows(
+    category_counts: dict[str, int],
+    category: str,
+    max_per_category: int,
+) -> bool:
+    if max_per_category == 0:
+        return True
+
+    return (
+        category_counts.get(category, 0)
+        < max_per_category
+    )
+
+
 def select_diverse_top(
     rows: list[dict],
     count: int,
     max_score_gap: int = 10,
+    max_per_category: int = 2,
 ) -> list[dict]:
     if count <= 0 or not rows:
         return []
@@ -761,11 +799,12 @@ def select_diverse_top(
 
     remaining = list(rows)
     selected: list[dict] = []
-    used_categories: set[str] = set()
+    selected_ids: set[int] = set()
+    category_counts: dict[str, int] = {}
 
     # Pass 1:
-    # Prefer different categories, but only when their
-    # quality remains close enough to the pure-score TOP.
+    # One strong candidate from each category.
+    # Diversity never bypasses the v0.6 quality floor.
     for row in remaining:
         score = numeric(
             row,
@@ -776,32 +815,50 @@ def select_diverse_top(
         if score < minimum_diverse_score:
             continue
 
-        category = str(
-            row.get("bagtop_category")
-            or "unknown"
-        ).casefold()
+        category = top_category(row)
 
-        if category in used_categories:
+        if category_counts.get(category, 0) >= 1:
+            continue
+
+        if not category_cap_allows(
+            category_counts,
+            category,
+            max_per_category,
+        ):
             continue
 
         selected.append(row)
-        used_categories.add(category)
+        selected_ids.add(id(row))
+        category_counts[category] = (
+            category_counts.get(category, 0)
+            + 1
+        )
 
         if len(selected) >= count:
             return selected
 
     # Pass 2:
-    # Fill remaining positions using normal score ranking.
-    selected_ids = {
-        id(row)
-        for row in selected
-    }
-
+    # Fill from normal ranking, but never exceed
+    # the configured category cap.
     for row in remaining:
         if id(row) in selected_ids:
             continue
 
+        category = top_category(row)
+
+        if not category_cap_allows(
+            category_counts,
+            category,
+            max_per_category,
+        ):
+            continue
+
         selected.append(row)
+        selected_ids.add(id(row))
+        category_counts[category] = (
+            category_counts.get(category, 0)
+            + 1
+        )
 
         if len(selected) >= count:
             break
@@ -814,12 +871,14 @@ def select_top(
     count: int,
     strategy: str,
     diversity_score_gap: int = 10,
+    max_per_category: int = 2,
 ) -> list[dict]:
     if strategy == "diverse":
         return select_diverse_top(
             rows,
             count,
             diversity_score_gap,
+            max_per_category,
         )
 
     return rows[:count]
@@ -985,6 +1044,7 @@ def main():
         top_count,
         args.top_strategy,
         args.diversity_score_gap,
+        args.max_per_category,
     )
 
     write_csv(
@@ -1027,6 +1087,10 @@ def main():
         (
             "- Diversity score gap: "
             f"{args.diversity_score_gap}"
+        ),
+        (
+            "- Max per category: "
+            f"{args.max_per_category}"
         ),
         "",
         f"- Input candidates: {len(rows)}",
@@ -1086,6 +1150,14 @@ def main():
     print(
         "Diversity score gap   : "
         f"{args.diversity_score_gap}"
+    )
+    print(
+        "Max per category      : "
+        + (
+            "unlimited"
+            if args.max_per_category == 0
+            else str(args.max_per_category)
+        )
     )
     print("-" * 68)
     print(
