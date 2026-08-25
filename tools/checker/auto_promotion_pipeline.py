@@ -36,6 +36,7 @@ ROOT = Path(__file__).resolve().parents[2]
 PROMOTE_APPROVED = ROOT / "tools" / "checker" / "promote_approved_candidates.py"
 TESTING_GATE = ROOT / "tools" / "checker" / "testing_promotion_gate.py"
 PROMOTE_STABLE = ROOT / "tools" / "checker" / "promote_testing_to_stable.py"
+GENERATE_PLAYLISTS = ROOT / "tools" / "generator" / "generate_playlists.py"
 
 DEFAULT_CHANNELS = ROOT / "channels" / "channels.yaml"
 
@@ -96,6 +97,12 @@ def parse_args() -> argparse.Namespace:
         "--skip-stable-promotion",
         action="store_true",
         help="Skip testing -> stable stage",
+    )
+
+    parser.add_argument(
+        "--generate-playlists",
+        action="store_true",
+        help="Regenerate generated M3U playlists after promotion stages",
     )
 
     return parser.parse_args()
@@ -284,6 +291,15 @@ def main() -> int:
                 command,
             )
 
+    if args.generate_playlists:
+        run_step(
+            "Generate playlists",
+            [
+                python,
+                str(GENERATE_PLAYLISTS),
+            ],
+        )
+
     print()
     print("=" * 72)
     print("✅ Bondik pipeline finished")
@@ -298,5 +314,6 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 
 

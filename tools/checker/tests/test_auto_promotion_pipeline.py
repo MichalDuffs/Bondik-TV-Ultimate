@@ -93,3 +93,13 @@ def test_dashboard_groups_channels(tmp_path, capsys):
     assert "Almost: 2/3" in out
     assert "Early: 1/3" in out
     assert "Failed: 0/3" in out
+def test_generate_playlists_flag_is_in_help():
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--help"],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+
+    assert result.returncode == 0
+    assert "--generate-playlists" in result.stdout
