@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """Bondik TV AUTO-PROMOTION PIPELINE v2.0.
 
 Orchestrates the existing Bondik promotion tools without bypassing
@@ -33,10 +33,17 @@ VERSION = "2.0.0"
 
 ROOT = Path(__file__).resolve().parents[2]
 
+HUNTER = ROOT / "tools" / "checker" / "hunt_m3u.py"
+PREPARE_CANDIDATES = ROOT / "tools" / "checker" / "prepare_hunt_candidates.py"
 PROMOTE_APPROVED = ROOT / "tools" / "checker" / "promote_approved_candidates.py"
 TESTING_GATE = ROOT / "tools" / "checker" / "testing_promotion_gate.py"
 PROMOTE_STABLE = ROOT / "tools" / "checker" / "promote_testing_to_stable.py"
 GENERATE_PLAYLISTS = ROOT / "tools" / "generator" / "generate_playlists.py"
+
+DEFAULT_SOURCE_LIST = ROOT / "tools" / "discovery" / "sources-czsk.txt"
+DEFAULT_HUNTER_OUT = ROOT / "hunt-results" / "auto-v2-hunter"
+DEFAULT_CANDIDATE_OUT = ROOT / "hunt-results" / "auto-v2-candidates"
+DEFAULT_KNOWN_SOURCE = ROOT / "playlists" / "ultimate.m3u"
 
 DEFAULT_CHANNELS = ROOT / "channels" / "channels.yaml"
 
@@ -56,6 +63,51 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--candidates", type=Path)
     parser.add_argument("--testing-decisions", type=Path)
     parser.add_argument("--stable-decisions", type=Path)
+
+    parser.add_argument(
+        "--run-hunter",
+        action="store_true",
+        help="Run Hunter and Candidate Gate before promotion stages",
+    )
+
+    parser.add_argument(
+        "--source-list",
+        type=Path,
+        default=DEFAULT_SOURCE_LIST,
+        help="Hunter source-list file",
+    )
+
+    parser.add_argument(
+        "--country",
+        action="append",
+        dest="countries",
+        default=[],
+        help="Hunter country filter; may be repeated",
+    )
+
+    parser.add_argument(
+        "--hunter-out-dir",
+        type=Path,
+        default=DEFAULT_HUNTER_OUT,
+    )
+
+    parser.add_argument(
+        "--candidate-out-dir",
+        type=Path,
+        default=DEFAULT_CANDIDATE_OUT,
+    )
+
+    parser.add_argument(
+        "--hunter-workers",
+        type=int,
+        default=24,
+    )
+
+    parser.add_argument(
+        "--hunter-timeout",
+        type=float,
+        default=8.0,
+    )
 
     parser.add_argument(
         "--channels",
@@ -218,11 +270,79 @@ def main() -> int:
 
     python = sys.executable
 
+    generated_candidates = None
+
+    if args.run_hunter:
+        if not args.source_list.exists():
+            raise SystemExit(
+                f"ERROR: Hunter source list not found: {args.source_list}"
+            )
+
+        countries = args.countries or ["CZ", "SK"]
+
+        hunter_command = [
+            python,
+            str(HUNTER),
+            "--source-list",
+            str(args.source_list),
+            "--known-source",
+            str(DEFAULT_KNOWN_SOURCE),
+            "--new-only",
+            "--workers",
+            str(args.hunter_workers),
+            "--timeout",
+            str(args.hunter_timeout),
+            "--out-dir",
+            str(args.hunter_out_dir),
+        ]
+
+        for country in countries:
+            hunter_command.extend(
+                ["--country", str(country).strip().upper()]
+            )
+
+        run_step(
+            "Hunter discovery",
+            hunter_command,
+        )
+
+        hunter_results = args.hunter_out_dir / "results.json"
+
+        if not hunter_results.exists():
+            raise SystemExit(
+                f"ERROR: Hunter results not found: {hunter_results}"
+            )
+
+        run_step(
+            "Candidate Gate",
+            [
+                python,
+                str(PREPARE_CANDIDATES),
+                str(hunter_results),
+                "--channels",
+                str(args.channels),
+                "--out-dir",
+                str(args.candidate_out_dir),
+            ],
+        )
+
+        generated_candidates = (
+            args.candidate_out_dir / "candidates.json"
+        )
+
+        if not generated_candidates.exists():
+            raise SystemExit(
+                "ERROR: Candidate Gate output not found: "
+                f"{generated_candidates}"
+            )
+
     if not args.skip_testing_import:
-        if not args.candidates:
+        candidates_path = args.candidates or generated_candidates
+
+        if not candidates_path:
             raise SystemExit(
                 "ERROR: --candidates is required unless "
-                "--skip-testing-import is used"
+                "--run-hunter or --skip-testing-import is used"
             )
 
         if not args.testing_decisions:
@@ -235,7 +355,7 @@ def main() -> int:
             python,
             str(PROMOTE_APPROVED),
             "--candidates",
-            str(args.candidates),
+            str(candidates_path),
             "--decisions",
             str(args.testing_decisions),
             "--channels",
