@@ -58,6 +58,13 @@ COUNTRY_ALIASES = {
     "UK": "GB",
 }
 
+# Explicit channel-name aliases only.
+# Keep this deliberately small and conservative: aliases affect
+# existing-channel identity matching, never automatic approval.
+CHANNEL_NAME_ALIASES = {
+    "retromusictv": "retromusictelevision",
+}
+
 # These are deliberately small and conservative. A match means "park for review",
 # not "illegal" or "bad". Users can extend the list later if repeated batches justify it.
 PARK_DOMAIN_SUFFIXES = {
@@ -156,7 +163,8 @@ def clean_display_name(name: str) -> str:
 
 def canonical_name(name: str) -> str:
     value = normalize_text(clean_display_name(name))
-    return NON_ALNUM_RE.sub("", value)
+    key = NON_ALNUM_RE.sub("", value)
+    return CHANNEL_NAME_ALIASES.get(key, key)
 
 
 def load_yaml(path: Path) -> dict[str, Any]:
