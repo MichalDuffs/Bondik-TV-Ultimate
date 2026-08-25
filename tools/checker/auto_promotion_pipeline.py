@@ -200,6 +200,27 @@ def write_candidate_approval_queue(
 
         candidates.append(
             {
+                "name": str(
+                    row.get("candidate_name", "")
+                ).strip(),
+                "country": str(
+                    row.get("country_inferred", "")
+                ).strip(),
+                "category": (
+                    str(
+                        row.get("category_inferred", "")
+                    ).strip()
+                    or "unknown"
+                ),
+                "score": str(
+                    row.get("bondik_score", "")
+                ).strip(),
+                "host": str(
+                    row.get("stream_host", "")
+                ).strip(),
+                "flags": str(
+                    row.get("review_flags", "")
+                ).strip(),
                 "url": url,
                 "decision": "pending",
             }
@@ -425,11 +446,31 @@ def show_approval_queue(path: Path) -> int:
         return 0
 
     for index, item in enumerate(candidates, start=1):
+        name = str(item.get("name", "")).strip() or "Unknown"
+        country = str(item.get("country", "")).strip() or "?"
+        category = str(item.get("category", "")).strip() or "unknown"
+        score = str(item.get("score", "")).strip() or "?"
+        host = str(item.get("host", "")).strip()
+        flags = str(item.get("flags", "")).strip()
         url = str(item.get("url", "")).strip()
-        decision = str(item.get("decision", "")).strip() or "pending"
+        decision = (
+            str(item.get("decision", "")).strip()
+            or "pending"
+        )
 
-        print(f"{index}. {decision.upper()}")
-        print(f"   {url}")
+        print(
+            f"{index}. {name} | {country} | "
+            f"{category} | score={score} | "
+            f"{decision.upper()}"
+        )
+
+        if host:
+            print(f"   host : {host}")
+
+        if flags:
+            print(f"   flags: {flags}")
+
+        print(f"   url  : {url}")
 
     return 0
 

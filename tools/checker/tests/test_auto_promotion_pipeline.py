@@ -196,14 +196,13 @@ def test_candidate_approval_queue_contains_only_new_candidates(
         output.read_text(encoding="utf-8")
     )
 
-    assert payload == {
-        "candidates": [
-            {
-                "url": "https://new.example/stream.m3u8",
-                "decision": "pending",
-            }
-        ]
-    }
+    assert len(payload["candidates"]) == 1
+
+    item = payload["candidates"][0]
+
+    assert item["url"] == "https://new.example/stream.m3u8"
+    assert item["decision"] == "pending"
+    assert item["name"] == "New TV"
 def test_show_approval_queue(tmp_path, capsys):
     import json
 
@@ -231,3 +230,4 @@ def test_show_approval_queue(tmp_path, capsys):
     assert "Bondik Approval Queue" in out
     assert "PENDING" in out
     assert "https://example.com/test.m3u8" in out
+
