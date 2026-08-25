@@ -178,5 +178,51 @@ class ProvenanceTests(unittest.TestCase):
         )
 
 
+    def test_manual_category_override_wins(self):
+        candidate = {
+            "category_inferred": "",
+        }
+
+        decision = {
+            "category": "news",
+        }
+
+        self.assertEqual(
+            promotion.resolve_category(
+                candidate,
+                decision,
+            ),
+            "news",
+        )
+
+    def test_build_channel_accepts_manual_channel_id(self):
+        decision = self.valid_decision()
+
+        provenance, errors = promotion.validate_provenance(
+            decision
+        )
+
+        self.assertEqual(errors, [])
+
+        channel = promotion.build_channel(
+            {
+                "candidate_name": "????????? ?????",
+                "url": "https://example.com/live/index.m3u8",
+                "validation": "hls-segment",
+                "source": "https://example.org/source.m3u",
+                "tvg_id": "CurrentTimeTV.cz@SD",
+            },
+            "CZ",
+            "news",
+            provenance,
+            "current-time-tv-cz",
+        )
+
+        self.assertEqual(
+            channel["id"],
+            "current-time-tv-cz",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
