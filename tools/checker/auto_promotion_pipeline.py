@@ -180,6 +180,39 @@ def parse_args() -> argparse.Namespace:
         help="Reject candidate number N in the current approval queue",
     )
 
+    parser.add_argument(
+        "--provenance",
+        type=int,
+        metavar="N",
+        help="Attach provenance evidence to candidate number N",
+    )
+
+    parser.add_argument(
+        "--provenance-level",
+        choices=("official", "corroborated", "unverified"),
+        default="unverified",
+        help="Trust level for candidate provenance",
+    )
+
+    parser.add_argument(
+        "--provenance-website",
+        default="",
+        help="Website supporting the provenance decision",
+    )
+
+    parser.add_argument(
+        "--provenance-evidence",
+        action="append",
+        default=[],
+        help="Evidence item; may be repeated",
+    )
+
+    parser.add_argument(
+        "--provenance-note",
+        default="",
+        help="Human review note for provenance",
+    )
+
     return parser.parse_args()
 
 
@@ -959,6 +992,16 @@ def main() -> int:
             approval_queue,
             args.reject,
             "reject",
+        )
+
+    if args.provenance is not None:
+        return set_candidate_provenance(
+            approval_queue,
+            args.provenance,
+            args.provenance_level,
+            args.provenance_website,
+            args.provenance_evidence,
+            args.provenance_note,
         )
 
     python = sys.executable

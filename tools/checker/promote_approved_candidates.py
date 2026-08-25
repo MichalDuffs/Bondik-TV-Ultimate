@@ -338,11 +338,23 @@ def provider_for(candidate: dict[str, Any]) -> str:
     return slugify(name) or "unknown"
 
 
+def resolve_category(
+    candidate: dict[str, Any],
+    decision: dict[str, Any],
+) -> str:
+    return str(
+        decision.get("category")
+        or candidate.get("category_inferred")
+        or ""
+    ).strip()
+
+
 def build_channel(
     candidate: dict[str, Any],
     country: str,
     category: str,
     provenance: dict[str, Any],
+    channel_id_override: str = "",
 ) -> dict[str, Any]:
     name = str(
         candidate.get("candidate_name")
@@ -352,7 +364,10 @@ def build_channel(
 
     url = str(candidate.get("url", "")).strip()
 
-    channel_id = f"{slugify(name)}-{country.casefold()}"
+    channel_id = (
+        channel_id_override.strip()
+        or f"{slugify(name)}-{country.casefold()}"
+    )
 
     tvg_id = str(candidate.get("tvg_id", "")).strip() or None
     source = str(candidate.get("source", "")).strip()
@@ -498,9 +513,12 @@ def main() -> int:
             candidate.get("country_inferred") or ""
         ).strip().upper()
 
-        category = str(
-            candidate.get("category_inferred") or ""
-        ).strip()
+        decision = approved[url]
+
+        category = resolve_category(
+            candidate,
+            decision,
+        )
 
         if not name:
             skipped.append((url or "unknown", "missing name"))
@@ -549,11 +567,18 @@ def main() -> int:
             )
             continue
 
+        decision = approved[url]
+
+        channel_id_override = str(
+            decision.get("channel_id") or ""
+        ).strip()
+
         channel = build_channel(
             candidate,
             country,
             category,
             provenance,
+            channel_id_override,
         )
 
         channel_id = str(channel["id"])
