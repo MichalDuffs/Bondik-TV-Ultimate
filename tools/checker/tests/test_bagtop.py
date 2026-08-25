@@ -385,3 +385,123 @@ def test_no_metadata_disables_metadata(
 
     assert path is None
     assert mode == "disabled"
+
+
+def test_diverse_top_prefers_different_categories():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "Music B",
+            "bagtop_category": "music",
+            "bagtop_score": "95",
+        },
+        {
+            "candidate_name": "Movie A",
+            "bagtop_category": "movies",
+            "bagtop_score": "90",
+        },
+    ]
+
+    result = bagtop.select_diverse_top(
+        rows,
+        2,
+    )
+
+    assert [
+        row["candidate_name"]
+        for row in result
+    ] == [
+        "Music A",
+        "Movie A",
+    ]
+
+
+def test_diverse_top_second_pass_fills_remaining_slots():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+        },
+        {
+            "candidate_name": "Movie A",
+            "bagtop_category": "movies",
+        },
+        {
+            "candidate_name": "Music B",
+            "bagtop_category": "music",
+        },
+    ]
+
+    result = bagtop.select_diverse_top(
+        rows,
+        3,
+    )
+
+    assert len(result) == 3
+    assert result[2]["candidate_name"] == "Music B"
+
+
+def test_score_strategy_preserves_ranking():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+        },
+        {
+            "candidate_name": "Music B",
+            "bagtop_category": "music",
+        },
+        {
+            "candidate_name": "Movie A",
+            "bagtop_category": "movies",
+        },
+    ]
+
+    result = bagtop.select_top(
+        rows,
+        2,
+        "score",
+    )
+
+    assert [
+        row["candidate_name"]
+        for row in result
+    ] == [
+        "Music A",
+        "Music B",
+    ]
+
+
+def test_diverse_strategy_uses_diversity_gate():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+        },
+        {
+            "candidate_name": "Music B",
+            "bagtop_category": "music",
+        },
+        {
+            "candidate_name": "Kids A",
+            "bagtop_category": "kids",
+        },
+    ]
+
+    result = bagtop.select_top(
+        rows,
+        2,
+        "diverse",
+    )
+
+    assert [
+        row["candidate_name"]
+        for row in result
+    ] == [
+        "Music A",
+        "Kids A",
+    ]

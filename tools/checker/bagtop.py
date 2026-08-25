@@ -11,7 +11,7 @@ import urllib.request
 from pathlib import Path
 
 
-VERSION = "0.4.0"
+VERSION = "0.5.0"
 
 METADATA_URL = "https://iptv-org.github.io/api/channels.json"
 
@@ -123,6 +123,17 @@ def parse_args():
         help=(
             "Optional maximum number of TOP GOODIES. "
             "0 means use the full top one-third."
+        ),
+    )
+
+    parser.add_argument(
+        "--top-strategy",
+        choices=("score", "diverse"),
+        default="score",
+        help=(
+            "TOP selection strategy. "
+            "'score' preserves pure ranking; "
+            "'diverse' spreads the first pass across categories."
         ),
     )
 
@@ -708,6 +719,66 @@ def write_csv(
         writer.writerows(rows)
 
 
+def select_diverse_top(
+    rows: list[dict],
+    count: int,
+) -> list[dict]:
+    if count <= 0:
+        return []
+
+    remaining = list(rows)
+    selected: list[dict] = []
+    used_categories: set[str] = set()
+
+    # Pass 1:
+    # take the highest-scoring candidate from each category.
+    for row in remaining:
+        category = str(
+            row.get("bagtop_category") or "unknown"
+        ).casefold()
+
+        if category in used_categories:
+            continue
+
+        selected.append(row)
+        used_categories.add(category)
+
+        if len(selected) >= count:
+            return selected
+
+    # Pass 2:
+    # fill remaining positions using normal ranking.
+    selected_ids = {
+        id(row)
+        for row in selected
+    }
+
+    for row in remaining:
+        if id(row) in selected_ids:
+            continue
+
+        selected.append(row)
+
+        if len(selected) >= count:
+            break
+
+    return selected
+
+
+def select_top(
+    rows: list[dict],
+    count: int,
+    strategy: str,
+) -> list[dict]:
+    if strategy == "diverse":
+        return select_diverse_top(
+            rows,
+            count,
+        )
+
+    return rows[:count]
+
+
 def output_sort_key(row: dict):
     return (
         -numeric(
@@ -863,7 +934,11 @@ def main():
             args.top,
         )
 
-    top = goodies[:top_count]
+    top = select_top(
+        goodies,
+        top_count,
+        args.top_strategy,
+    )
 
     write_csv(
         args.out_dir
@@ -901,6 +976,7 @@ def main():
         f"- Metadata mode: {metadata_mode}",
         f"- Metadata source: {metadata_source}",
         f"- Metadata records: {len(metadata)}",
+        f"- TOP strategy: {args.top_strategy}",
         "",
         f"- Input candidates: {len(rows)}",
         f"- Raw GOODIES streams: {len(goodies_raw)}",
@@ -952,6 +1028,9 @@ def main():
     )
     print(
         f"Metadata source       : {metadata_source}"
+    )
+    print(
+        f"TOP strategy          : {args.top_strategy}"
     )
     print("-" * 68)
     print(
