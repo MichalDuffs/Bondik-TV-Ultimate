@@ -336,6 +336,56 @@ def write_candidate_approval_queue(
         f"{preserved_count}"
     )
 
+def normalize_hunter_source_list(
+    source_path: Path,
+    output_path: Path,
+) -> Path:
+    """Normalize plain URL and label|URL Hunter source-list formats."""
+
+    lines = source_path.read_text(
+        encoding="utf-8-sig"
+    ).splitlines()
+
+    normalized = []
+
+    for raw_line in lines:
+        line = raw_line.strip()
+
+        if not line or line.startswith("#"):
+            continue
+
+        if "|" in line:
+            _, source = line.split("|", 1)
+            line = source.strip()
+
+        if not line:
+            continue
+
+        normalized.append(line)
+
+    if not normalized:
+        raise SystemExit(
+            f"ERROR: no usable Hunter sources in {source_path}"
+        )
+
+    output_path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    output_path.write_text(
+        "\n".join(normalized) + "\n",
+        encoding="utf-8",
+    )
+
+    print(
+        f"Hunter sources normalized: "
+        f"{len(normalized)} -> {output_path}"
+    )
+
+    return output_path
+
+
 def review_cluster_key(row: dict) -> str:
     tvg_id = str(row.get("tvg_id", "")).strip()
 
@@ -923,11 +973,16 @@ def main() -> int:
 
         countries = args.countries or ["CZ", "SK"]
 
+        normalized_source_list = normalize_hunter_source_list(
+            args.source_list,
+            args.hunter_out_dir / "sources.normalized.txt",
+        )
+
         hunter_command = [
             python,
             str(HUNTER),
             "--source-list",
-            str(args.source_list),
+            str(normalized_source_list),
             "--known-source",
             str(DEFAULT_KNOWN_SOURCE),
             "--new-only",

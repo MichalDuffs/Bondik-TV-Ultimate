@@ -632,3 +632,27 @@ def test_approval_queue_preserves_review_state_by_exact_url(
     assert item["score"] == "77"
     assert item["host"] == "fresh.example"
 
+def test_normalize_hunter_source_list_supports_labels(
+    tmp_path,
+):
+    source = tmp_path / "sources.txt"
+    output = tmp_path / "normalized.txt"
+
+    source.write_text(
+        "# comment\n"
+        "CZ | https://example.com/cz.m3u\n"
+        "https://example.com/sk.m3u\n"
+        "\n",
+        encoding="utf-8",
+    )
+
+    result = pipeline.normalize_hunter_source_list(
+        source,
+        output,
+    )
+
+    assert result == output
+    assert output.read_text(encoding="utf-8").splitlines() == [
+        "https://example.com/cz.m3u",
+        "https://example.com/sk.m3u",
+    ]
