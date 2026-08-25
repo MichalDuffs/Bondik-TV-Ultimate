@@ -11,7 +11,7 @@ import urllib.request
 from pathlib import Path
 
 
-VERSION = "0.9.0"
+VERSION = "1.0.0"
 
 METADATA_URL = "https://iptv-org.github.io/api/channels.json"
 
@@ -267,6 +267,28 @@ def validate_metadata_payload(data: bytes) -> None:
             "iptv-org metadata payload is empty"
         )
 
+    has_channel = any(
+        isinstance(channel, dict)
+        and str(
+            channel.get("id") or ""
+        ).strip()
+        for channel in raw
+    )
+
+    if not has_channel:
+        raise ValueError(
+            "iptv-org metadata payload contains "
+            "no channel records with an id"
+        )
+
+
+def validate_metadata_file(
+    path: Path,
+) -> None:
+    validate_metadata_payload(
+        path.read_bytes()
+    )
+
 
 def download_channel_metadata(
     cache_path: Path,
@@ -317,38 +339,112 @@ def resolve_metadata_source(
     if no_metadata:
         return None, "disabled"
 
+    # Explicit metadata is never modified automatically,
+    # but production mode still requires it to be healthy.
     if channel_metadata is not None:
         if not channel_metadata.exists():
             raise FileNotFoundError(
                 f"metadata file not found: {channel_metadata}"
             )
 
+        validate_metadata_file(
+            channel_metadata
+        )
+
         return channel_metadata, "explicit"
 
     cache_exists = metadata_cache.exists()
+    cache_valid = False
+    cache_error: Exception | None = None
 
-    if cache_exists and not refresh_metadata:
+    if cache_exists:
+        try:
+            validate_metadata_file(
+                metadata_cache
+            )
+            cache_valid = True
+
+        except (
+            OSError,
+            ValueError,
+            UnicodeError,
+        ) as exc:
+            cache_error = exc
+
+    # Healthy automatic cache: normal fast path.
+    if cache_valid and not refresh_metadata:
         return metadata_cache, "cache"
 
+    # Corrupt automatic cache:
+    # try to replace it immediately with a healthy download.
+    if (
+        cache_exists
+        and not cache_valid
+        and not refresh_metadata
+    ):
+        try:
+            download_channel_metadata(
+                metadata_cache
+            )
+
+            validate_metadata_file(
+                metadata_cache
+            )
+
+            return (
+                metadata_cache,
+                "cache-repaired",
+            )
+
+        except Exception as exc:
+            raise RuntimeError(
+                "metadata cache is invalid and "
+                "automatic repair failed: "
+                f"cache_error={cache_error}; "
+                f"repair_error={exc}"
+            ) from exc
+
+    # Missing cache or explicitly requested refresh.
     try:
         download_channel_metadata(
+            metadata_cache
+        )
+
+        # Validate again even though the normal downloader
+        # already validates. This also protects tests/custom
+        # download implementations.
+        validate_metadata_file(
             metadata_cache
         )
 
         return metadata_cache, "downloaded"
 
     except Exception as exc:
-        if cache_exists:
+        # Only a previously verified cache may be used
+        # as a network-failure fallback.
+        if cache_valid:
             print(
-                "?? Metadata refresh failed; "
-                "using existing cache: "
+                "WARN: Metadata refresh failed; "
+                "using verified existing cache: "
                 f"{exc}"
             )
 
-            return metadata_cache, "cache-fallback"
+            return (
+                metadata_cache,
+                "cache-fallback",
+            )
+
+        if cache_exists:
+            raise RuntimeError(
+                "metadata refresh failed and "
+                "existing cache is invalid: "
+                f"cache_error={cache_error}; "
+                f"refresh_error={exc}"
+            ) from exc
 
         raise RuntimeError(
-            "metadata download failed and no cache exists: "
+            "metadata download failed and "
+            "no valid cache exists: "
             f"{exc}"
         ) from exc
 
@@ -777,6 +873,20 @@ def write_csv(
         writer.writerows(rows)
 
 
+def write_json(
+    path: Path,
+    payload: dict,
+) -> None:
+    path.write_text(
+        json.dumps(
+            payload,
+            indent=2,
+            ensure_ascii=False,
+        ) + "\n",
+        encoding="utf-8",
+    )
+
+
 def category_family(category: str) -> str:
     normalized = str(
         category or "unknown"
@@ -820,14 +930,13 @@ def category_cap_allows(
     )
 
 
-def select_diverse_top_entries(
+def diversity_thresholds(
     rows: list[dict],
     count: int,
-    max_score_gap: int = 10,
-    max_per_category: int = 2,
-) -> list[tuple[dict, str]]:
+    max_score_gap: int,
+) -> tuple[int | None, int | None]:
     if count <= 0 or not rows:
-        return []
+        return None, None
 
     baseline_count = min(
         count,
@@ -840,10 +949,60 @@ def select_diverse_top_entries(
         0,
     )
 
-    minimum_diverse_score = (
-        baseline_cutoff
-        - max_score_gap
+    return (
+        baseline_cutoff,
+        baseline_cutoff - max_score_gap,
     )
+
+
+def trace_diverse_top(
+    rows: list[dict],
+    count: int,
+    max_score_gap: int = 10,
+    max_per_category: int = 2,
+) -> tuple[
+    list[tuple[dict, str]],
+    dict[int, dict],
+]:
+    baseline_cutoff, minimum_diverse_score = (
+        diversity_thresholds(
+            rows,
+            count,
+            max_score_gap,
+        )
+    )
+
+    trace: dict[int, dict] = {}
+
+    for row in rows:
+        score = numeric(
+            row,
+            "bagtop_score",
+            0,
+        )
+
+        trace[id(row)] = {
+            "decision": "skipped-top-limit",
+            "rank": "",
+            "family": top_category(row),
+            "diversity_eligible": (
+                minimum_diverse_score is not None
+                and score >= minimum_diverse_score
+            ),
+            "baseline_cutoff": (
+                ""
+                if baseline_cutoff is None
+                else baseline_cutoff
+            ),
+            "diversity_floor": (
+                ""
+                if minimum_diverse_score is None
+                else minimum_diverse_score
+            ),
+        }
+
+    if count <= 0 or not rows:
+        return [], trace
 
     remaining = list(rows)
     selected: list[tuple[dict, str]] = []
@@ -851,7 +1010,7 @@ def select_diverse_top_entries(
     category_counts: dict[str, int] = {}
 
     # Pass 1:
-    # Strong representative from each category family.
+    # One strong representative from each category family.
     for row in remaining:
         score = numeric(
             row,
@@ -859,7 +1018,10 @@ def select_diverse_top_entries(
             0,
         )
 
-        if score < minimum_diverse_score:
+        if (
+            minimum_diverse_score is not None
+            and score < minimum_diverse_score
+        ):
             continue
 
         category = top_category(row)
@@ -872,6 +1034,9 @@ def select_diverse_top_entries(
             category,
             max_per_category,
         ):
+            trace[id(row)][
+                "decision"
+            ] = "skipped-category-cap"
             continue
 
         selected.append(
@@ -884,12 +1049,19 @@ def select_diverse_top_entries(
             + 1
         )
 
+        trace[id(row)][
+            "decision"
+        ] = "selected-diversity"
+
+        trace[id(row)][
+            "rank"
+        ] = len(selected)
+
         if len(selected) >= count:
-            return selected
+            return selected, trace
 
     # Pass 2:
-    # Fill remaining places by normal score ranking
-    # while preserving the category-family cap.
+    # Normal score fill, still respecting family cap.
     for row in remaining:
         if id(row) in selected_ids:
             continue
@@ -901,6 +1073,9 @@ def select_diverse_top_entries(
             category,
             max_per_category,
         ):
+            trace[id(row)][
+                "decision"
+            ] = "skipped-category-cap"
             continue
 
         selected.append(
@@ -913,8 +1088,32 @@ def select_diverse_top_entries(
             + 1
         )
 
+        trace[id(row)][
+            "decision"
+        ] = "selected-score-fill"
+
+        trace[id(row)][
+            "rank"
+        ] = len(selected)
+
         if len(selected) >= count:
             break
+
+    return selected, trace
+
+
+def select_diverse_top_entries(
+    rows: list[dict],
+    count: int,
+    max_score_gap: int = 10,
+    max_per_category: int = 2,
+) -> list[tuple[dict, str]]:
+    selected, _trace = trace_diverse_top(
+        rows,
+        count,
+        max_score_gap,
+        max_per_category,
+    )
 
     return selected
 
@@ -1027,6 +1226,153 @@ def select_top_with_reasons(
             start=1,
         )
     ]
+
+
+def build_selection_audit(
+    rows: list[dict],
+    count: int,
+    strategy: str,
+    diversity_score_gap: int = 10,
+    max_per_category: int = 2,
+) -> list[dict]:
+    if strategy == "diverse":
+        _selected, trace = trace_diverse_top(
+            rows,
+            count,
+            diversity_score_gap,
+            max_per_category,
+        )
+    else:
+        trace = {}
+
+        selected_count = min(
+            count,
+            len(rows),
+        )
+
+        for index, row in enumerate(
+            rows,
+            start=1,
+        ):
+            selected = (
+                index <= selected_count
+            )
+
+            trace[id(row)] = {
+                "decision": (
+                    "selected-score"
+                    if selected
+                    else "skipped-top-limit"
+                ),
+                "rank": (
+                    index
+                    if selected
+                    else ""
+                ),
+                "family": top_category(row),
+                "diversity_eligible": "",
+                "baseline_cutoff": "",
+                "diversity_floor": "",
+            }
+
+    audit = []
+
+    for row in rows:
+        state = trace[id(row)]
+        audited = dict(row)
+
+        audited[
+            "bagtop_audit_decision"
+        ] = state["decision"]
+
+        audited[
+            "bagtop_audit_rank"
+        ] = state["rank"]
+
+        audited[
+            "bagtop_audit_family"
+        ] = state["family"]
+
+        audited[
+            "bagtop_diversity_eligible"
+        ] = (
+            str(
+                state[
+                    "diversity_eligible"
+                ]
+            ).lower()
+            if isinstance(
+                state[
+                    "diversity_eligible"
+                ],
+                bool,
+            )
+            else ""
+        )
+
+        audited[
+            "bagtop_baseline_cutoff"
+        ] = state[
+            "baseline_cutoff"
+        ]
+
+        audited[
+            "bagtop_diversity_floor"
+        ] = state[
+            "diversity_floor"
+        ]
+
+        audit.append(audited)
+
+    return audit
+
+
+def build_run_manifest(
+    *,
+    metadata_mode: str,
+    metadata_source: str,
+    metadata_records: int,
+    top_strategy: str,
+    diversity_score_gap: int,
+    max_per_category: int,
+    input_candidates: int,
+    raw_goodies: int,
+    unique_goodies: int,
+    review_count: int,
+    parking_count: int,
+    top_requested: int,
+    top_selected: int,
+) -> dict:
+    return {
+        "bagtop_version": VERSION,
+        "metadata": {
+            "mode": metadata_mode,
+            "source": metadata_source,
+            "records": metadata_records,
+        },
+        "selection": {
+            "strategy": top_strategy,
+            "diversity_score_gap": (
+                diversity_score_gap
+            ),
+            "max_per_category_family": (
+                max_per_category
+            ),
+            "top_requested": top_requested,
+            "top_selected": top_selected,
+        },
+        "counts": {
+            "input_candidates": input_candidates,
+            "raw_goodies": raw_goodies,
+            "unique_goodies": unique_goodies,
+            "collapsed_alternatives": (
+                raw_goodies
+                - unique_goodies
+            ),
+            "review": review_count,
+            "parking": parking_count,
+        },
+    }
 
 
 def output_sort_key(row: dict):
@@ -1198,6 +1544,14 @@ def main():
         args.max_per_category,
     )
 
+    selection_audit = build_selection_audit(
+        goodies,
+        top_count,
+        args.top_strategy,
+        args.diversity_score_gap,
+        args.max_per_category,
+    )
+
     write_csv(
         args.out_dir
         / "bagtop-goodies.csv",
@@ -1228,6 +1582,38 @@ def main():
         top,
     )
 
+    write_csv(
+        args.out_dir
+        / "bagtop-selection-audit.csv",
+        selection_audit,
+    )
+
+    manifest = build_run_manifest(
+        metadata_mode=metadata_mode,
+        metadata_source=metadata_source,
+        metadata_records=len(metadata),
+        top_strategy=args.top_strategy,
+        diversity_score_gap=(
+            args.diversity_score_gap
+        ),
+        max_per_category=(
+            args.max_per_category
+        ),
+        input_candidates=len(rows),
+        raw_goodies=len(goodies_raw),
+        unique_goodies=len(goodies),
+        review_count=len(review),
+        parking_count=len(parking),
+        top_requested=top_count,
+        top_selected=len(top),
+    )
+
+    write_json(
+        args.out_dir
+        / "bagtop-manifest.json",
+        manifest,
+    )
+
     summary = [
         f"# Bondik BAGTOP v{VERSION}",
         "",
@@ -1245,6 +1631,8 @@ def main():
         ),
         "- Category grouping: family",
         "- TOP selection ledger: enabled",
+        "- Full selection audit: enabled",
+        "- Run manifest: enabled",
         "",
         f"- Input candidates: {len(rows)}",
         f"- Raw GOODIES streams: {len(goodies_raw)}",
@@ -1314,6 +1702,12 @@ def main():
     )
     print(
         "TOP selection ledger  : enabled"
+    )
+    print(
+        "Full selection audit  : enabled"
+    )
+    print(
+        "Run manifest          : enabled"
     )
     print("-" * 68)
     print(
