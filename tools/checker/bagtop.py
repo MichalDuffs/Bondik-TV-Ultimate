@@ -11,7 +11,7 @@ import urllib.request
 from pathlib import Path
 
 
-VERSION = "0.7.0"
+VERSION = "0.8.0"
 
 METADATA_URL = "https://iptv-org.github.io/api/channels.json"
 
@@ -48,6 +48,33 @@ GOODIES = {
     "hobby",
     "gardening",
 }
+
+CATEGORY_FAMILY_MAP = {
+    # Film-family aliases and genres.
+    "movies": "movies",
+    "cinema": "movies",
+    "film": "movies",
+    "action": "movies",
+    "comedy": "movies",
+
+    # Music-family aliases and genres.
+    "music": "music",
+    "concerts": "music",
+    "live music": "music",
+    "rock": "music",
+    "pop": "music",
+
+    # Animation aliases.
+    "animation": "animation",
+    "cartoon": "animation",
+
+    # Closely related specialist aliases.
+    "space": "space",
+    "astronomy": "space",
+    "wildlife": "wildlife",
+    "animals": "wildlife",
+}
+
 
 PARKING = {
     "religion",
@@ -152,7 +179,7 @@ def parse_args():
         type=int,
         default=2,
         help=(
-            "Maximum number of TOP channels from one category "
+            "Maximum number of TOP channels from one category family "
             "when using the diverse strategy. "
             "0 disables the cap. Default: 2."
         ),
@@ -750,11 +777,33 @@ def write_csv(
         writer.writerows(rows)
 
 
+def category_family(category: str) -> str:
+    normalized = str(
+        category or "unknown"
+    ).strip().casefold()
+
+    if not normalized:
+        normalized = "unknown"
+
+    return CATEGORY_FAMILY_MAP.get(
+        normalized,
+        normalized,
+    )
+
+
 def top_category(row: dict) -> str:
-    return str(
+    explicit_family = str(
+        row.get("bagtop_category_family")
+        or ""
+    ).strip().casefold()
+
+    if explicit_family:
+        return explicit_family
+
+    return category_family(
         row.get("bagtop_category")
         or "unknown"
-    ).casefold()
+    )
 
 
 def category_cap_allows(
@@ -968,6 +1017,12 @@ def main():
         ] = category
 
         enriched[
+            "bagtop_category_family"
+        ] = category_family(
+            category
+        )
+
+        enriched[
             "bagtop_metadata_categories"
         ] = ";".join(
             metadata_categories(
@@ -1089,9 +1144,10 @@ def main():
             f"{args.diversity_score_gap}"
         ),
         (
-            "- Max per category: "
+            "- Max per category family: "
             f"{args.max_per_category}"
         ),
+        "- Category grouping: family",
         "",
         f"- Input candidates: {len(rows)}",
         f"- Raw GOODIES streams: {len(goodies_raw)}",
@@ -1152,7 +1208,7 @@ def main():
         f"{args.diversity_score_gap}"
     )
     print(
-        "Max per category      : "
+        "Max per family        : "
         + (
             "unlimited"
             if args.max_per_category == 0

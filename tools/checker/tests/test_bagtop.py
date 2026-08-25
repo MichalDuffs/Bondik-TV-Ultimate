@@ -817,3 +817,101 @@ def test_score_strategy_ignores_category_cap():
     )
 
     assert len(result) == 3
+
+
+def test_movie_categories_share_family():
+    assert bagtop.category_family("movies") == "movies"
+    assert bagtop.category_family("cinema") == "movies"
+    assert bagtop.category_family("film") == "movies"
+    assert bagtop.category_family("action") == "movies"
+    assert bagtop.category_family("comedy") == "movies"
+
+
+def test_music_categories_share_family():
+    assert bagtop.category_family("music") == "music"
+    assert bagtop.category_family("concerts") == "music"
+    assert bagtop.category_family("live music") == "music"
+    assert bagtop.category_family("rock") == "music"
+    assert bagtop.category_family("pop") == "music"
+
+
+def test_specialist_aliases_share_family():
+    assert bagtop.category_family("cartoon") == "animation"
+    assert bagtop.category_family("animation") == "animation"
+    assert bagtop.category_family("astronomy") == "space"
+    assert bagtop.category_family("space") == "space"
+    assert bagtop.category_family("animals") == "wildlife"
+    assert bagtop.category_family("wildlife") == "wildlife"
+
+
+def test_category_family_cap_blocks_disguised_duplicates():
+    rows = [
+        {
+            "candidate_name": "Movie A",
+            "bagtop_category": "movies",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "Cinema B",
+            "bagtop_category": "cinema",
+            "bagtop_score": "99",
+        },
+        {
+            "candidate_name": "Film C",
+            "bagtop_category": "film",
+            "bagtop_score": "98",
+        },
+        {
+            "candidate_name": "Kids A",
+            "bagtop_category": "kids",
+            "bagtop_score": "97",
+        },
+    ]
+
+    result = bagtop.select_diverse_top(
+        rows,
+        4,
+        max_score_gap=10,
+        max_per_category=2,
+    )
+
+    names = [
+        row["candidate_name"]
+        for row in result
+    ]
+
+    assert "Movie A" in names
+    assert "Cinema B" in names
+    assert "Film C" not in names
+    assert "Kids A" in names
+    assert len(result) == 3
+
+
+def test_score_strategy_still_ignores_category_family_cap():
+    rows = [
+        {
+            "candidate_name": "Movie A",
+            "bagtop_category": "movies",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "Cinema B",
+            "bagtop_category": "cinema",
+            "bagtop_score": "99",
+        },
+        {
+            "candidate_name": "Film C",
+            "bagtop_category": "film",
+            "bagtop_score": "98",
+        },
+    ]
+
+    result = bagtop.select_top(
+        rows,
+        3,
+        "score",
+        diversity_score_gap=10,
+        max_per_category=1,
+    )
+
+    assert len(result) == 3
