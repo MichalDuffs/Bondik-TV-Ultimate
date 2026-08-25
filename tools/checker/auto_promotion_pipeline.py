@@ -164,6 +164,22 @@ def parse_args() -> argparse.Namespace:
         help="Show the current NEW-candidate approval queue and exit",
     )
 
+    decision_group = parser.add_mutually_exclusive_group()
+
+    decision_group.add_argument(
+        "--approve",
+        type=int,
+        metavar="N",
+        help="Approve candidate number N in the current approval queue",
+    )
+
+    decision_group.add_argument(
+        "--reject",
+        type=int,
+        metavar="N",
+        help="Reject candidate number N in the current approval queue",
+    )
+
     return parser.parse_args()
 
 
@@ -425,6 +441,82 @@ def run_step(name: str, command: list[str]) -> None:
         )
 
 
+def set_approval_decision(
+    path: Path,
+    index: int,
+    decision: str,
+) -> int:
+    if not path.exists():
+        print(f"ERROR: approval queue not found: {path}")
+        return 1
+
+    if index < 1:
+        print("ERROR: candidate number must be 1 or greater")
+        return 1
+
+    payload = json.loads(
+        path.read_text(encoding="utf-8-sig")
+    )
+
+    candidates = payload.get("candidates", [])
+
+    if not isinstance(candidates, list):
+        print("ERROR: invalid approval queue")
+        return 1
+
+    if index > len(candidates):
+        print(
+            f"ERROR: candidate number {index} does not exist "
+            f"(queue contains {len(candidates)})"
+        )
+        return 1
+
+    if decision not in {"approve", "reject"}:
+        print(f"ERROR: invalid decision: {decision}")
+        return 1
+
+    item = candidates[index - 1]
+
+    if not isinstance(item, dict):
+        print("ERROR: invalid candidate entry")
+        return 1
+
+    previous = (
+        str(item.get("decision", "")).strip()
+        or "pending"
+    )
+
+    item["decision"] = decision
+
+    path.write_text(
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    name = (
+        str(item.get("name", "")).strip()
+        or str(item.get("url", "")).strip()
+        or f"candidate {index}"
+    )
+
+    print()
+    print("=" * 72)
+    print("Bondik Approval Decision")
+    print("=" * 72)
+    print(f"Candidate : {index}. {name}")
+    print(f"Previous  : {previous.upper()}")
+    print(f"Decision  : {decision.upper()}")
+    print()
+    print("Queue updated only. No channel promotion was performed.")
+
+    return 0
+
+
 def show_approval_queue(path: Path) -> int:
     if not path.exists():
         print(f"ERROR: approval queue not found: {path}")
@@ -485,9 +577,27 @@ def main() -> int:
     print(f"Stable apply  : {args.apply_stable}")
     print("=" * 72)
 
+    approval_queue = (
+        args.candidate_out_dir / "approval-queue.json"
+    )
+
     if args.show_approval_queue:
         return show_approval_queue(
-            args.candidate_out_dir / "approval-queue.json"
+            approval_queue
+        )
+
+    if args.approve is not None:
+        return set_approval_decision(
+            approval_queue,
+            args.approve,
+            "approve",
+        )
+
+    if args.reject is not None:
+        return set_approval_decision(
+            approval_queue,
+            args.reject,
+            "reject",
         )
 
     python = sys.executable

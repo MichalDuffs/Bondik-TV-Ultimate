@@ -231,3 +231,94 @@ def test_show_approval_queue(tmp_path, capsys):
     assert "PENDING" in out
     assert "https://example.com/test.m3u8" in out
 
+def test_set_approval_decision(tmp_path):
+    import json
+
+    queue = tmp_path / "approval-queue.json"
+
+    queue.write_text(
+        json.dumps(
+            {
+                "candidates": [
+                    {
+                        "name": "Test TV",
+                        "url": "https://example.com/test.m3u8",
+                        "decision": "pending",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = pipeline.set_approval_decision(
+        queue,
+        1,
+        "approve",
+    )
+
+    assert result == 0
+
+    payload = json.loads(
+        queue.read_text(encoding="utf-8")
+    )
+
+    assert payload["candidates"][0]["decision"] == "approve"
+
+
+def test_set_approval_decision_reject(tmp_path):
+    import json
+
+    queue = tmp_path / "approval-queue.json"
+
+    queue.write_text(
+        json.dumps(
+            {
+                "candidates": [
+                    {
+                        "name": "Test TV",
+                        "url": "https://example.com/test.m3u8",
+                        "decision": "pending",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = pipeline.set_approval_decision(
+        queue,
+        1,
+        "reject",
+    )
+
+    assert result == 0
+
+    payload = json.loads(
+        queue.read_text(encoding="utf-8")
+    )
+
+    assert payload["candidates"][0]["decision"] == "reject"
+
+
+def test_set_approval_decision_rejects_invalid_index(tmp_path):
+    import json
+
+    queue = tmp_path / "approval-queue.json"
+
+    queue.write_text(
+        json.dumps({"candidates": []}),
+        encoding="utf-8",
+    )
+
+    assert pipeline.set_approval_decision(
+        queue,
+        0,
+        "approve",
+    ) == 1
+
+    assert pipeline.set_approval_decision(
+        queue,
+        1,
+        "approve",
+    ) == 1
