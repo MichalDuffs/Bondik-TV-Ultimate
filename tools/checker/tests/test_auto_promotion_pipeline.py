@@ -153,3 +153,54 @@ def test_candidate_review_dashboard_groups_new_and_alternatives(
     assert "New TV" in out
     assert "Existing TV" in out
     assert "existing-tv-sk" in out
+def test_candidate_approval_queue_contains_only_new_candidates(
+    tmp_path,
+):
+    import csv
+    import json
+
+    review = tmp_path / "review.csv"
+    output = tmp_path / "approval-queue.json"
+
+    rows = [
+        {
+            "candidate_name": "New TV",
+            "url": "https://new.example/stream.m3u8",
+            "existing_channel_id": "",
+        },
+        {
+            "candidate_name": "Existing TV",
+            "url": "https://alt.example/stream.m3u8",
+            "existing_channel_id": "existing-tv-cz",
+        },
+    ]
+
+    with review.open(
+        "w",
+        encoding="utf-8-sig",
+        newline="",
+    ) as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=rows[0].keys(),
+        )
+        writer.writeheader()
+        writer.writerows(rows)
+
+    pipeline.write_candidate_approval_queue(
+        review,
+        output,
+    )
+
+    payload = json.loads(
+        output.read_text(encoding="utf-8")
+    )
+
+    assert payload == {
+        "candidates": [
+            {
+                "url": "https://new.example/stream.m3u8",
+                "decision": "pending",
+            }
+        ]
+    }

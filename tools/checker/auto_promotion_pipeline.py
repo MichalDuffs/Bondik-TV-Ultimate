@@ -16,6 +16,7 @@ DRY-RUN is the default.
 from __future__ import annotations
 
 import argparse
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -158,6 +159,70 @@ def parse_args() -> argparse.Namespace:
     )
 
     return parser.parse_args()
+
+
+def write_candidate_approval_queue(
+    csv_path: Path,
+    output_path: Path,
+) -> None:
+    if not csv_path.exists():
+        return
+
+    import csv
+
+    with csv_path.open(
+        "r",
+        encoding="utf-8-sig",
+        newline="",
+    ) as handle:
+        rows = list(csv.DictReader(handle))
+
+    candidates = []
+
+    for row in rows:
+        existing = str(
+            row.get("existing_channel_id", "")
+        ).strip()
+
+        if existing:
+            continue
+
+        url = str(row.get("url", "")).strip()
+
+        if not url:
+            continue
+
+        candidates.append(
+            {
+                "url": url,
+                "decision": "pending",
+            }
+        )
+
+    output_path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    output_path.write_text(
+        json.dumps(
+            {"candidates": candidates},
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    print()
+    print(
+        f"?? Approval queue written: "
+        f"{output_path}"
+    )
+    print(
+        f"?? Pending NEW candidates: "
+        f"{len(candidates)}"
+    )
 
 
 def print_candidate_review_dashboard(csv_path: Path) -> None:
@@ -411,8 +476,18 @@ def main() -> int:
                 f"{generated_candidates}"
             )
 
-        print_candidate_review_dashboard(
+        review_csv = (
             args.candidate_out_dir / "review.csv"
+        )
+
+        print_candidate_review_dashboard(
+            review_csv
+        )
+
+        write_candidate_approval_queue(
+            review_csv,
+            args.candidate_out_dir
+            / "approval-queue.json",
         )
 
     if not args.skip_testing_import:
@@ -513,6 +588,7 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 
 
 
