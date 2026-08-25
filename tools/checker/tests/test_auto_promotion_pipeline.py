@@ -476,3 +476,80 @@ def test_show_approval_queue_displays_provenance(
     assert result == 0
     assert "CORROBORATED / NOT VERIFIED" in out
     assert "APPROVE" in out
+def test_approval_queue_preserves_review_state_by_exact_url(
+    tmp_path,
+):
+    import csv
+    import json
+
+    review = tmp_path / "review.csv"
+    queue = tmp_path / "approval-queue.json"
+
+    queue.write_text(
+        json.dumps(
+            {
+                "candidates": [
+                    {
+                        "name": "TV Central",
+                        "url": "https://example.com/tv.m3u8",
+                        "decision": "approve",
+                        "provenance": {
+                            "level": "corroborated",
+                            "verified": False,
+                        },
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with review.open(
+        "w",
+        encoding="utf-8-sig",
+        newline="",
+    ) as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=[
+                "candidate_name",
+                "country_inferred",
+                "category_inferred",
+                "bondik_score",
+                "stream_host",
+                "review_flags",
+                "existing_channel_id",
+                "url",
+            ],
+        )
+
+        writer.writeheader()
+        writer.writerow(
+            {
+                "candidate_name": "TV Central",
+                "country_inferred": "SK",
+                "category_inferred": "general",
+                "bondik_score": "77",
+                "stream_host": "fresh.example",
+                "review_flags": "manual-provenance-review",
+                "existing_channel_id": "",
+                "url": "https://example.com/tv.m3u8",
+            }
+        )
+
+    pipeline.write_candidate_approval_queue(
+        review,
+        queue,
+    )
+
+    payload = json.loads(
+        queue.read_text(encoding="utf-8")
+    )
+
+    item = payload["candidates"][0]
+
+    assert item["decision"] == "approve"
+    assert item["provenance"]["level"] == "corroborated"
+    assert item["provenance"]["verified"] is False
+    assert item["score"] == "77"
+    assert item["host"] == "fresh.example"

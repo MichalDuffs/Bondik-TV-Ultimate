@@ -192,6 +192,34 @@ def write_candidate_approval_queue(
 
     import csv
 
+    preserved_by_url: dict[str, dict] = {}
+
+    if output_path.exists():
+        try:
+            previous_payload = json.loads(
+                output_path.read_text(encoding="utf-8-sig")
+            )
+
+            previous_candidates = previous_payload.get(
+                "candidates",
+                [],
+            )
+
+            if isinstance(previous_candidates, list):
+                for item in previous_candidates:
+                    if not isinstance(item, dict):
+                        continue
+
+                    old_url = str(
+                        item.get("url", "")
+                    ).strip()
+
+                    if old_url:
+                        preserved_by_url[old_url] = item
+
+        except (OSError, ValueError, json.JSONDecodeError):
+            preserved_by_url = {}
+
     with csv_path.open(
         "r",
         encoding="utf-8-sig",
@@ -200,6 +228,7 @@ def write_candidate_approval_queue(
         rows = list(csv.DictReader(handle))
 
     candidates = []
+    preserved_count = 0
 
     for row in rows:
         existing = str(
@@ -214,33 +243,54 @@ def write_candidate_approval_queue(
         if not url:
             continue
 
-        candidates.append(
-            {
-                "name": str(
-                    row.get("candidate_name", "")
-                ).strip(),
-                "country": str(
-                    row.get("country_inferred", "")
-                ).strip(),
-                "category": (
-                    str(
-                        row.get("category_inferred", "")
-                    ).strip()
-                    or "unknown"
-                ),
-                "score": str(
-                    row.get("bondik_score", "")
-                ).strip(),
-                "host": str(
-                    row.get("stream_host", "")
-                ).strip(),
-                "flags": str(
-                    row.get("review_flags", "")
-                ).strip(),
-                "url": url,
-                "decision": "pending",
-            }
-        )
+        candidate = {
+            "name": str(
+                row.get("candidate_name", "")
+            ).strip(),
+            "country": str(
+                row.get("country_inferred", "")
+            ).strip(),
+            "category": (
+                str(
+                    row.get("category_inferred", "")
+                ).strip()
+                or "unknown"
+            ),
+            "score": str(
+                row.get("bondik_score", "")
+            ).strip(),
+            "host": str(
+                row.get("stream_host", "")
+            ).strip(),
+            "flags": str(
+                row.get("review_flags", "")
+            ).strip(),
+            "url": url,
+            "decision": "pending",
+        }
+
+        previous = preserved_by_url.get(url)
+
+        if isinstance(previous, dict):
+            old_decision = str(
+                previous.get("decision", "")
+            ).strip().casefold()
+
+            if old_decision in {
+                "pending",
+                "approve",
+                "reject",
+            }:
+                candidate["decision"] = old_decision
+
+            old_provenance = previous.get("provenance")
+
+            if isinstance(old_provenance, dict):
+                candidate["provenance"] = old_provenance
+
+            preserved_count += 1
+
+        candidates.append(candidate)
 
     output_path.parent.mkdir(
         parents=True,
@@ -257,16 +307,25 @@ def write_candidate_approval_queue(
         encoding="utf-8",
     )
 
+    pending_count = sum(
+        1
+        for item in candidates
+        if item.get("decision") == "pending"
+    )
+
     print()
     print(
-        f"?? Approval queue written: "
+        f"Approval queue written: "
         f"{output_path}"
     )
     print(
-        f"?? Pending NEW candidates: "
-        f"{len(candidates)}"
+        f"Pending NEW candidates: "
+        f"{pending_count}"
     )
-
+    print(
+        f"Preserved review state: "
+        f"{preserved_count}"
+    )
 
 def print_candidate_review_dashboard(csv_path: Path) -> None:
     if not csv_path.exists():
