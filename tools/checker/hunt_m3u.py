@@ -441,17 +441,31 @@ def matches(channel: Channel, pattern: re.Pattern[str] | None) -> bool:
         )
     ) is not None
 
+COUNTRY_ALIASES = {
+    "UK": "GB",
+}
+
+
+def normalize_country_code(value: str) -> str:
+    code = str(value).strip().upper()
+    return COUNTRY_ALIASES.get(code, code)
+
+
 def source_country(source: str) -> str:
     parsed = urllib.parse.urlparse(source)
     path = parsed.path.casefold()
 
     match = re.search(r"/streams/([a-z]{2})\.m3u8?$", path)
     if match:
-        return match.group(1).upper()
+        return normalize_country_code(
+            match.group(1)
+        )
 
     match = re.search(r"/countries/([a-z]{2})\.m3u8?$", path)
     if match:
-        return match.group(1).upper()
+        return normalize_country_code(
+            match.group(1)
+        )
 
     return ""
 
@@ -1067,7 +1081,7 @@ def main() -> int:
             )
 
     countries = {
-        value.strip().upper()
+        normalize_country_code(value)
         for value in args.country
         if value.strip()
     }
