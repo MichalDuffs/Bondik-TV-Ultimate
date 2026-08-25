@@ -263,7 +263,7 @@ def test_metadata_source_uses_existing_cache(
 ):
     cache = tmp_path / "channels.json"
     cache.write_text(
-        "[]",
+        '[{"id":"Cached.test"}]',
         encoding="utf-8",
     )
 
@@ -356,7 +356,7 @@ def test_explicit_metadata_beats_cache(
 ):
     explicit = tmp_path / "explicit.json"
     explicit.write_text(
-        "[]",
+        '[{"id":"Explicit.test"}]',
         encoding="utf-8",
     )
 
@@ -1069,3 +1069,381 @@ def test_selection_ledger_uses_family_without_mutating_source():
     assert "bagtop_top_rank" not in rows[0]
     assert "bagtop_top_reason" not in rows[0]
     assert "bagtop_top_family" not in rows[0]
+
+
+def test_score_audit_marks_selected_and_top_limit():
+    rows = [
+        {
+            "candidate_name": "A",
+            "bagtop_category": "music",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "B",
+            "bagtop_category": "kids",
+            "bagtop_score": "99",
+        },
+        {
+            "candidate_name": "C",
+            "bagtop_category": "movies",
+            "bagtop_score": "98",
+        },
+    ]
+
+    audit = bagtop.build_selection_audit(
+        rows,
+        2,
+        "score",
+    )
+
+    assert [
+        row["bagtop_audit_decision"]
+        for row in audit
+    ] == [
+        "selected-score",
+        "selected-score",
+        "skipped-top-limit",
+    ]
+
+
+def test_diverse_audit_marks_selection_reasons():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "Music B",
+            "bagtop_category": "music",
+            "bagtop_score": "99",
+        },
+        {
+            "candidate_name": "Kids A",
+            "bagtop_category": "kids",
+            "bagtop_score": "98",
+        },
+    ]
+
+    audit = bagtop.build_selection_audit(
+        rows,
+        3,
+        "diverse",
+        max_per_category=2,
+    )
+
+    decisions = {
+        row["candidate_name"]:
+        row["bagtop_audit_decision"]
+        for row in audit
+    }
+
+    assert decisions["Music A"] == "selected-diversity"
+    assert decisions["Kids A"] == "selected-diversity"
+    assert decisions["Music B"] == "selected-score-fill"
+
+
+def test_diverse_audit_marks_category_cap():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "Music B",
+            "bagtop_category": "music",
+            "bagtop_score": "99",
+        },
+        {
+            "candidate_name": "Music C",
+            "bagtop_category": "music",
+            "bagtop_score": "98",
+        },
+        {
+            "candidate_name": "Kids A",
+            "bagtop_category": "kids",
+            "bagtop_score": "97",
+        },
+    ]
+
+    audit = bagtop.build_selection_audit(
+        rows,
+        4,
+        "diverse",
+        max_per_category=2,
+    )
+
+    decisions = {
+        row["candidate_name"]:
+        row["bagtop_audit_decision"]
+        for row in audit
+    }
+
+    assert decisions["Music C"] == "skipped-category-cap"
+
+
+def test_diversity_floor_is_diagnostic_not_final_rejection():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "Music B",
+            "bagtop_category": "music",
+            "bagtop_score": "99",
+        },
+        {
+            "candidate_name": "Music C",
+            "bagtop_category": "music",
+            "bagtop_score": "98",
+        },
+        {
+            "candidate_name": "Kids Weak",
+            "bagtop_category": "kids",
+            "bagtop_score": "80",
+        },
+    ]
+
+    audit = bagtop.build_selection_audit(
+        rows,
+        3,
+        "diverse",
+        diversity_score_gap=5,
+        max_per_category=2,
+    )
+
+    weak = next(
+        row
+        for row in audit
+        if row["candidate_name"] == "Kids Weak"
+    )
+
+    assert weak["bagtop_diversity_eligible"] == "false"
+    assert weak["bagtop_audit_decision"] == "selected-score-fill"
+
+
+def test_selection_audit_does_not_mutate_source():
+    rows = [
+        {
+            "candidate_name": "Cinema A",
+            "bagtop_category": "cinema",
+            "bagtop_score": "100",
+        },
+    ]
+
+    audit = bagtop.build_selection_audit(
+        rows,
+        1,
+        "score",
+    )
+
+    assert audit[0]["bagtop_audit_family"] == "movies"
+    assert "bagtop_audit_decision" not in rows[0]
+    assert "bagtop_audit_rank" not in rows[0]
+
+
+def test_run_manifest_records_production_inputs():
+    manifest = bagtop.build_run_manifest(
+        metadata_mode="cache",
+        metadata_source="channels.json",
+        metadata_records=100,
+        top_strategy="diverse",
+        diversity_score_gap=10,
+        max_per_category=2,
+        input_candidates=50,
+        raw_goodies=12,
+        unique_goodies=10,
+        review_count=20,
+        parking_count=18,
+        top_requested=4,
+        top_selected=3,
+    )
+
+    assert manifest["bagtop_version"] == "1.0.0"
+    assert manifest["metadata"]["mode"] == "cache"
+    assert manifest["metadata"]["records"] == 100
+    assert manifest["selection"]["top_requested"] == 4
+    assert manifest["selection"]["top_selected"] == 3
+    assert (
+        manifest["selection"]["max_per_category_family"]
+        == 2
+    )
+    assert manifest["counts"]["collapsed_alternatives"] == 2
+
+
+def test_invalid_metadata_cache_is_repaired(
+    tmp_path,
+    monkeypatch,
+):
+    cache = tmp_path / "channels.json"
+    cache.write_text(
+        "{broken",
+        encoding="utf-8",
+    )
+
+    def fake_download(path):
+        path.write_text(
+            '[{"id":"Repaired.test"}]',
+            encoding="utf-8",
+        )
+
+    monkeypatch.setattr(
+        bagtop,
+        "download_channel_metadata",
+        fake_download,
+    )
+
+    path, mode = bagtop.resolve_metadata_source(
+        channel_metadata=None,
+        metadata_cache=cache,
+        refresh_metadata=False,
+        no_metadata=False,
+    )
+
+    assert path == cache
+    assert mode == "cache-repaired"
+
+    metadata = bagtop.load_channel_metadata(
+        cache
+    )
+
+    assert "repaired.test" in metadata
+
+
+def test_invalid_metadata_cache_repair_failure_raises(
+    tmp_path,
+    monkeypatch,
+):
+    cache = tmp_path / "channels.json"
+    cache.write_text(
+        "{broken",
+        encoding="utf-8",
+    )
+
+    def failing_download(path):
+        raise OSError("network down")
+
+    monkeypatch.setattr(
+        bagtop,
+        "download_channel_metadata",
+        failing_download,
+    )
+
+    try:
+        bagtop.resolve_metadata_source(
+            channel_metadata=None,
+            metadata_cache=cache,
+            refresh_metadata=False,
+            no_metadata=False,
+        )
+    except RuntimeError as exc:
+        assert (
+            "automatic repair failed"
+            in str(exc)
+        )
+    else:
+        raise AssertionError(
+            "invalid cache must not be accepted"
+        )
+
+
+def test_refresh_failure_never_uses_invalid_cache(
+    tmp_path,
+    monkeypatch,
+):
+    cache = tmp_path / "channels.json"
+    cache.write_text(
+        "[]",
+        encoding="utf-8",
+    )
+
+    def failing_download(path):
+        raise OSError("network down")
+
+    monkeypatch.setattr(
+        bagtop,
+        "download_channel_metadata",
+        failing_download,
+    )
+
+    try:
+        bagtop.resolve_metadata_source(
+            channel_metadata=None,
+            metadata_cache=cache,
+            refresh_metadata=True,
+            no_metadata=False,
+        )
+    except RuntimeError as exc:
+        assert (
+            "existing cache is invalid"
+            in str(exc)
+        )
+    else:
+        raise AssertionError(
+            "invalid fallback cache must be rejected"
+        )
+
+
+def test_invalid_explicit_metadata_is_rejected(
+    tmp_path,
+):
+    explicit = tmp_path / "explicit.json"
+    explicit.write_text(
+        "[]",
+        encoding="utf-8",
+    )
+
+    try:
+        bagtop.resolve_metadata_source(
+            channel_metadata=explicit,
+            metadata_cache=(
+                tmp_path / "cache.json"
+            ),
+            refresh_metadata=False,
+            no_metadata=False,
+        )
+    except ValueError as exc:
+        assert "empty" in str(exc)
+    else:
+        raise AssertionError(
+            "invalid explicit metadata must fail"
+        )
+
+
+def test_downloaded_metadata_is_revalidated(
+    tmp_path,
+    monkeypatch,
+):
+    cache = tmp_path / "channels.json"
+
+    def bad_download(path):
+        path.write_text(
+            "[]",
+            encoding="utf-8",
+        )
+
+    monkeypatch.setattr(
+        bagtop,
+        "download_channel_metadata",
+        bad_download,
+    )
+
+    try:
+        bagtop.resolve_metadata_source(
+            channel_metadata=None,
+            metadata_cache=cache,
+            refresh_metadata=False,
+            no_metadata=False,
+        )
+    except RuntimeError as exc:
+        assert (
+            "no valid cache exists"
+            in str(exc)
+        )
+    else:
+        raise AssertionError(
+            "bad downloaded metadata must fail"
+        )
