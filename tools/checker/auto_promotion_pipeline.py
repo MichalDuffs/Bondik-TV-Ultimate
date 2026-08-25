@@ -441,6 +441,96 @@ def run_step(name: str, command: list[str]) -> None:
         )
 
 
+def set_candidate_provenance(
+    path: Path,
+    index: int,
+    level: str,
+    website: str,
+    evidence: list[str],
+    note: str,
+) -> int:
+    """Attach provenance evidence without weakening the v1.1 gate."""
+
+    allowed_levels = {
+        "official",
+        "corroborated",
+        "unverified",
+    }
+
+    if level not in allowed_levels:
+        print(f"ERROR: invalid provenance level: {level}")
+        return 1
+
+    if not path.exists():
+        print(f"ERROR: approval queue not found: {path}")
+        return 1
+
+    payload = json.loads(
+        path.read_text(encoding="utf-8-sig")
+    )
+
+    candidates = payload.get("candidates", [])
+
+    if (
+        not isinstance(candidates, list)
+        or index < 1
+        or index > len(candidates)
+    ):
+        print(f"ERROR: candidate number {index} does not exist")
+        return 1
+
+    item = candidates[index - 1]
+
+    if not isinstance(item, dict):
+        print("ERROR: invalid candidate entry")
+        return 1
+
+    # Critical safety rule:
+    # only direct official provenance satisfies v1.1 verified=True.
+    verified = level == "official"
+
+    item["provenance"] = {
+        "level": level,
+        "verified": verified,
+        "website": website.strip(),
+        "evidence": [
+            str(value).strip()
+            for value in evidence
+            if str(value).strip()
+        ],
+        "note": note.strip(),
+    }
+
+    path.write_text(
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    name = (
+        str(item.get("name", "")).strip()
+        or str(item.get("url", "")).strip()
+        or f"candidate {index}"
+    )
+
+    print()
+    print("=" * 72)
+    print("Bondik Provenance Update")
+    print("=" * 72)
+    print(f"Candidate : {index}. {name}")
+    print(f"Level     : {level.upper()}")
+    print(f"Verified  : {verified}")
+    print(f"Website   : {website}")
+    print()
+    print("Evidence stored. Existing promotion safety gates remain unchanged.")
+
+    return 0
+
+
 def set_approval_decision(
     path: Path,
     index: int,
@@ -780,6 +870,7 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 
 
 

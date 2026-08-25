@@ -322,3 +322,83 @@ def test_set_approval_decision_rejects_invalid_index(tmp_path):
         1,
         "approve",
     ) == 1
+def test_corrob_provenance_never_marks_verified(tmp_path):
+    import json
+
+    queue = tmp_path / "approval-queue.json"
+
+    queue.write_text(
+        json.dumps(
+            {
+                "candidates": [
+                    {
+                        "name": "TV Central",
+                        "url": "https://example.com/tv.m3u8",
+                        "decision": "approve",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = pipeline.set_candidate_provenance(
+        queue,
+        1,
+        "corroborated",
+        "https://www.cetv.sk/",
+        ["https://www.cetv.sk/o-tv-central/"],
+        "Station corroborated; stream URL not directly confirmed.",
+    )
+
+    assert result == 0
+
+    payload = json.loads(
+        queue.read_text(encoding="utf-8")
+    )
+
+    provenance = payload["candidates"][0]["provenance"]
+
+    assert provenance["level"] == "corroborated"
+    assert provenance["verified"] is False
+
+
+def test_official_provenance_marks_verified(tmp_path):
+    import json
+
+    queue = tmp_path / "approval-queue.json"
+
+    queue.write_text(
+        json.dumps(
+            {
+                "candidates": [
+                    {
+                        "name": "Official TV",
+                        "url": "https://example.com/tv.m3u8",
+                        "decision": "approve",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = pipeline.set_candidate_provenance(
+        queue,
+        1,
+        "official",
+        "https://example.com/",
+        ["https://example.com/live"],
+        "Official operator directly confirms this stream.",
+    )
+
+    assert result == 0
+
+    payload = json.loads(
+        queue.read_text(encoding="utf-8")
+    )
+
+    provenance = payload["candidates"][0]["provenance"]
+
+    assert provenance["level"] == "official"
+    assert provenance["verified"] is True
