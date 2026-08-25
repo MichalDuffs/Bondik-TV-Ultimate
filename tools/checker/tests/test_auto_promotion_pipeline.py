@@ -439,3 +439,40 @@ def test_show_approval_queue_displays_provenance(
     assert result == 0
     assert "CORROBORATED / NOT VERIFIED" in out
     assert "APPROVE" in out
+def test_show_approval_queue_displays_provenance(
+    tmp_path,
+    capsys,
+):
+    import json
+
+    queue = tmp_path / "approval-queue.json"
+
+    queue.write_text(
+        json.dumps(
+            {
+                "candidates": [
+                    {
+                        "name": "TV Central",
+                        "country": "SK",
+                        "category": "unknown",
+                        "score": "54",
+                        "url": "https://example.com/tv.m3u8",
+                        "decision": "approve",
+                        "provenance": {
+                            "level": "corroborated",
+                            "verified": False,
+                        },
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = pipeline.show_approval_queue(queue)
+
+    out = capsys.readouterr().out
+
+    assert result == 0
+    assert "CORROBORATED / NOT VERIFIED" in out
+    assert "APPROVE" in out
