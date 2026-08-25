@@ -852,3 +852,32 @@ channels:
     metadata:
       website: "https://www.tvnoe.cz/"
       notes: "Public TV Noe+ HLS candidate discovered via iptv-org. Hunter deep-HLS verified to media segment; keep in testing pending provenance and stability observation."
+
+  - id: current-time-tv-cz
+    name: Настоящее Время
+    country: CZ
+    language: cs
+    category: news
+    provider: unknown
+    stream:
+      url: https://rfe-ingest.akamaized.net/hls/live/2033043/tvmc05/master.m3u8
+      format: hls
+      quality: unknown
+    epg:
+      id: CurrentTimeTV.cz@SD
+      source: null
+      enabled: false
+    logo:
+      url: null
+      local: null
+    status: testing
+    metadata:
+      website: https://www.currenttime.tv/p/6018.html
+      notes: 'AUTO-PROMOTION v1.1: manually approved candidate with verified provenance evidence. Inserted as testing; stable promotion still requires Bondik QC.'
+      provenance:
+        verified: true
+        evidence:
+        - https://www.currenttime.tv/p/6018.html
+        note: Official Current Time distribution page publishes the matching rfe-ingest.akamaized.net HLS stream.
+        discovery_source: https://raw.githubusercontent.com/iptv-org/iptv/master/streams/cz.m3u
+        stream_host: rfe-ingest.akamaized.net
