@@ -656,3 +656,75 @@ def test_normalize_hunter_source_list_supports_labels(
         "https://example.com/cz.m3u",
         "https://example.com/sk.m3u",
     ]
+def test_set_candidate_review_category(tmp_path):
+    import json
+
+    queue = tmp_path / "approval-queue.json"
+
+    queue.write_text(
+        json.dumps(
+            {
+                "candidates": [
+                    {
+                        "name": "Example TV",
+                        "url": "https://example.com/live.m3u8",
+                        "decision": "pending",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = pipeline.set_candidate_review_field(
+        queue,
+        1,
+        "category",
+        "news",
+    )
+
+    assert result == 0
+
+    payload = json.loads(
+        queue.read_text(encoding="utf-8")
+    )
+
+    assert payload["candidates"][0]["category"] == "news"
+
+
+def test_set_candidate_review_channel_id_rejects_invalid_value(
+    tmp_path,
+):
+    import json
+
+    queue = tmp_path / "approval-queue.json"
+
+    queue.write_text(
+        json.dumps(
+            {
+                "candidates": [
+                    {
+                        "name": "Example TV",
+                        "url": "https://example.com/live.m3u8",
+                        "decision": "pending",
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = pipeline.set_candidate_review_field(
+        queue,
+        1,
+        "channel_id",
+        "Bad ID!",
+    )
+
+    assert result != 0
+
+    payload = json.loads(
+        queue.read_text(encoding="utf-8")
+    )
+
+    assert "channel_id" not in payload["candidates"][0]

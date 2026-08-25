@@ -181,6 +181,20 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--set-category",
+        nargs=2,
+        metavar=("N", "CATEGORY"),
+        help="Set reviewed category for candidate N",
+    )
+
+    parser.add_argument(
+        "--set-channel-id",
+        nargs=2,
+        metavar=("N", "CHANNEL_ID"),
+        help="Set reviewed channel ID for candidate N",
+    )
+
+    parser.add_argument(
         "--provenance",
         type=int,
         metavar="N",
@@ -719,6 +733,89 @@ def run_step(name: str, command: list[str]) -> None:
         )
 
 
+def set_candidate_review_field(
+    path: Path,
+    index: int,
+    field: str,
+    value: str,
+) -> int:
+    if not path.exists():
+        print(f"ERROR: approval queue not found: {path}")
+        return 1
+
+    payload = json.loads(
+        path.read_text(encoding="utf-8-sig")
+    )
+
+    candidates = payload.get("candidates", [])
+
+    if (
+        not isinstance(candidates, list)
+        or index < 1
+        or index > len(candidates)
+    ):
+        print(f"ERROR: candidate number {index} does not exist")
+        return 1
+
+    value = str(value).strip()
+
+    if not value:
+        print(f"ERROR: {field} cannot be empty")
+        return 1
+
+    if field == "channel_id":
+        import re
+
+        if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", value):
+            print(
+                "ERROR: channel_id must contain only "
+                "lowercase letters, digits and single hyphens"
+            )
+            return 1
+
+    if field not in {"category", "channel_id"}:
+        print(f"ERROR: unsupported review field: {field}")
+        return 1
+
+    item = candidates[index - 1]
+
+    if not isinstance(item, dict):
+        print("ERROR: invalid candidate entry")
+        return 1
+
+    previous = item.get(field)
+    item[field] = value
+
+    path.write_text(
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    name = (
+        str(item.get("name", "")).strip()
+        or str(item.get("url", "")).strip()
+        or f"candidate {index}"
+    )
+
+    print()
+    print("=" * 72)
+    print("Bondik Review Metadata Update")
+    print("=" * 72)
+    print(f"Candidate : {index}. {name}")
+    print(f"Field     : {field}")
+    print(f"Previous  : {previous or '<missing>'}")
+    print(f"Value     : {value}")
+    print()
+    print("Queue updated only. No promotion was performed.")
+
+    return 0
+
+
 def set_candidate_provenance(
     path: Path,
     index: int,
@@ -992,6 +1089,38 @@ def main() -> int:
             approval_queue,
             args.reject,
             "reject",
+        )
+
+    if args.set_category is not None:
+        index_raw, category = args.set_category
+
+        try:
+            index = int(index_raw)
+        except ValueError:
+            print("ERROR: --set-category candidate number must be an integer")
+            return 1
+
+        return set_candidate_review_field(
+            approval_queue,
+            index,
+            "category",
+            category,
+        )
+
+    if args.set_channel_id is not None:
+        index_raw, channel_id = args.set_channel_id
+
+        try:
+            index = int(index_raw)
+        except ValueError:
+            print("ERROR: --set-channel-id candidate number must be an integer")
+            return 1
+
+        return set_candidate_review_field(
+            approval_queue,
+            index,
+            "channel_id",
+            channel_id,
         )
 
     if args.provenance is not None:
