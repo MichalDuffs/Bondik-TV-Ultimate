@@ -1,8 +1,8 @@
 # 🗺️ Bondik TV Ultimate Roadmap
 
-Last refreshed: **2026-08-23**
+Last refreshed: **2026-08-26**
 
-> **Quality over quantity.**
+> **Quality before quantity.**
 
 Bondik TV Ultimate focuses on verified public streams, transparent review,
 simple operation and automation that never bypasses human quality control.
@@ -17,6 +17,9 @@ Public M3U sources
 M3U Hunter v0.9
         ↓
 Candidate Gate v0.5.1
+        ↓
+BAGTOP v1.0
+ranking / diversity / audit
         ↓
 Manual provenance review
         ↓
@@ -34,7 +37,7 @@ STABLE PROMOTION v1.0
         ↓
 status=stable
         ↓
-Playlist Generator
+Playlist Generator v5
         ↓
 Public Bondik TV playlists
 ```
@@ -52,11 +55,13 @@ No candidate can move directly from discovery into the stable public playlist.
 - [x] Country, category and provider playlists
 - [x] Ultimate playlist
 - [x] Stable-only public generation
-- [x] Bondík mascot logo and banner
+- [x] Bondík mascot / team branding
+- [x] README refresh with Quick Start and quality pipeline
+- [x] CI validation on push and pull request
 
 ---
 
-## 🚜 Discovery
+## 🚜 Discovery & Ranking
 
 ### M3U Hunter v0.9
 
@@ -77,6 +82,20 @@ No candidate can move directly from discovery into the stable public playlist.
 - [x] Candidate scoring
 - [x] Raw-IP, suspicious-restream and test-feed detection
 - [x] Reviewable JSON / CSV / M3U outputs
+
+### BAGTOP v1.0
+
+- [x] Score-based TOP selection
+- [x] Diversity quality floor
+- [x] Maximum per category family
+- [x] Category-family grouping
+- [x] Selection ledger with rank and reason
+- [x] Full selection audit
+- [x] Run manifest
+- [x] Metadata cache validation
+- [x] Automatic repair of corrupt automatic metadata cache
+- [x] Verified-cache fallback after metadata refresh failure
+- [x] Invalid explicit metadata rejection
 
 ---
 
@@ -115,6 +134,10 @@ No candidate can move directly from discovery into the stable public playlist.
 - [x] Manual review note required
 - [x] DRY-RUN by default
 - [x] Explicit `--apply`
+- [x] First production testing → stable batch completed
+
+The first verified production batch moved channels through the controlled
+testing-to-stable lifecycle instead of publishing directly from discovery.
 
 ---
 
@@ -137,11 +160,22 @@ No candidate can move directly from discovery into the stable public playlist.
 
 Current priority is **quality CZ/SK coverage**, not maximum channel count.
 
+Current CI snapshot:
+
+- **39** validated channel records
+- **29** channels in the stable Ultimate playlist
+- **16** country playlists
+- **14** category playlists
+- **22** provider playlists
+
+Progress:
+
 - [x] CZ/SK discovery pipeline
 - [x] Manual provenance workflow
+- [x] Candidate ranking and audit
 - [x] Testing lifecycle
 - [x] Stable promotion lifecycle
-- [ ] First production 3/3 → stable promotion
+- [x] First production testing → stable promotion
 - [ ] Expand verified Czech channels
 - [ ] Expand verified Slovak channels
 - [ ] Improve channel logos and EPG metadata
@@ -153,15 +187,20 @@ Current priority is **quality CZ/SK coverage**, not maximum channel count.
 
 - [x] Hunter tests
 - [x] Candidate Gate tests
+- [x] BAGTOP regression tests
 - [x] AUTO-PROMOTION and provenance tests
 - [x] Testing Promotion Gate tests
 - [x] STABLE PROMOTION tests
 - [x] Stream and EPG automation tests
-- [x] **289 automated tests passing**
+- [x] CI compiles production Python tooling
+- [x] CI verifies generated playlists remain synchronized
+- [x] **359 tests passing + 22 subtests passing**
 
 A working stream is not automatically trusted.
 
 A trusted testing stream is not automatically stable.
+
+A high-scoring candidate is not automatically published.
 
 ---
 
@@ -170,15 +209,25 @@ A trusted testing stream is not automatically stable.
 - [x] Central channel database
 - [x] Stable-only playlist generation
 - [x] Discovery and candidate-review pipeline
+- [x] Auditable candidate ranking with BAGTOP v1.0
 - [x] Provenance-aware testing promotion
 - [x] Long-term testing gate
 - [x] Controlled stable promotion
-- [x] Automated test suite
-- [ ] First production 3/3 → stable promotion
-- [ ] Improve CZ/SK curated set
-- [ ] Improve logo and EPG coverage
+- [x] First real production stable batch
+- [x] Automated CI test suite
+- [x] Team branding and README refresh
+- [ ] Expand the verified CZ/SK curated set
+- [ ] Improve CZ/SK EPG and channel logos
 - [ ] Final documentation review
-- [ ] Stable public release
+- [ ] Prepare the next stable public release
+
+---
+
+## 🎯 Next Priorities
+
+1. Expand verified CZ/SK candidates while preserving the quality floor.
+2. Improve EPG mappings, channel logos and provenance metadata.
+3. Finish documentation/release review and prepare the next stable public release.
 
 ---
 
@@ -196,6 +245,6 @@ Applications come after the core playlist and QC pipeline is mature.
 
 🐾 **Bondik TV Ultimate**
 
-**Open • Free • Community**
+**Open • Free • Community • Verified IPTV**
 
-> **When Bondík can play it, everyone can play it.**
+> **Když to přehraje Bondík, přehraje to každý.**
