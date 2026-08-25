@@ -505,3 +505,140 @@ def test_diverse_strategy_uses_diversity_gate():
         "Music A",
         "Kids A",
     ]
+
+
+def test_diversity_floor_blocks_large_quality_drop():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "Music B",
+            "bagtop_category": "music",
+            "bagtop_score": "95",
+        },
+        {
+            "candidate_name": "Kids Weak",
+            "bagtop_category": "kids",
+            "bagtop_score": "70",
+        },
+    ]
+
+    result = bagtop.select_diverse_top(
+        rows,
+        2,
+        max_score_gap=10,
+    )
+
+    assert [
+        row["candidate_name"]
+        for row in result
+    ] == [
+        "Music A",
+        "Music B",
+    ]
+
+
+def test_diversity_floor_allows_small_quality_drop():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "Music B",
+            "bagtop_category": "music",
+            "bagtop_score": "95",
+        },
+        {
+            "candidate_name": "Kids Good",
+            "bagtop_category": "kids",
+            "bagtop_score": "90",
+        },
+    ]
+
+    result = bagtop.select_diverse_top(
+        rows,
+        2,
+        max_score_gap=10,
+    )
+
+    assert [
+        row["candidate_name"]
+        for row in result
+    ] == [
+        "Music A",
+        "Kids Good",
+    ]
+
+
+def test_zero_diversity_gap_requires_cutoff_quality():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "Music B",
+            "bagtop_category": "music",
+            "bagtop_score": "95",
+        },
+        {
+            "candidate_name": "Kids Almost",
+            "bagtop_category": "kids",
+            "bagtop_score": "94",
+        },
+    ]
+
+    result = bagtop.select_diverse_top(
+        rows,
+        2,
+        max_score_gap=0,
+    )
+
+    assert [
+        row["candidate_name"]
+        for row in result
+    ] == [
+        "Music A",
+        "Music B",
+    ]
+
+
+def test_select_top_passes_diversity_score_gap():
+    rows = [
+        {
+            "candidate_name": "Music A",
+            "bagtop_category": "music",
+            "bagtop_score": "100",
+        },
+        {
+            "candidate_name": "Music B",
+            "bagtop_category": "music",
+            "bagtop_score": "95",
+        },
+        {
+            "candidate_name": "Kids Weak",
+            "bagtop_category": "kids",
+            "bagtop_score": "80",
+        },
+    ]
+
+    result = bagtop.select_top(
+        rows,
+        2,
+        "diverse",
+        diversity_score_gap=5,
+    )
+
+    assert [
+        row["candidate_name"]
+        for row in result
+    ] == [
+        "Music A",
+        "Music B",
+    ]
