@@ -39,6 +39,13 @@ PROMOTE_STABLE = ROOT / "tools" / "checker" / "promote_testing_to_stable.py"
 
 DEFAULT_CHANNELS = ROOT / "channels" / "channels.yaml"
 
+PROMOTION_REPORT = (
+    ROOT
+    / "hunt-results"
+    / "testing-promotion"
+    / "promotion_status.json"
+)
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -92,6 +99,84 @@ def parse_args() -> argparse.Namespace:
     )
 
     return parser.parse_args()
+
+
+def print_promotion_dashboard(report_path: Path = PROMOTION_REPORT) -> None:
+    if not report_path.exists():
+        print()
+        print("ℹ️ Promotion dashboard unavailable: report not found.")
+        return
+
+    import json
+
+    payload = json.loads(
+        report_path.read_text(encoding="utf-8-sig")
+    )
+
+    channels = payload.get("channels", [])
+
+    if not isinstance(channels, list):
+        print()
+        print("ℹ️ Promotion dashboard unavailable: invalid report.")
+        return
+
+    ready = []
+    almost = []
+    early = []
+    failed = []
+
+    for row in channels:
+        if not isinstance(row, dict):
+            continue
+
+        name = str(row.get("name", row.get("id", "unknown")))
+        counted = int(row.get("counted_passes", 0) or 0)
+        required = int(row.get("required_passes", 0) or 0)
+        last_result = str(row.get("last_result", "")).casefold()
+
+        item = (name, counted, required)
+
+        if last_result != "pass":
+            failed.append(item)
+        elif row.get("eligible") is True:
+            ready.append(item)
+        elif required > 0 and counted == required - 1:
+            almost.append(item)
+        else:
+            early.append(item)
+
+    print()
+    print("=" * 72)
+    print("🐾 Bondik Promotion Dashboard")
+    print("=" * 72)
+    print(f"READY NOW     : {len(ready)}")
+    print(f"ALMOST READY  : {len(almost)}")
+    print(f"EARLY TESTING : {len(early)}")
+    print(f"FAILED        : {len(failed)}")
+
+    if ready:
+        print()
+        print("Ready now:")
+        for name, counted, required in ready:
+            print(f"🏆 {name}: {counted}/{required}")
+
+    if almost:
+        print()
+        print("Almost ready:")
+        for name, counted, required in almost:
+            print(f"🟡 {name}: {counted}/{required}")
+
+    if early:
+        print()
+        print("Early testing:")
+        for name, counted, required in early:
+            print(f"🧪 {name}: {counted}/{required}")
+
+    if failed:
+        print()
+        print("Failed:")
+        for name, counted, required in failed:
+            print(f"❌ {name}: {counted}/{required}")
 
 
 def run_step(name: str, command: list[str]) -> None:
@@ -172,6 +257,8 @@ def main() -> int:
         ],
     )
 
+    print_promotion_dashboard()
+
     if not args.skip_stable_promotion:
         if not args.stable_decisions:
             print()
@@ -211,4 +298,5 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 

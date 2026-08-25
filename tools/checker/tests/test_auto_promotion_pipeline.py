@@ -29,3 +29,67 @@ def test_missing_candidates_fails_without_skip():
     combined = result.stdout + result.stderr
     assert "--candidates is required" in combined
 
+from pathlib import Path
+import importlib.util
+import json
+
+SCRIPT = Path("tools/checker/auto_promotion_pipeline.py")
+
+spec = importlib.util.spec_from_file_location("pipeline", SCRIPT)
+pipeline = importlib.util.module_from_spec(spec)
+assert spec.loader is not None
+spec.loader.exec_module(pipeline)
+
+def test_dashboard_groups_channels(tmp_path, capsys):
+    report = tmp_path / "promotion_status.json"
+
+    report.write_text(
+        json.dumps(
+            {
+                "channels": [
+                    {
+                        "name": "Ready",
+                        "eligible": True,
+                        "counted_passes": 3,
+                        "required_passes": 3,
+                        "last_result": "pass",
+                    },
+                    {
+                        "name": "Almost",
+                        "eligible": False,
+                        "counted_passes": 2,
+                        "required_passes": 3,
+                        "last_result": "pass",
+                    },
+                    {
+                        "name": "Early",
+                        "eligible": False,
+                        "counted_passes": 1,
+                        "required_passes": 3,
+                        "last_result": "pass",
+                    },
+                    {
+                        "name": "Failed",
+                        "eligible": False,
+                        "counted_passes": 0,
+                        "required_passes": 3,
+                        "last_result": "fail",
+                    },
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    pipeline.print_promotion_dashboard(report)
+
+    out = capsys.readouterr().out
+
+    assert "READY NOW     : 1" in out
+    assert "ALMOST READY  : 1" in out
+    assert "EARLY TESTING : 1" in out
+    assert "FAILED        : 1" in out
+    assert "Ready: 3/3" in out
+    assert "Almost: 2/3" in out
+    assert "Early: 1/3" in out
+    assert "Failed: 0/3" in out
