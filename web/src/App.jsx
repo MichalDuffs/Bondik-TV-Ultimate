@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
 import LivePreview from "./components/LivePreview";
+import PlaylistIOPanel from "./components/PlaylistIOPanel";
 import "./App.css";
 
 const navigation = [
@@ -37,6 +38,7 @@ const MAX_PLAYLISTS = 10;
 const EMPTY_PLAYLIST_STATE = {
   ids: [],
   notes: {},
+  externalChannels: {},
   name: "Bondik TV Custom",
   note: "",
 };
@@ -62,6 +64,7 @@ function createEmptyPlaylist(
     id: createPlaylistId(),
     ids: [],
     notes: {},
+    externalChannels: {},
     name,
     note: "",
   };
@@ -123,10 +126,28 @@ function normalizePlaylistState(
       ? value.id
       : fallbackId;
 
+  const externalChannels =
+    value.externalChannels &&
+    typeof value.externalChannels === "object"
+      ? Object.fromEntries(
+          Object.entries(
+            value.externalChannels,
+          ).filter(
+            ([channelId, channel]) =>
+              ids.includes(channelId) &&
+              channel &&
+              typeof channel === "object" &&
+              typeof channel.stream?.url ===
+                "string",
+          ),
+        )
+      : {};
+
   return {
     id,
     ids,
     notes,
+    externalChannels,
     name:
       typeof value.name === "string"
         ? value.name
@@ -1028,10 +1049,22 @@ function PlaylistPage({
       ]),
     );
 
+    Object.entries(
+      playlistState.externalChannels ?? {},
+    ).forEach(([id, channel]) => {
+      if (!channelsById.has(id)) {
+        channelsById.set(id, channel);
+      }
+    });
+
     return playlistIds
       .map((id) => channelsById.get(id))
       .filter(Boolean);
-  }, [catalog, playlistIds]);
+  }, [
+    catalog,
+    playlistIds,
+    playlistState.externalChannels,
+  ]);
 
   function selectPlaylist(playlistId) {
     setActivePlaylistPreviewId(null);
@@ -1241,7 +1274,12 @@ function PlaylistPage({
   function removeChannel(channelId) {
     setPlaylistState((current) => {
       const notes = { ...current.notes };
+      const externalChannels = {
+        ...current.externalChannels,
+      };
+
       delete notes[channelId];
+      delete externalChannels[channelId];
 
       return {
         ...current,
@@ -1249,6 +1287,7 @@ function PlaylistPage({
           (id) => id !== channelId,
         ),
         notes,
+        externalChannels,
       };
     });
   }
@@ -1258,72 +1297,143 @@ function PlaylistPage({
       ...current,
       ids: [],
       notes: {},
+      externalChannels: {},
     }));
   }
 
-  function escapeAttribute(value) {
-    return String(value ?? "").replaceAll('"', "'");
-  }
-
-  function downloadPlaylist() {
-    if (selectedChannels.length === 0) {
-      return;
+  function importPlaylistData(
+    importData,
+    mode,
+  ) {
+    if (
+      !importData?.channels?.length
+    ) {
+      return {
+        ok: false,
+        message:
+          "Import neobsahuje zadne stanice.",
+      };
     }
 
-    const lines = ["#EXTM3U"];
+    if (
+      mode === "new" &&
+      playlistLibrary.playlists.length >=
+        MAX_PLAYLISTS
+    ) {
+      return {
+        ok: false,
+        message:
+          "Knihovna uz obsahuje maximalne 10 playlistu.",
+      };
+    }
 
-    selectedChannels.forEach((channel) => {
-      const name = String(channel.name ?? "")
-        .replace(/[\r\n]+/g, " ")
-        .trim();
-
-      const tvgId = escapeAttribute(channel.epg?.id);
-      const logo = escapeAttribute(
-        channel.logo?.url ?? "",
+    const catalogByUrl =
+      new Map(
+        (catalog?.channels ?? [])
+          .filter(
+            (channel) =>
+              channel.stream?.url,
+          )
+          .map((channel) => [
+            channel.stream.url,
+            channel,
+          ]),
       );
-      const group = escapeAttribute(
-        channel.category,
-      );
 
-      lines.push(
-        `#EXTINF:-1 tvg-id="${tvgId}" tvg-name="${escapeAttribute(name)}" tvg-logo="${logo}" group-title="${group}",${name}`,
-      );
-      lines.push(channel.stream.url);
-    });
+    const ids = [];
+    const externalChannels = {};
+    const seen = new Set();
 
-    const safeFileName = (
-      playlistName.trim() ||
-      "Bondik-TV-Custom"
-    )
-      .replace(/[<>:"/\\|?*]/g, "-")
-      .split("")
-      .map((character) =>
-        character.charCodeAt(0) < 32
-          ? "-"
-          : character,
-      )
-      .join("")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-");
+    importData.channels.forEach(
+      (channel) => {
+        const streamUrl =
+          channel.stream?.url;
 
-    const blob = new Blob(
-      ["\uFEFF", `${lines.join("\n")}\n`],
-      {
-        type: "audio/x-mpegurl;charset=utf-8",
+        if (!streamUrl) {
+          return;
+        }
+
+        const known =
+          catalogByUrl.get(streamUrl);
+
+        const selected =
+          known || channel;
+
+        if (!seen.has(selected.id)) {
+          seen.add(selected.id);
+          ids.push(selected.id);
+        }
+
+        if (!known) {
+          externalChannels[
+            selected.id
+          ] = selected;
+        }
       },
     );
 
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
+    if (ids.length === 0) {
+      return {
+        ok: false,
+        message:
+          "Po kontrole nezbyla zadna platna stanice.",
+      };
+    }
 
-    link.href = url;
-    link.download = `${safeFileName}.m3u`;
+    setActivePlaylistPreviewId(null);
 
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    if (mode === "new") {
+      const playlist = {
+        id: createPlaylistId(),
+        name:
+          importData.name ||
+          "Importovany playlist",
+        note:
+          `Import ${String(
+            importData.format || "",
+          ).toUpperCase()}`,
+        ids,
+        notes: {},
+        externalChannels,
+      };
 
-    URL.revokeObjectURL(url);
+      setPlaylistLibrary(
+        (current) => ({
+          ...current,
+          activeId: playlist.id,
+          playlists: [
+            ...current.playlists,
+            playlist,
+          ],
+        }),
+      );
+
+      return {
+        ok: true,
+        message:
+          `Vytvoren novy playlist: ${playlist.name}`,
+      };
+    }
+
+    setPlaylistState((current) => ({
+      ...current,
+      ids: [
+        ...new Set([
+          ...current.ids,
+          ...ids,
+        ]),
+      ],
+      externalChannels: {
+        ...current.externalChannels,
+        ...externalChannels,
+      },
+    }));
+
+    return {
+      ok: true,
+      message:
+        `${ids.length} stanic pridano do aktivniho playlistu.`,
+    };
   }
 
   return (
@@ -1515,19 +1625,16 @@ function PlaylistPage({
         }
       </p>
 
+      <PlaylistIOPanel
+        playlistName={playlistName}
+        selectedChannels={selectedChannels}
+        onImport={importPlaylistData}
+      />
+
       <div className="playlist-builder-actions">
         <NavLink to="/search">
           {"\u2190 Zp\u011bt do Search"}
         </NavLink>
-
-        <button
-          type="button"
-          className="playlist-download"
-          disabled={selectedChannels.length === 0}
-          onClick={downloadPlaylist}
-        >
-          {"\u2B07\uFE0F St\u00e1hnout .m3u"}
-        </button>
 
         <button
           type="button"
@@ -1854,10 +1961,21 @@ function AppShell() {
           ),
         );
 
+      const externalChannels =
+        Object.fromEntries(
+          Object.entries(
+            current.externalChannels ?? {},
+          ).filter(
+            ([id]) =>
+              ids.includes(id),
+          ),
+        );
+
       return {
         ...current,
         ids,
         notes,
+        externalChannels,
       };
     });
   }

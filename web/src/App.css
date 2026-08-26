@@ -1685,3 +1685,213 @@ select:focus {
 .playlist-row-preview .live-preview-video {
   z-index: 0;
 }
+
+
+/* Playlist Interop & Sharing v2.1 */
+
+.playlist-io-panel {
+  margin: 22px 0;
+  padding: 18px;
+  background: rgba(13, 17, 22, 0.95);
+  border: 1px solid #303640;
+  border-radius: 14px;
+}
+
+.playlist-io-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.playlist-io-heading h3 {
+  margin: 5px 0 0;
+}
+
+.playlist-io-formats {
+  padding: 7px 10px;
+  color: var(--accent);
+  background: #171d24;
+  border: 1px solid #343d48;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.playlist-io-import-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.playlist-io-card {
+  padding: 15px;
+  display: grid;
+  gap: 10px;
+  background: #11161c;
+  border: 1px solid #303842;
+  border-radius: 11px;
+}
+
+.playlist-io-card p {
+  margin: 0;
+  color: #929ba7;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.playlist-io-card button,
+.playlist-import-actions button,
+.playlist-export-actions button {
+  min-height: 44px;
+  padding: 9px 13px;
+  cursor: pointer;
+  color: #f2f4f7;
+  background: #1b222b;
+  border: 1px solid #39434f;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 800;
+}
+
+.playlist-io-card button:hover:not(:disabled),
+.playlist-io-card button:focus-visible:not(:disabled),
+.playlist-import-actions button:hover:not(:disabled),
+.playlist-import-actions button:focus-visible:not(:disabled),
+.playlist-export-actions button:hover:not(:disabled),
+.playlist-export-actions button:focus-visible:not(:disabled) {
+  color: #080808;
+  background: var(--accent);
+  border-color: var(--accent);
+  outline: none;
+}
+
+.playlist-io-card button:disabled,
+.playlist-import-actions button:disabled,
+.playlist-export-actions button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.playlist-file-input {
+  display: none;
+}
+
+.playlist-url-row {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.playlist-url-row input,
+.playlist-export-toolbar select {
+  min-height: 44px;
+  width: 100%;
+  padding: 9px 11px;
+  color: #f5f5f5;
+  background: #090d11;
+  border: 1px solid #38414d;
+  border-radius: 8px;
+  font: inherit;
+}
+
+.playlist-url-row input:focus,
+.playlist-export-toolbar select:focus {
+  border-color: var(--accent);
+  outline: 3px solid var(--glow);
+}
+
+.playlist-import-preview {
+  margin-top: 14px;
+  padding: 14px;
+  background: #111820;
+  border: 1px solid var(--accent);
+  border-radius: 11px;
+}
+
+.playlist-import-preview > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.playlist-import-preview span {
+  color: #929ba7;
+  font-size: 12px;
+}
+
+.playlist-io-warning {
+  margin: 10px 0 0;
+  color: #e3b95d;
+  font-size: 12px;
+}
+
+.playlist-import-actions {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.playlist-import-actions .secondary {
+  margin-left: auto;
+}
+
+.playlist-export-toolbar {
+  margin-top: 16px;
+  padding-top: 16px;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+  border-top: 1px solid #303842;
+}
+
+.playlist-export-toolbar label {
+  min-width: 120px;
+  display: grid;
+  gap: 6px;
+  color: #929ba7;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.playlist-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.playlist-io-message {
+  margin-top: 12px;
+  padding: 10px 12px;
+  color: #d8dde4;
+  background: #0b1015;
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+@media (max-width: 800px) {
+  .playlist-io-heading,
+  .playlist-export-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .playlist-io-import-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .playlist-export-actions {
+    justify-content: stretch;
+  }
+
+  .playlist-export-actions button {
+    flex: 1 1 150px;
+  }
+}
