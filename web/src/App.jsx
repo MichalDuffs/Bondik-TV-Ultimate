@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
 import LivePreview from "./components/LivePreview";
 import "./App.css";
@@ -139,6 +139,8 @@ function SearchPage({ playlistIds, setPlaylistIds }) {
   const [categories, setCategories] = useState([]);
   const [statuses, setStatuses] = useState(["stable"]);
 
+  const previewButtonRefs = useRef(new Map());
+
   const ui = {
     title: "Najdi p\u0159esn\u011b to, co chce\u0161",
     search: "Hledat stanici",
@@ -229,14 +231,34 @@ function SearchPage({ playlistIds, setPlaylistIds }) {
         "Backspace",
       ]);
 
-      if (
+      const isBackKey =
         backKeys.has(event.key) ||
         event.keyCode === 4 ||
-        event.keyCode === 461
-      ) {
-        event.preventDefault();
-        setActivePreviewId(null);
+        event.keyCode === 461;
+
+      if (!isBackKey) {
+        return;
       }
+
+      event.preventDefault();
+
+      if (document.fullscreenElement) {
+        const exitResult =
+          document.exitFullscreen();
+
+        exitResult?.catch?.(() => {});
+        return;
+      }
+
+      const closingId = activePreviewId;
+
+      setActivePreviewId(null);
+
+      window.requestAnimationFrame(() => {
+        previewButtonRefs.current
+          .get(closingId)
+          ?.focus();
+      });
     }
 
     window.addEventListener(
@@ -318,6 +340,146 @@ function SearchPage({ playlistIds, setPlaylistIds }) {
       );
     });
   }, [catalog, query, countries, categories, statuses]);
+
+  function registerPreviewButton(
+    channelId,
+    element,
+  ) {
+    if (element) {
+      previewButtonRefs.current.set(
+        channelId,
+        element,
+      );
+      return;
+    }
+
+    previewButtonRefs.current.delete(channelId);
+  }
+
+  function movePreviewFocus(
+    channelId,
+    direction,
+  ) {
+    const buttons = previewButtonRefs.current;
+    const current = buttons.get(channelId);
+
+    if (!current) {
+      return;
+    }
+
+    if (direction === "first") {
+      for (const channel of results) {
+        const element = buttons.get(channel.id);
+
+        if (element) {
+          element.focus();
+          return;
+        }
+      }
+
+      return;
+    }
+
+    if (direction === "last") {
+      for (
+        let index = results.length - 1;
+        index >= 0;
+        index -= 1
+      ) {
+        const element =
+          buttons.get(results[index].id);
+
+        if (element) {
+          element.focus();
+          return;
+        }
+      }
+
+      return;
+    }
+
+    const currentRect =
+      current.getBoundingClientRect();
+
+    const currentX =
+      currentRect.left +
+      currentRect.width / 2;
+
+    const currentY =
+      currentRect.top +
+      currentRect.height / 2;
+
+    const candidates = results
+      .map((channel) => {
+        const element =
+          buttons.get(channel.id);
+
+        if (
+          !element ||
+          channel.id === channelId
+        ) {
+          return null;
+        }
+
+        const rect =
+          element.getBoundingClientRect();
+
+        const x =
+          rect.left + rect.width / 2;
+
+        const y =
+          rect.top + rect.height / 2;
+
+        const dx = x - currentX;
+        const dy = y - currentY;
+
+        let valid = false;
+        let primary = 0;
+        let cross = 0;
+
+        if (direction === "left" && dx < -4) {
+          valid = true;
+          primary = Math.abs(dx);
+          cross = Math.abs(dy);
+        }
+
+        if (direction === "right" && dx > 4) {
+          valid = true;
+          primary = Math.abs(dx);
+          cross = Math.abs(dy);
+        }
+
+        if (direction === "up" && dy < -4) {
+          valid = true;
+          primary = Math.abs(dy);
+          cross = Math.abs(dx);
+        }
+
+        if (direction === "down" && dy > 4) {
+          valid = true;
+          primary = Math.abs(dy);
+          cross = Math.abs(dx);
+        }
+
+        if (!valid) {
+          return null;
+        }
+
+        return {
+          element,
+          score:
+            primary +
+            cross * 2.25,
+        };
+      })
+      .filter(Boolean)
+      .sort(
+        (first, second) =>
+          first.score - second.score,
+      );
+
+    candidates[0]?.element.focus();
+  }
 
   function togglePlaylistChannel(channelId) {
     setPlaylistIds((current) =>
@@ -544,6 +706,18 @@ function SearchPage({ playlistIds, setPlaylistIds }) {
                       channel={channel}
                       active={
                         activePreviewId === channel.id
+                      }
+                      buttonRef={(element) =>
+                        registerPreviewButton(
+                          channel.id,
+                          element,
+                        )
+                      }
+                      onNavigate={(direction) =>
+                        movePreviewFocus(
+                          channel.id,
+                          direction,
+                        )
                       }
                       onToggle={() =>
                         togglePreview(channel.id)
