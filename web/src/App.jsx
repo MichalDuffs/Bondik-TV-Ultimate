@@ -23,8 +23,16 @@ const themes = {
 };
 
 
-const PLAYLIST_STORAGE_KEY = "bondik-tv-playlist-v2";
-const LEGACY_PLAYLIST_STORAGE_KEY = "bondik-tv-playlist-v1";
+const PLAYLIST_LIBRARY_STORAGE_KEY =
+  "bondik-tv-playlist-library-v3";
+
+const PLAYLIST_STORAGE_KEY =
+  "bondik-tv-playlist-v2";
+
+const LEGACY_PLAYLIST_STORAGE_KEY =
+  "bondik-tv-playlist-v1";
+
+const MAX_PLAYLISTS = 10;
 
 const EMPTY_PLAYLIST_STATE = {
   ids: [],
@@ -33,32 +41,73 @@ const EMPTY_PLAYLIST_STATE = {
   note: "",
 };
 
-function normalizePlaylistState(value) {
+function createPlaylistId() {
+  if (
+    typeof globalThis.crypto?.randomUUID ===
+    "function"
+  ) {
+    return `playlist-${globalThis.crypto.randomUUID()}`;
+  }
+
+  return (
+    `playlist-${Date.now().toString(36)}-` +
+    Math.random().toString(36).slice(2, 8)
+  );
+}
+
+function createEmptyPlaylist(
+  name = "Nov\u00fd playlist",
+) {
+  return {
+    id: createPlaylistId(),
+    ids: [],
+    notes: {},
+    name,
+    note: "",
+  };
+}
+
+function normalizePlaylistState(
+  value,
+  fallbackId = "playlist-1",
+) {
   if (Array.isArray(value)) {
     return {
+      id: fallbackId,
       ...EMPTY_PLAYLIST_STATE,
+      notes: {},
       ids: [
         ...new Set(
-          value.filter((id) => typeof id === "string"),
+          value.filter(
+            (id) => typeof id === "string",
+          ),
         ),
       ],
     };
   }
 
   if (!value || typeof value !== "object") {
-    return { ...EMPTY_PLAYLIST_STATE };
+    return {
+      id: fallbackId,
+      ...EMPTY_PLAYLIST_STATE,
+      notes: {},
+      ids: [],
+    };
   }
 
   const ids = [
     ...new Set(
       Array.isArray(value.ids)
-        ? value.ids.filter((id) => typeof id === "string")
+        ? value.ids.filter(
+            (id) => typeof id === "string",
+          )
         : [],
     ),
   ];
 
   const notes =
-    value.notes && typeof value.notes === "object"
+    value.notes &&
+    typeof value.notes === "object"
       ? Object.fromEntries(
           Object.entries(value.notes).filter(
             ([id, note]) =>
@@ -68,7 +117,14 @@ function normalizePlaylistState(value) {
         )
       : {};
 
+  const id =
+    typeof value.id === "string" &&
+    value.id.trim()
+      ? value.id
+      : fallbackId;
+
   return {
+    id,
     ids,
     notes,
     name:
@@ -82,13 +138,105 @@ function normalizePlaylistState(value) {
   };
 }
 
-function loadStoredPlaylistState() {
+function normalizePlaylistLibrary(value) {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const candidates =
+    Array.isArray(value.playlists)
+      ? value.playlists.slice(
+          0,
+          MAX_PLAYLISTS,
+        )
+      : [];
+
+  const seenIds = new Set();
+  const playlists = [];
+
+  candidates.forEach((candidate, index) => {
+    const normalized =
+      normalizePlaylistState(
+        candidate,
+        `playlist-${index + 1}`,
+      );
+
+    if (seenIds.has(normalized.id)) {
+      normalized.id = createPlaylistId();
+    }
+
+    seenIds.add(normalized.id);
+    playlists.push(normalized);
+  });
+
+  if (playlists.length === 0) {
+    const first =
+      createEmptyPlaylist(
+        "Bondik TV Custom",
+      );
+
+    return {
+      version: 3,
+      activeId: first.id,
+      playlists: [first],
+    };
+  }
+
+  const requestedActiveId =
+    typeof value.activeId === "string"
+      ? value.activeId
+      : "";
+
+  const activeId =
+    playlists.some(
+      (playlist) =>
+        playlist.id === requestedActiveId,
+    )
+      ? requestedActiveId
+      : playlists[0].id;
+
+  return {
+    version: 3,
+    activeId,
+    playlists,
+  };
+}
+
+function loadStoredPlaylistLibrary() {
   try {
+    const library =
+      window.localStorage.getItem(
+        PLAYLIST_LIBRARY_STORAGE_KEY,
+      );
+
+    if (library) {
+      const normalized =
+        normalizePlaylistLibrary(
+          JSON.parse(library),
+        );
+
+      if (normalized) {
+        return normalized;
+      }
+    }
+
     const current =
-      window.localStorage.getItem(PLAYLIST_STORAGE_KEY);
+      window.localStorage.getItem(
+        PLAYLIST_STORAGE_KEY,
+      );
 
     if (current) {
-      return normalizePlaylistState(JSON.parse(current));
+      const playlist =
+        normalizePlaylistState(
+          JSON.parse(current),
+          "playlist-migrated-v2",
+        );
+
+      return {
+        version: 3,
+        activeId: playlist.id,
+        playlists: [playlist],
+      };
     }
 
     const legacy =
@@ -97,13 +245,32 @@ function loadStoredPlaylistState() {
       );
 
     if (legacy) {
-      return normalizePlaylistState(JSON.parse(legacy));
+      const playlist =
+        normalizePlaylistState(
+          JSON.parse(legacy),
+          "playlist-migrated-v1",
+        );
+
+      return {
+        version: 3,
+        activeId: playlist.id,
+        playlists: [playlist],
+      };
     }
   } catch {
     // Ignore invalid or unavailable browser storage.
   }
 
-  return { ...EMPTY_PLAYLIST_STATE };
+  const first =
+    createEmptyPlaylist(
+      "Bondik TV Custom",
+    );
+
+  return {
+    version: 3,
+    activeId: first.id,
+    playlists: [first],
+  };
 }
 
 function HomePage() {
@@ -127,7 +294,7 @@ function HomePage() {
   );
 }
 
-function SearchPage({ playlistIds, setPlaylistIds }) {
+function SearchPage({ playlistIds, playlistName, setPlaylistIds }) {
   const [catalog, setCatalog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -667,7 +834,10 @@ function SearchPage({ playlistIds, setPlaylistIds }) {
           <div className="playlist-selection-bar">
             <div>
               <strong>{playlistIds.length}</strong>
-              <span> {"\u{1F4FA}"} playlist</span>
+              <span>
+                {" \u{1F4FA} "}
+                {playlistName || "Playlist"}
+              </span>
             </div>
 
             <div className="playlist-selection-actions">
@@ -809,12 +979,16 @@ function SearchPage({ playlistIds, setPlaylistIds }) {
 }
 
 function PlaylistPage({
+  playlistLibrary,
+  setPlaylistLibrary,
   playlistState,
   setPlaylistState,
 }) {
   const [catalog, setCatalog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [activePlaylistPreviewId, setActivePlaylistPreviewId] =
+    useState(null);
 
   const {
     ids: playlistIds,
@@ -858,6 +1032,160 @@ function PlaylistPage({
       .map((id) => channelsById.get(id))
       .filter(Boolean);
   }, [catalog, playlistIds]);
+
+  function selectPlaylist(playlistId) {
+    setActivePlaylistPreviewId(null);
+
+    setPlaylistLibrary((current) => {
+      const exists =
+        current.playlists.some(
+          (playlist) =>
+            playlist.id === playlistId,
+        );
+
+      if (!exists) {
+        return current;
+      }
+
+      return {
+        ...current,
+        activeId: playlistId,
+      };
+    });
+  }
+
+  function createPlaylist() {
+    setPlaylistLibrary((current) => {
+      if (
+        current.playlists.length >=
+        MAX_PLAYLISTS
+      ) {
+        return current;
+      }
+
+      const playlist =
+        createEmptyPlaylist(
+          `Nov\u00fd playlist ${
+            current.playlists.length + 1
+          }`,
+        );
+
+      return {
+        ...current,
+        activeId: playlist.id,
+        playlists: [
+          ...current.playlists,
+          playlist,
+        ],
+      };
+    });
+  }
+
+  function duplicatePlaylist(playlistId) {
+    setPlaylistLibrary((current) => {
+      if (
+        current.playlists.length >=
+        MAX_PLAYLISTS
+      ) {
+        return current;
+      }
+
+      const source =
+        current.playlists.find(
+          (playlist) =>
+            playlist.id === playlistId,
+        );
+
+      if (!source) {
+        return current;
+      }
+
+      const copy = {
+        ...source,
+        id: createPlaylistId(),
+        name:
+          `${source.name || "Playlist"} kopie`,
+        ids: [...source.ids],
+        notes: { ...source.notes },
+      };
+
+      return {
+        ...current,
+        activeId: copy.id,
+        playlists: [
+          ...current.playlists,
+          copy,
+        ],
+      };
+    });
+  }
+
+  function deletePlaylist(playlistId) {
+    const target =
+      playlistLibrary.playlists.find(
+        (playlist) =>
+          playlist.id === playlistId,
+      );
+
+    if (!target) {
+      return;
+    }
+
+    const confirmed =
+      window.confirm(
+        `Smazat playlist "${
+          target.name || "Playlist"
+        }"?`,
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setPlaylistLibrary((current) => {
+      const remaining =
+        current.playlists.filter(
+          (playlist) =>
+            playlist.id !== playlistId,
+        );
+
+      if (remaining.length === 0) {
+        const replacement =
+          createEmptyPlaylist(
+            "Nov\u00fd playlist",
+          );
+
+        return {
+          ...current,
+          activeId: replacement.id,
+          playlists: [replacement],
+        };
+      }
+
+      const activeStillExists =
+        remaining.some(
+          (playlist) =>
+            playlist.id === current.activeId,
+        );
+
+      return {
+        ...current,
+        activeId:
+          activeStillExists
+            ? current.activeId
+            : remaining[0].id,
+        playlists: remaining,
+      };
+    });
+  }
+
+  function togglePlaylistPreview(channelId) {
+    setActivePlaylistPreviewId((current) =>
+      current === channelId
+        ? null
+        : channelId,
+    );
+  }
 
   function updatePlaylistField(field, value) {
     setPlaylistState((current) => ({
@@ -1007,12 +1335,136 @@ function PlaylistPage({
 
         <div>
           <span className="eyebrow">
-            PLAYLIST BUILDER V1.1
+            PLAYLIST LIBRARY V2
           </span>
           <h2>
-            {"Vlastn\u00ed playlist"}
+            {"Moje playlisty"}
           </h2>
         </div>
+      </div>
+
+      <div className="playlist-library-toolbar">
+        <div>
+          <strong>
+            {"\u{1F4DA} Ulo\u017een\u00e9 playlisty"}
+          </strong>
+
+          <span>
+            {playlistLibrary.playlists.length}
+            {` / ${MAX_PLAYLISTS}`}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          className="playlist-library-create"
+          disabled={
+            playlistLibrary.playlists.length >=
+            MAX_PLAYLISTS
+          }
+          onClick={createPlaylist}
+        >
+          {"\u2795 Nov\u00fd playlist"}
+        </button>
+      </div>
+
+      <div className="playlist-library-grid">
+        {playlistLibrary.playlists.map(
+          (playlist) => {
+            const active =
+              playlist.id ===
+              playlistLibrary.activeId;
+
+            return (
+              <article
+                key={playlist.id}
+                className={
+                  `playlist-library-card ${
+                    active ? "active" : ""
+                  }`
+                }
+              >
+                <button
+                  type="button"
+                  className="playlist-library-open"
+                  aria-pressed={active}
+                  onClick={() =>
+                    selectPlaylist(playlist.id)
+                  }
+                >
+                  <span className="playlist-library-icon">
+                    {active
+                      ? "\u25B6"
+                      : "\u{1F4FA}"}
+                  </span>
+
+                  <span className="playlist-library-copy">
+                    <strong>
+                      {playlist.name ||
+                        "Playlist"}
+                    </strong>
+
+                    <small>
+                      {playlist.ids.length}
+                      {" stanic"}
+                    </small>
+
+                    {playlist.note.trim() && (
+                      <span>
+                        {playlist.note}
+                      </span>
+                    )}
+                  </span>
+
+                  {active && (
+                    <span className="playlist-library-active">
+                      AKTIVNI
+                    </span>
+                  )}
+                </button>
+
+                <div className="playlist-library-actions">
+                  <button
+                    type="button"
+                    disabled={
+                      playlistLibrary.playlists
+                        .length >= MAX_PLAYLISTS
+                    }
+                    onClick={() =>
+                      duplicatePlaylist(
+                        playlist.id,
+                      )
+                    }
+                  >
+                    {"\u29C9 Kopie"}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="danger"
+                    onClick={() =>
+                      deletePlaylist(
+                        playlist.id,
+                      )
+                    }
+                  >
+                    {"\u2715 Smazat"}
+                  </button>
+                </div>
+              </article>
+            );
+          },
+        )}
+      </div>
+
+      <div className="playlist-editor-heading">
+        <span className="eyebrow">
+          {"AKTIVNI PLAYLIST"}
+        </span>
+
+        <h3>
+          {playlistName || "Playlist"}
+        </h3>
       </div>
 
       <div className="playlist-builder-head">
@@ -1179,6 +1631,23 @@ function PlaylistPage({
                   <div className="playlist-channel-controls">
                     <button
                       type="button"
+                      className="playlist-play"
+                      title={
+                        activePlaylistPreviewId === channel.id
+                          ? "Zavrit prehravani"
+                          : "Prehrat stanici"
+                      }
+                      onClick={() =>
+                        togglePlaylistPreview(channel.id)
+                      }
+                    >
+                      {activePlaylistPreviewId === channel.id
+                        ? "\u25A0"
+                        : "\u25B6"}
+                    </button>
+
+                    <button
+                      type="button"
                       disabled={index === 0}
                       title="Posunout nahoru"
                       onClick={() =>
@@ -1213,6 +1682,18 @@ function PlaylistPage({
                       {"\u2715"}
                     </button>
                   </div>
+
+                  {activePlaylistPreviewId === channel.id && (
+                    <div className="playlist-row-preview">
+                      <LivePreview
+                        channel={channel}
+                        active
+                        onToggle={() =>
+                          togglePlaylistPreview(channel.id)
+                        }
+                      />
+                    </div>
+                  )}
                 </article>
               ),
             )}
@@ -1265,11 +1746,83 @@ function SettingsPage({ theme, setTheme }) {
 }
 
 function AppShell() {
-  const [theme, setTheme] = useState("ultimate");
-  const [playlistState, setPlaylistState] =
-    useState(loadStoredPlaylistState);
+  const [theme, setTheme] =
+    useState("ultimate");
 
-  const playlistIds = playlistState.ids;
+  const [
+    playlistLibrary,
+    setPlaylistLibrary,
+  ] = useState(
+    loadStoredPlaylistLibrary,
+  );
+
+  const playlistState =
+    playlistLibrary.playlists.find(
+      (playlist) =>
+        playlist.id ===
+        playlistLibrary.activeId,
+    ) ??
+    playlistLibrary.playlists[0] ?? {
+      id: "",
+      ...EMPTY_PLAYLIST_STATE,
+      notes: {},
+    };
+
+  const playlistIds =
+    playlistState.ids;
+
+  function setPlaylistState(update) {
+    setPlaylistLibrary((current) => {
+      const index =
+        current.playlists.findIndex(
+          (playlist) =>
+            playlist.id ===
+            current.activeId,
+        );
+
+      if (index === -1) {
+        return current;
+      }
+
+      const currentPlaylist =
+        current.playlists[index];
+
+      const nextValue =
+        typeof update === "function"
+          ? update(currentPlaylist)
+          : update;
+
+      if (
+        !nextValue ||
+        typeof nextValue !== "object"
+      ) {
+        return current;
+      }
+
+      const nextPlaylist =
+        normalizePlaylistState(
+          {
+            ...nextValue,
+            id: currentPlaylist.id,
+          },
+          currentPlaylist.id,
+        );
+
+      nextPlaylist.id =
+        currentPlaylist.id;
+
+      const playlists =
+        [...current.playlists];
+
+      playlists[index] =
+        nextPlaylist;
+
+      return {
+        ...current,
+        playlists,
+      };
+    });
+  }
 
   function setPlaylistIds(update) {
     setPlaylistState((current) => {
@@ -1285,16 +1838,21 @@ function AppShell() {
       const ids = [
         ...new Set(
           nextValue.filter(
-            (id) => typeof id === "string",
+            (id) =>
+              typeof id === "string",
           ),
         ),
       ];
 
-      const notes = Object.fromEntries(
-        Object.entries(current.notes).filter(
-          ([id]) => ids.includes(id),
-        ),
-      );
+      const notes =
+        Object.fromEntries(
+          Object.entries(
+            current.notes,
+          ).filter(
+            ([id]) =>
+              ids.includes(id),
+          ),
+        );
 
       return {
         ...current,
@@ -1307,13 +1865,15 @@ function AppShell() {
   useEffect(() => {
     try {
       window.localStorage.setItem(
-        PLAYLIST_STORAGE_KEY,
-        JSON.stringify(playlistState),
+        PLAYLIST_LIBRARY_STORAGE_KEY,
+        JSON.stringify(
+          playlistLibrary,
+        ),
       );
     } catch {
       // Storage can be unavailable in restricted browser contexts.
     }
-  }, [playlistState]);
+  }, [playlistLibrary]);
 
   return (
     <div className={`app ${themes[theme].className}`}>
@@ -1354,6 +1914,9 @@ function AppShell() {
             element={
               <SearchPage
                 playlistIds={playlistIds}
+                playlistName={
+                  playlistState.name
+                }
                 setPlaylistIds={setPlaylistIds}
               />
             }
@@ -1362,6 +1925,12 @@ function AppShell() {
             path="/playlists"
             element={
               <PlaylistPage
+                playlistLibrary={
+                  playlistLibrary
+                }
+                setPlaylistLibrary={
+                  setPlaylistLibrary
+                }
                 playlistState={playlistState}
                 setPlaylistState={setPlaylistState}
               />
