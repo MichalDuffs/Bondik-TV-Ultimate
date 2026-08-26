@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
+import LivePreview from "./components/LivePreview";
 import "./App.css";
 
 const navigation = [
@@ -131,6 +132,8 @@ function SearchPage({ playlistIds, setPlaylistIds }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
+  const [activePreviewId, setActivePreviewId] =
+    useState(null);
 
   const [countries, setCountries] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -201,6 +204,61 @@ function SearchPage({ playlistIds, setPlaylistIds }) {
         setLoading(false);
       });
   }, []);
+
+  useEffect(() => {
+    function handlePreviewBack(event) {
+      if (!activePreviewId) {
+        return;
+      }
+
+      const target = event.target;
+      const tagName = target?.tagName;
+
+      if (
+        tagName === "INPUT" ||
+        tagName === "TEXTAREA"
+      ) {
+        return;
+      }
+
+      const backKeys = new Set([
+        "Escape",
+        "BrowserBack",
+        "GoBack",
+        "Back",
+        "Backspace",
+      ]);
+
+      if (
+        backKeys.has(event.key) ||
+        event.keyCode === 4 ||
+        event.keyCode === 461
+      ) {
+        event.preventDefault();
+        setActivePreviewId(null);
+      }
+    }
+
+    window.addEventListener(
+      "keydown",
+      handlePreviewBack,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handlePreviewBack,
+      );
+    };
+  }, [activePreviewId]);
+
+  function togglePreview(channelId) {
+    setActivePreviewId((current) =>
+      current === channelId
+        ? null
+        : channelId,
+    );
+  }
 
   function toggleSelection(value, setter) {
     setter((current) =>
@@ -482,6 +540,16 @@ function SearchPage({ playlistIds, setPlaylistIds }) {
                     className={`channel-card ${inPlaylist ? "in-playlist" : ""}`}
                     key={channel.id}
                   >
+                    <LivePreview
+                      channel={channel}
+                      active={
+                        activePreviewId === channel.id
+                      }
+                      onToggle={() =>
+                        togglePreview(channel.id)
+                      }
+                    />
+
                     <div className="channel-card-head">
                       <div>
                         <span className="channel-country">
