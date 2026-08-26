@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bondik Hunter v0.5.1 Candidate Gate.
+"""Bondik Hunter v0.5.2 Candidate Gate.
 
 Turn Hunter result JSON files into a review queue without modifying channels.yaml.
 
@@ -34,7 +34,7 @@ from typing import Any, Iterable
 
 import yaml
 
-VERSION = "0.5.1"
+VERSION = "0.5.2"
 
 COUNTRY_SOURCE_RE = re.compile(r"/countries/([a-z]{2})\.m3u(?:$|[?#])", re.IGNORECASE)
 CATEGORY_SOURCE_RE = re.compile(r"/categories/([a-z0-9_-]+)\.m3u(?:$|[?#])", re.IGNORECASE)
