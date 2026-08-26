@@ -69,6 +69,9 @@ CHANNEL_NAME_ALIASES = {
 # not "illegal" or "bad". Users can extend the list later if repeated batches justify it.
 PARK_DOMAIN_SUFFIXES = {
     "freeott.top",
+}
+
+PROVIDER_REVIEW_DOMAIN_SUFFIXES = {
     "antik.sk",
 }
 
@@ -98,6 +101,7 @@ REVIEW_FLAGS = {
     "category-unknown",
     "possible-existing-channel-alternative",
     "duplicate-name-multiple-streams",
+    "provider-host-review",
 }
 
 
@@ -362,6 +366,8 @@ def provenance_flags(url: str) -> tuple[str, list[str]]:
 
     if domain_matches(host, PARK_DOMAIN_SUFFIXES):
         flags.append("suspicious-restream-domain")
+    elif domain_matches(host, PROVIDER_REVIEW_DOMAIN_SUFFIXES):
+        flags.append("provider-host-review")
 
     try:
         parsed = urllib.parse.urlparse(url)

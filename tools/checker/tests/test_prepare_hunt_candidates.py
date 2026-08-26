@@ -243,7 +243,7 @@ class CandidateGateTests(unittest.TestCase):
             "GB",
         )
 
-    def test_antik_domain_goes_to_parking(self):
+    def test_antik_provider_domain_goes_to_review(self):
         rows = [{
             "ok": True,
             "validation": "hls-segment",
@@ -254,8 +254,19 @@ class CandidateGateTests(unittest.TestCase):
             "source": "https://iptv-org.github.io/iptv/categories/kids.m3u",
         }]
         candidates, _ = self.build(rows, country_codes={"SK"})
-        self.assertIn("suspicious-restream-domain", candidates[0]["review_flags"])
-        self.assertEqual(candidates[0]["review_bucket"], "parking")
+
+        self.assertIn(
+            "provider-host-review",
+            candidates[0]["review_flags"],
+        )
+        self.assertNotIn(
+            "suspicious-restream-domain",
+            candidates[0]["review_flags"],
+        )
+        self.assertEqual(
+            candidates[0]["review_bucket"],
+            "review",
+        )
 
     def test_bondik_score_rewards_clean_candidate(self):
         clean = {
