@@ -4,6 +4,8 @@ import {
   useState,
 } from "react";
 
+const PREVIEW_TIMEOUT_MS = 15000;
+
 function isHlsStream(format, url) {
   const normalizedFormat =
     String(format ?? "").toLowerCase();
@@ -17,20 +19,50 @@ function isHlsStream(format, url) {
   );
 }
 
+function formatBitrate(value) {
+  if (!value) {
+    return "";
+  }
+
+  if (value >= 1000000) {
+    return `${(value / 1000000).toFixed(1)} Mb/s`;
+  }
+
+  return `${Math.round(value / 1000)} kb/s`;
+}
+
 export default function LivePreview({
   channel,
   active,
   onToggle,
+  onNavigate,
+  buttonRef,
 }) {
+  const shellRef = useRef(null);
   const videoRef = useRef(null);
-  const [previewState, setPreviewState] =
-    useState("loading");
+  const hlsRef = useRef(null);
 
-  const streamUrl = channel.stream?.url ?? "";
+  const [previewState, setPreviewState] =
+    useState("idle");
+
+  const [levels, setLevels] = useState([]);
+  const [selectedLevel, setSelectedLevel] =
+    useState(-1);
+
+  const [isFullscreen, setIsFullscreen] =
+    useState(false);
+
+  const [infoVisible, setInfoVisible] =
+    useState(false);
+
+  const streamUrl =
+    channel.stream?.url ?? "";
+
   const streamFormat =
     channel.stream?.format ?? "";
 
-  const logo = channel.logo?.url;
+  const logo =
+    channel.logo?.url ?? "";
 
   useEffect(() => {
     if (!active) {
@@ -43,34 +75,63 @@ export default function LivePreview({
       return undefined;
     }
 
-    let hls = null;
     let disposed = false;
+    let startupTimer = null;
+    let recoveryAttempts = 0;
+
+    function clearStartupTimer() {
+      if (startupTimer !== null) {
+        window.clearTimeout(startupTimer);
+        startupTimer = null;
+      }
+    }
 
     function markPlaying() {
       if (!disposed) {
+        clearStartupTimer();
         setPreviewState("playing");
+      }
+    }
+
+    function markBuffering() {
+      if (!disposed) {
+        setPreviewState("buffering");
       }
     }
 
     function markError() {
       if (!disposed) {
+        clearStartupTimer();
         setPreviewState("error");
       }
     }
 
     function playVideo() {
-      video
-        .play()
-        .catch(markError);
+      video.play().catch(markError);
     }
 
     async function startPlayback() {
       video.muted = true;
       video.playsInline = true;
 
+      startupTimer = window.setTimeout(
+        markError,
+        PREVIEW_TIMEOUT_MS,
+      );
+
       video.addEventListener(
         "playing",
         markPlaying,
+      );
+
+      video.addEventListener(
+        "waiting",
+        markBuffering,
+      );
+
+      video.addEventListener(
+        "stalled",
+        markBuffering,
       );
 
       video.addEventListener(
@@ -110,9 +171,13 @@ export default function LivePreview({
           return;
         }
 
-        hls = new Hls({
+        const hls = new Hls({
           enableWorker: true,
+          backBufferLength: 12,
+          maxBufferLength: 15,
         });
+
+        hlsRef.current = hls;
 
         hls.attachMedia(video);
 
@@ -125,15 +190,61 @@ export default function LivePreview({
 
         hls.on(
           Hls.Events.MANIFEST_PARSED,
-          playVideo,
+          () => {
+            const availableLevels =
+              hls.levels.map((level, index) => ({
+                index,
+                height: level.height ?? 0,
+                width: level.width ?? 0,
+                bitrate: level.bitrate ?? 0,
+              }));
+
+            setLevels(availableLevels);
+            setSelectedLevel(-1);
+            playVideo();
+          },
+        );
+
+        hls.on(
+          Hls.Events.LEVEL_SWITCHED,
+          (_event, data) => {
+            if (hls.autoLevelEnabled) {
+              setSelectedLevel(-1);
+              return;
+            }
+
+            setSelectedLevel(data.level);
+          },
         );
 
         hls.on(
           Hls.Events.ERROR,
           (_event, data) => {
-            if (data.fatal) {
-              markError();
+            if (!data.fatal) {
+              return;
             }
+
+            if (recoveryAttempts < 1) {
+              recoveryAttempts += 1;
+
+              if (
+                data.type ===
+                Hls.ErrorTypes.NETWORK_ERROR
+              ) {
+                hls.startLoad();
+                return;
+              }
+
+              if (
+                data.type ===
+                Hls.ErrorTypes.MEDIA_ERROR
+              ) {
+                hls.recoverMediaError();
+                return;
+              }
+            }
+
+            markError();
           },
         );
       } catch {
@@ -145,10 +256,21 @@ export default function LivePreview({
 
     return () => {
       disposed = true;
+      clearStartupTimer();
 
       video.removeEventListener(
         "playing",
         markPlaying,
+      );
+
+      video.removeEventListener(
+        "waiting",
+        markBuffering,
+      );
+
+      video.removeEventListener(
+        "stalled",
+        markBuffering,
       );
 
       video.removeEventListener(
@@ -160,8 +282,9 @@ export default function LivePreview({
       video.removeAttribute("src");
       video.load();
 
-      if (hls) {
-        hls.destroy();
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
       }
     };
   }, [
@@ -170,92 +293,326 @@ export default function LivePreview({
     streamUrl,
   ]);
 
+  useEffect(() => {
+    function handleFullscreenChange() {
+      setIsFullscreen(
+        document.fullscreenElement ===
+          shellRef.current,
+      );
+    }
+
+    document.addEventListener(
+      "fullscreenchange",
+      handleFullscreenChange,
+    );
+
+    return () => {
+      document.removeEventListener(
+        "fullscreenchange",
+        handleFullscreenChange,
+      );
+    };
+  }, []);
+
   function handleToggle() {
     if (!active) {
       setPreviewState("loading");
+      setLevels([]);
+      setSelectedLevel(-1);
+      setInfoVisible(false);
     }
 
     onToggle();
   }
 
-  const visibleState =
-    !streamUrl
-      ? "error"
-      : previewState;
+  function handleKeyDown(event) {
+    const directions = {
+      ArrowLeft: "left",
+      ArrowRight: "right",
+      ArrowUp: "up",
+      ArrowDown: "down",
+      Home: "first",
+      End: "last",
+    };
+
+    const direction =
+      directions[event.key];
+
+    if (!direction || !onNavigate) {
+      return;
+    }
+
+    event.preventDefault();
+    onNavigate(direction);
+  }
+
+  async function handleFullscreen() {
+    const shell = shellRef.current;
+    const video = videoRef.current;
+
+    if (!shell) {
+      return;
+    }
+
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+        return;
+      }
+
+      if (shell.requestFullscreen) {
+        await shell.requestFullscreen();
+        return;
+      }
+
+      if (shell.webkitRequestFullscreen) {
+        shell.webkitRequestFullscreen();
+        return;
+      }
+
+      if (video?.webkitEnterFullscreen) {
+        video.webkitEnterFullscreen();
+      }
+    } catch {
+      // Fullscreen is optional on older TV browsers.
+    }
+  }
+
+  function handleQualityChange(event) {
+    const value =
+      Number(event.target.value);
+
+    const hls =
+      hlsRef.current;
+
+    setSelectedLevel(value);
+
+    if (!hls) {
+      return;
+    }
+
+    hls.currentLevel = value;
+  }
+
+  const qualityLabel =
+    selectedLevel === -1
+      ? "AUTO"
+      : levels.find(
+          (level) =>
+            level.index === selectedLevel,
+        )?.height
+        ? `${levels.find(
+            (level) =>
+              level.index === selectedLevel,
+          ).height}p`
+        : "MANUAL";
 
   return (
-    <button
-      type="button"
+    <div
+      ref={shellRef}
       className={
-        `live-preview ${
-          active ? "active" : ""
-        }`
+        `live-preview-shell state-${previewState}`
       }
-      aria-pressed={active}
-      aria-label={
-        active
-          ? `Zavrit nahled ${channel.name}`
-          : `Spustit nahled ${channel.name}`
-      }
-      onClick={handleToggle}
     >
-      {active ? (
-        <>
-          <video
-            ref={videoRef}
-            className="live-preview-video"
-            autoPlay
-            muted
-            playsInline
-          />
-
-          {visibleState === "loading" && (
-            <span className="live-preview-status">
-              {
-                "\u{1F415} Na\u010d\u00edt\u00e1m \u017eiv\u00fd obraz..."
-              }
-            </span>
-          )}
-
-          {visibleState === "error" && (
-            <span className="live-preview-status error">
-              {
-                "\u26A0\uFE0F N\u00e1hled nen\u00ed v prohl\u00ed\u017ee\u010di dostupn\u00fd"
-              }
-            </span>
-          )}
-
-          <span className="live-preview-close">
-            {
-              "OK / Enter \u2022 zav\u0159\u00edt"
-            }
-          </span>
-        </>
-      ) : (
-        <>
-          {logo ? (
-            <img
-              className="live-preview-logo"
-              src={logo}
-              alt=""
+      <button
+        ref={buttonRef}
+        type="button"
+        className={
+          `live-preview ${
+            active ? "active" : ""
+          }`
+        }
+        aria-pressed={active}
+        onClick={handleToggle}
+        onKeyDown={handleKeyDown}
+      >
+        {active ? (
+          <>
+            <video
+              ref={videoRef}
+              className="live-preview-video"
+              autoPlay
+              muted
+              playsInline
             />
-          ) : (
-            <span className="live-preview-placeholder">
-              {"\u{1F4FA}"}
+
+            {previewState === "loading" && (
+              <span className="live-preview-status">
+                <span className="live-preview-spinner" />
+                {
+                  "Na\u010d\u00edt\u00e1m \u017eiv\u00fd obraz..."
+                }
+              </span>
+            )}
+
+            {previewState === "buffering" && (
+              <span className="live-preview-status buffering">
+                <span className="live-preview-spinner" />
+                {
+                  "Stream se znovu na\u010d\u00edt\u00e1..."
+                }
+              </span>
+            )}
+
+            {previewState === "error" && (
+              <span className="live-preview-status error">
+                {
+                  "\u26A0\uFE0F N\u00e1hled se nepoda\u0159ilo spustit"
+                }
+              </span>
+            )}
+
+            {previewState === "playing" && (
+              <span className="live-preview-live-badge">
+                {"\u25CF LIVE"}
+              </span>
+            )}
+
+            <span className="live-preview-name">
+              {channel.name}
             </span>
+          </>
+        ) : (
+          <>
+            {logo ? (
+              <img
+                className="live-preview-logo"
+                src={logo}
+                alt=""
+              />
+            ) : (
+              <span className="live-preview-placeholder">
+                {"\u{1F4FA}"}
+              </span>
+            )}
+
+            <span className="live-preview-name">
+              {channel.name}
+            </span>
+
+            <span className="live-preview-hint">
+              {
+                "\u{1F441}\uFE0F OK / Enter \u2022 spustit"
+              }
+            </span>
+          </>
+        )}
+      </button>
+
+      {active && (
+        <>
+          <div className="live-preview-toolbar">
+            <div className="live-preview-toolbar-group">
+              <button
+                type="button"
+                onClick={() =>
+                  setInfoVisible((current) => !current)
+                }
+              >
+                {
+                  infoVisible
+                    ? "\u2715 Info"
+                    : "\u2139\uFE0F Info"
+                }
+              </button>
+
+              <button
+                type="button"
+                onClick={handleFullscreen}
+              >
+                {isFullscreen
+                  ? "\u229F Zp\u011bt"
+                  : "\u26F6 Fullscreen"}
+              </button>
+            </div>
+
+            <div className="live-preview-quality">
+              <span>
+                {"Kvalita "}
+                <strong>{qualityLabel}</strong>
+              </span>
+
+              {levels.length > 1 && (
+                <select
+                  value={selectedLevel}
+                  onChange={handleQualityChange}
+                  aria-label="Kvalita obrazu"
+                >
+                  <option value={-1}>
+                    AUTO
+                  </option>
+
+                  {levels.map((level) => (
+                    <option
+                      key={level.index}
+                      value={level.index}
+                    >
+                      {level.height
+                        ? `${level.height}p`
+                        : `Level ${level.index + 1}`}
+                      {level.bitrate
+                        ? ` \u2022 ${formatBitrate(level.bitrate)}`
+                        : ""}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          </div>
+
+          {infoVisible && (
+            <div className="live-preview-info">
+              <div>
+                <span>Stanice</span>
+                <strong>{channel.name}</strong>
+              </div>
+
+              <div>
+                <span>Zem\u011b</span>
+                <strong>{channel.country}</strong>
+              </div>
+
+              <div>
+                <span>Kategorie</span>
+                <strong>{channel.category}</strong>
+              </div>
+
+              <div>
+                <span>Provider</span>
+                <strong>{channel.provider}</strong>
+              </div>
+
+              <div>
+                <span>Form\u00e1t</span>
+                <strong>
+                  {channel.stream?.format ?? "-"}
+                </strong>
+              </div>
+
+              <div>
+                <span>Katalogov\u00e1 kvalita</span>
+                <strong>
+                  {channel.stream?.quality ?? "-"}
+                </strong>
+              </div>
+
+              <div>
+                <span>EPG</span>
+                <strong>
+                  {channel.epg?.enabled
+                    ? "\u2705 ano"
+                    : "\u2796 ne"}
+                </strong>
+              </div>
+
+              <div>
+                <span>Stav</span>
+                <strong>{channel.status}</strong>
+              </div>
+            </div>
           )}
-
-          <span className="live-preview-name">
-            {channel.name}
-          </span>
-
-          <span className="live-preview-hint">
-            {
-              "\u{1F441}\uFE0F N\u00e1hled \u2022 OK / Enter"
-            }
-          </span>
         </>
       )}
-    </button>
+    </div>
   );
 }
