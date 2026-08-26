@@ -21,6 +21,22 @@ const themes = {
   minimal: { name: "Minimal", mascot: "📺", className: "theme-minimal" },
 };
 
+
+const PLAYLIST_STORAGE_KEY = "bondik-tv-playlist-v1";
+
+function loadStoredPlaylistIds() {
+  try {
+    const raw = window.localStorage.getItem(PLAYLIST_STORAGE_KEY);
+    const value = raw ? JSON.parse(raw) : [];
+
+    return Array.isArray(value)
+      ? value.filter((id) => typeof id === "string")
+      : [];
+  } catch {
+    return [];
+  }
+}
+
 function HomePage() {
   return (
     <section className="hero">
@@ -42,7 +58,7 @@ function HomePage() {
   );
 }
 
-function SearchPage() {
+function SearchPage({ playlistIds, setPlaylistIds }) {
   const [catalog, setCatalog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -65,7 +81,6 @@ function SearchPage() {
     results: "v\u00fdsledk\u016f z",
     channels: "kan\u00e1l\u016f",
     clear: "Vy\u010distit filtry",
-    all: "V\u0161e",
     noResults:
       "\u017d\u00e1dn\u00e1 stanice t\u00e9to kombinaci neodpov\u00edd\u00e1",
     tryAgain: "Zkus zm\u011bnit kombinaci filtr\u016f.",
@@ -73,6 +88,10 @@ function SearchPage() {
     noEpg: "\u2796 bez EPG",
     stream: "\u25B6 Stream",
     web: "\u{1F310} Web",
+    addResults: "P\u0159idat v\u00fdsledky",
+    openPlaylist: "Otev\u0159\u00edt playlist",
+    add: "Do playlistu",
+    added: "V playlistu",
   };
 
   const categoryLabels = {
@@ -173,6 +192,23 @@ function SearchPage() {
       );
     });
   }, [catalog, query, countries, categories, statuses]);
+
+  function togglePlaylistChannel(channelId) {
+    setPlaylistIds((current) =>
+      current.includes(channelId)
+        ? current.filter((id) => id !== channelId)
+        : [...current, channelId],
+    );
+  }
+
+  function addVisibleResults() {
+    setPlaylistIds((current) => [
+      ...new Set([
+        ...current,
+        ...results.map((channel) => channel.id),
+      ]),
+    ]);
+  }
 
   const countryQuery =
     countries.length > 0
@@ -340,6 +376,28 @@ function SearchPage() {
             </span>
           </div>
 
+          <div className="playlist-selection-bar">
+            <div>
+              <strong>{playlistIds.length}</strong>
+              <span> {"\u{1F4FA}"} playlist</span>
+            </div>
+
+            <div className="playlist-selection-actions">
+              <button
+                type="button"
+                onClick={addVisibleResults}
+                disabled={results.length === 0}
+              >
+                {"\u2795 "}
+                {ui.addResults}
+              </button>
+
+              <NavLink to="/playlists">
+                {ui.openPlaylist} {"\u2192"}
+              </NavLink>
+            </div>
+          </div>
+
           {results.length === 0 ? (
             <div className="empty-results">
               <div>{"\u{1F50E}"}</div>
@@ -348,77 +406,307 @@ function SearchPage() {
             </div>
           ) : (
             <div className="results-grid">
-              {results.map((channel) => (
-                <article
-                  className="channel-card"
-                  key={channel.id}
-                >
-                  <div className="channel-card-head">
-                    <div>
-                      <span className="channel-country">
-                        {channel.country}
-                      </span>
+              {results.map((channel) => {
+                const inPlaylist = playlistIds.includes(channel.id);
 
-                      <h3>{channel.name}</h3>
+                return (
+                  <article
+                    className={`channel-card ${inPlaylist ? "in-playlist" : ""}`}
+                    key={channel.id}
+                  >
+                    <div className="channel-card-head">
+                      <div>
+                        <span className="channel-country">
+                          {channel.country}
+                        </span>
+
+                        <h3>{channel.name}</h3>
+                      </div>
+
+                      <span
+                        className={
+                          `status-badge status-${channel.status}`
+                        }
+                      >
+                        {channel.status}
+                      </span>
                     </div>
 
-                    <span
-                      className={
-                        `status-badge status-${channel.status}`
-                      }
-                    >
-                      {channel.status}
-                    </span>
-                  </div>
+                    <div className="channel-meta">
+                      <span>
+                        {"\u{1F4C2} "}
+                        {categoryLabels[channel.category] ??
+                          channel.category}
+                      </span>
 
-                  <div className="channel-meta">
-                    <span>
-                      {"\u{1F4C2} "}
-                      {categoryLabels[channel.category] ??
-                        channel.category}
-                    </span>
+                      <span>
+                        {"\u{1F4E1} "}
+                        {channel.provider}
+                      </span>
 
-                    <span>
-                      {"\u{1F4E1} "}
-                      {channel.provider}
-                    </span>
+                      <span>
+                        {"\u{1F39E}\uFE0F "}
+                        {channel.stream.quality}
+                      </span>
 
-                    <span>
-                      {"\u{1F39E}\uFE0F "}
-                      {channel.stream.quality}
-                    </span>
+                      <span>
+                        {channel.epg.enabled
+                          ? ui.epg
+                          : ui.noEpg}
+                      </span>
+                    </div>
 
-                    <span>
-                      {channel.epg.enabled
-                        ? ui.epg
-                        : ui.noEpg}
-                    </span>
-                  </div>
+                    <div className="channel-actions">
+                      <button
+                        type="button"
+                        className={`playlist-toggle ${inPlaylist ? "selected" : ""}`}
+                        onClick={() =>
+                          togglePlaylistChannel(channel.id)
+                        }
+                      >
+                        {inPlaylist
+                          ? `\u2713 ${ui.added}`
+                          : `\u2795 ${ui.add}`}
+                      </button>
 
-                  <div className="channel-actions">
-                    <a
-                      href={channel.stream.url}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {ui.stream}
-                    </a>
-
-                    {channel.metadata.website && (
                       <a
-                        href={channel.metadata.website}
+                        href={channel.stream.url}
                         target="_blank"
                         rel="noreferrer"
                       >
-                        {ui.web}
+                        {ui.stream}
                       </a>
-                    )}
-                  </div>
-                </article>
-              ))}
+
+                      {channel.metadata.website && (
+                        <a
+                          href={channel.metadata.website}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {ui.web}
+                        </a>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           )}
         </>
+      )}
+    </section>
+  );
+}
+
+function PlaylistPage({ playlistIds, setPlaylistIds }) {
+  const [catalog, setCatalog] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [playlistName, setPlaylistName] = useState("Bondik TV Custom");
+
+  useEffect(() => {
+    fetch(`${import.meta.env.BASE_URL}data/channels.json`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        return response.json();
+      })
+      .then((data) => {
+        setCatalog(data);
+        setLoading(false);
+      })
+      .catch((reason) => {
+        setError(String(reason));
+        setLoading(false);
+      });
+  }, []);
+
+  const selectedChannels = useMemo(() => {
+    if (!catalog?.channels) {
+      return [];
+    }
+
+    const selected = new Set(playlistIds);
+
+    return catalog.channels.filter((channel) =>
+      selected.has(channel.id),
+    );
+  }, [catalog, playlistIds]);
+
+  function removeChannel(channelId) {
+    setPlaylistIds((current) =>
+      current.filter((id) => id !== channelId),
+    );
+  }
+
+  function clearPlaylist() {
+    setPlaylistIds([]);
+  }
+
+  function escapeAttribute(value) {
+    return String(value ?? "").replaceAll('"', "'");
+  }
+
+  function downloadPlaylist() {
+    if (selectedChannels.length === 0) {
+      return;
+    }
+
+    const lines = ["#EXTM3U"];
+
+    selectedChannels.forEach((channel) => {
+      const name = String(channel.name ?? "")
+        .replace(/[\r\n]+/g, " ")
+        .trim();
+
+      const tvgId = escapeAttribute(channel.epg?.id);
+      const logo = escapeAttribute(channel.logo?.url);
+      const group = escapeAttribute(channel.category);
+
+      lines.push(
+        `#EXTINF:-1 tvg-id="${tvgId}" tvg-name="${escapeAttribute(name)}" tvg-logo="${logo}" group-title="${group}",${name}`,
+      );
+      lines.push(channel.stream.url);
+    });
+
+    const safeFileName = (playlistName.trim() || "Bondik-TV-Custom")
+      .replace(/[<>:"/\\|?*\u0000-\u001F]/g, "-")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+
+    const blob = new Blob(
+      ["\uFEFF", `${lines.join("\n")}\n`],
+      {
+        type: "audio/x-mpegurl;charset=utf-8",
+      },
+    );
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `${safeFileName}.m3u`;
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    URL.revokeObjectURL(url);
+  }
+
+  return (
+    <section className="page">
+      <div className="page-heading">
+        <div className="character">{"\u{1F4FA}"}</div>
+
+        <div>
+          <span className="eyebrow">PLAYLIST BUILDER V1</span>
+          <h2>{"Vlastn\u00ed playlist"}</h2>
+        </div>
+      </div>
+
+      <div className="playlist-builder-head">
+        <label>
+          {"N\u00e1zev playlistu"}
+
+          <input
+            type="text"
+            value={playlistName}
+            onChange={(event) =>
+              setPlaylistName(event.target.value)
+            }
+          />
+        </label>
+
+        <div className="playlist-builder-summary">
+          <strong>{selectedChannels.length}</strong>
+          <span> {"vybran\u00fdch stanic"}</span>
+        </div>
+      </div>
+
+      <div className="playlist-builder-actions">
+        <NavLink to="/search">
+          {"\u2190 Zp\u011bt do Search"}
+        </NavLink>
+
+        <button
+          type="button"
+          className="playlist-download"
+          disabled={selectedChannels.length === 0}
+          onClick={downloadPlaylist}
+        >
+          {"\u2B07\uFE0F St\u00e1hnout .m3u"}
+        </button>
+
+        <button
+          type="button"
+          className="playlist-clear"
+          disabled={selectedChannels.length === 0}
+          onClick={clearPlaylist}
+        >
+          {"\u{1F9F9} Vy\u010distit playlist"}
+        </button>
+      </div>
+
+      {loading && (
+        <div className="empty-results">
+          <div>{"\u{1F415}"}</div>
+          <h3>{"Na\u010d\u00edt\u00e1m playlist..."}</h3>
+        </div>
+      )}
+
+      {error && (
+        <div className="empty-results">
+          <div>{"\u26A0\uFE0F"}</div>
+          <h3>{"Katalog se nepoda\u0159ilo na\u010d\u00edst"}</h3>
+          <p>{error}</p>
+        </div>
+      )}
+
+      {!loading && !error && selectedChannels.length === 0 && (
+        <div className="empty-results">
+          <div>{"\u{1F4FA}"}</div>
+          <h3>{"Playlist je zat\u00edm pr\u00e1zdn\u00fd"}</h3>
+          <p>
+            {"Vyber stanice v Ultimate Search a p\u0159idej je sem."}
+          </p>
+        </div>
+      )}
+
+      {!loading && !error && selectedChannels.length > 0 && (
+        <div className="playlist-channel-list">
+          {selectedChannels.map((channel, index) => (
+            <article
+              className="playlist-channel-row"
+              key={channel.id}
+            >
+              <span className="playlist-position">
+                {index + 1}
+              </span>
+
+              <div className="playlist-channel-info">
+                <strong>{channel.name}</strong>
+
+                <span>
+                  {channel.country}
+                  {" \u2022 "}
+                  {channel.category}
+                  {" \u2022 "}
+                  {channel.status}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => removeChannel(channel.id)}
+              >
+                {"\u2715"}
+              </button>
+            </article>
+          ))}
+        </div>
       )}
     </section>
   );
@@ -468,6 +756,18 @@ function SettingsPage({ theme, setTheme }) {
 
 function AppShell() {
   const [theme, setTheme] = useState("ultimate");
+  const [playlistIds, setPlaylistIds] = useState(loadStoredPlaylistIds);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        PLAYLIST_STORAGE_KEY,
+        JSON.stringify(playlistIds),
+      );
+    } catch {
+      // Storage can be unavailable in restricted browser contexts.
+    }
+  }, [playlistIds]);
 
   return (
     <div className={`app ${themes[theme].className}`}>
@@ -503,18 +803,28 @@ function AppShell() {
       <main className="content">
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/search" element={<SearchPage />} />
-
           <Route
-            path="/playlists"
+            path="/search"
             element={
-              <PlaceholderPage
-                character="📺"
-                title="Playlisty"
-                text="Vlastní Playlist Builder přijde sem."
+              <SearchPage
+                playlistIds={playlistIds}
+                setPlaylistIds={setPlaylistIds}
               />
             }
           />
+          <Route
+            path="/playlists"
+            element={
+              <PlaylistPage
+                playlistIds={playlistIds}
+                setPlaylistIds={setPlaylistIds}
+              />
+            }
+          />
+
+
+
+
 
           <Route
             path="/epg"
