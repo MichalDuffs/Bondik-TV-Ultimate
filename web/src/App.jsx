@@ -22,19 +22,87 @@ const themes = {
 };
 
 
-const PLAYLIST_STORAGE_KEY = "bondik-tv-playlist-v1";
+const PLAYLIST_STORAGE_KEY = "bondik-tv-playlist-v2";
+const LEGACY_PLAYLIST_STORAGE_KEY = "bondik-tv-playlist-v1";
 
-function loadStoredPlaylistIds() {
-  try {
-    const raw = window.localStorage.getItem(PLAYLIST_STORAGE_KEY);
-    const value = raw ? JSON.parse(raw) : [];
+const EMPTY_PLAYLIST_STATE = {
+  ids: [],
+  notes: {},
+  name: "Bondik TV Custom",
+  note: "",
+};
 
-    return Array.isArray(value)
-      ? value.filter((id) => typeof id === "string")
-      : [];
-  } catch {
-    return [];
+function normalizePlaylistState(value) {
+  if (Array.isArray(value)) {
+    return {
+      ...EMPTY_PLAYLIST_STATE,
+      ids: [
+        ...new Set(
+          value.filter((id) => typeof id === "string"),
+        ),
+      ],
+    };
   }
+
+  if (!value || typeof value !== "object") {
+    return { ...EMPTY_PLAYLIST_STATE };
+  }
+
+  const ids = [
+    ...new Set(
+      Array.isArray(value.ids)
+        ? value.ids.filter((id) => typeof id === "string")
+        : [],
+    ),
+  ];
+
+  const notes =
+    value.notes && typeof value.notes === "object"
+      ? Object.fromEntries(
+          Object.entries(value.notes).filter(
+            ([id, note]) =>
+              ids.includes(id) &&
+              typeof note === "string",
+          ),
+        )
+      : {};
+
+  return {
+    ids,
+    notes,
+    name:
+      typeof value.name === "string"
+        ? value.name
+        : EMPTY_PLAYLIST_STATE.name,
+    note:
+      typeof value.note === "string"
+        ? value.note
+        : "",
+  };
+}
+
+function loadStoredPlaylistState() {
+  try {
+    const current =
+      window.localStorage.getItem(PLAYLIST_STORAGE_KEY);
+
+    if (current) {
+      return normalizePlaylistState(JSON.parse(current));
+    }
+
+    const legacy =
+      window.localStorage.getItem(
+        LEGACY_PLAYLIST_STORAGE_KEY,
+      );
+
+    if (legacy) {
+      return normalizePlaylistState(JSON.parse(legacy));
+    }
+  } catch {
+    // Ignore invalid or unavailable browser storage.
+  }
+
+  return { ...EMPTY_PLAYLIST_STATE };
 }
 
 function HomePage() {
@@ -498,11 +566,20 @@ function SearchPage({ playlistIds, setPlaylistIds }) {
   );
 }
 
-function PlaylistPage({ playlistIds, setPlaylistIds }) {
+function PlaylistPage({
+  playlistState,
+  setPlaylistState,
+}) {
   const [catalog, setCatalog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [playlistName, setPlaylistName] = useState("Bondik TV Custom");
+
+  const {
+    ids: playlistIds,
+    notes: channelNotes,
+    name: playlistName,
+    note: playlistNote,
+  } = playlistState;
 
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}data/channels.json`)
@@ -528,21 +605,90 @@ function PlaylistPage({ playlistIds, setPlaylistIds }) {
       return [];
     }
 
-    const selected = new Set(playlistIds);
-
-    return catalog.channels.filter((channel) =>
-      selected.has(channel.id),
+    const channelsById = new Map(
+      catalog.channels.map((channel) => [
+        channel.id,
+        channel,
+      ]),
     );
+
+    return playlistIds
+      .map((id) => channelsById.get(id))
+      .filter(Boolean);
   }, [catalog, playlistIds]);
 
+  function updatePlaylistField(field, value) {
+    setPlaylistState((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  }
+
+  function updateChannelNote(channelId, value) {
+    setPlaylistState((current) => {
+      const notes = { ...current.notes };
+
+      if (value === "") {
+        delete notes[channelId];
+      } else {
+        notes[channelId] = value;
+      }
+
+      return {
+        ...current,
+        notes,
+      };
+    });
+  }
+
+  function moveChannel(channelId, offset) {
+    setPlaylistState((current) => {
+      const ids = [...current.ids];
+      const index = ids.indexOf(channelId);
+
+      if (index === -1) {
+        return current;
+      }
+
+      const target = index + offset;
+
+      if (target < 0 || target >= ids.length) {
+        return current;
+      }
+
+      [ids[index], ids[target]] = [
+        ids[target],
+        ids[index],
+      ];
+
+      return {
+        ...current,
+        ids,
+      };
+    });
+  }
+
   function removeChannel(channelId) {
-    setPlaylistIds((current) =>
-      current.filter((id) => id !== channelId),
-    );
+    setPlaylistState((current) => {
+      const notes = { ...current.notes };
+      delete notes[channelId];
+
+      return {
+        ...current,
+        ids: current.ids.filter(
+          (id) => id !== channelId,
+        ),
+        notes,
+      };
+    });
   }
 
   function clearPlaylist() {
-    setPlaylistIds([]);
+    setPlaylistState((current) => ({
+      ...current,
+      ids: [],
+      notes: {},
+    }));
   }
 
   function escapeAttribute(value) {
@@ -562,8 +708,12 @@ function PlaylistPage({ playlistIds, setPlaylistIds }) {
         .trim();
 
       const tvgId = escapeAttribute(channel.epg?.id);
-      const logo = escapeAttribute(channel.logo?.url);
-      const group = escapeAttribute(channel.category);
+      const logo = escapeAttribute(
+        channel.logo?.url ?? "",
+      );
+      const group = escapeAttribute(
+        channel.category,
+      );
 
       lines.push(
         `#EXTINF:-1 tvg-id="${tvgId}" tvg-name="${escapeAttribute(name)}" tvg-logo="${logo}" group-title="${group}",${name}`,
@@ -571,8 +721,18 @@ function PlaylistPage({ playlistIds, setPlaylistIds }) {
       lines.push(channel.stream.url);
     });
 
-    const safeFileName = (playlistName.trim() || "Bondik-TV-Custom")
-      .replace(/[<>:"/\\|?*\u0000-\u001F]/g, "-")
+    const safeFileName = (
+      playlistName.trim() ||
+      "Bondik-TV-Custom"
+    )
+      .replace(/[<>:"/\\|?*]/g, "-")
+      .split("")
+      .map((character) =>
+        character.charCodeAt(0) < 32
+          ? "-"
+          : character,
+      )
+      .join("")
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-");
 
@@ -599,11 +759,17 @@ function PlaylistPage({ playlistIds, setPlaylistIds }) {
   return (
     <section className="page">
       <div className="page-heading">
-        <div className="character">{"\u{1F4FA}"}</div>
+        <div className="character">
+          {"\u{1F4FA}\u{1F4DD}"}
+        </div>
 
         <div>
-          <span className="eyebrow">PLAYLIST BUILDER V1</span>
-          <h2>{"Vlastn\u00ed playlist"}</h2>
+          <span className="eyebrow">
+            PLAYLIST BUILDER V1.1
+          </span>
+          <h2>
+            {"Vlastn\u00ed playlist"}
+          </h2>
         </div>
       </div>
 
@@ -615,16 +781,45 @@ function PlaylistPage({ playlistIds, setPlaylistIds }) {
             type="text"
             value={playlistName}
             onChange={(event) =>
-              setPlaylistName(event.target.value)
+              updatePlaylistField(
+                "name",
+                event.target.value,
+              )
             }
           />
         </label>
 
         <div className="playlist-builder-summary">
           <strong>{selectedChannels.length}</strong>
-          <span> {"vybran\u00fdch stanic"}</span>
+          <span>
+            {" vybran\u00fdch stanic"}
+          </span>
         </div>
       </div>
+
+      <label className="playlist-builder-note">
+        {"\u{1F4DD} Pozn\u00e1mka k playlistu"}
+
+        <textarea
+          rows="3"
+          placeholder={
+            "Nap\u0159. TV u babi\u010dky, CZ/SK hudba..."
+          }
+          value={playlistNote}
+          onChange={(event) =>
+            updatePlaylistField(
+              "note",
+              event.target.value,
+            )
+          }
+        />
+      </label>
+
+      <p className="playlist-note-hint">
+        {
+          "Pozn\u00e1mky se ukl\u00e1daj\u00ed v prohl\u00ed\u017ee\u010di. Do .m3u se zat\u00edm nevkl\u00e1daj\u00ed."
+        }
+      </p>
 
       <div className="playlist-builder-actions">
         <NavLink to="/search">
@@ -646,68 +841,141 @@ function PlaylistPage({ playlistIds, setPlaylistIds }) {
           disabled={selectedChannels.length === 0}
           onClick={clearPlaylist}
         >
-          {"\u{1F9F9} Vy\u010distit playlist"}
+          {
+            "\u{1F9F9} Vy\u010distit stanice"
+          }
         </button>
       </div>
 
       {loading && (
         <div className="empty-results">
           <div>{"\u{1F415}"}</div>
-          <h3>{"Na\u010d\u00edt\u00e1m playlist..."}</h3>
+          <h3>
+            {"Na\u010d\u00edt\u00e1m playlist..."}
+          </h3>
         </div>
       )}
 
       {error && (
         <div className="empty-results">
           <div>{"\u26A0\uFE0F"}</div>
-          <h3>{"Katalog se nepoda\u0159ilo na\u010d\u00edst"}</h3>
+          <h3>
+            {
+              "Katalog se nepoda\u0159ilo na\u010d\u00edst"
+            }
+          </h3>
           <p>{error}</p>
         </div>
       )}
 
-      {!loading && !error && selectedChannels.length === 0 && (
-        <div className="empty-results">
-          <div>{"\u{1F4FA}"}</div>
-          <h3>{"Playlist je zat\u00edm pr\u00e1zdn\u00fd"}</h3>
-          <p>
-            {"Vyber stanice v Ultimate Search a p\u0159idej je sem."}
-          </p>
-        </div>
-      )}
+      {!loading &&
+        !error &&
+        selectedChannels.length === 0 && (
+          <div className="empty-results">
+            <div>{"\u{1F4FA}"}</div>
+            <h3>
+              {
+                "Playlist je zat\u00edm pr\u00e1zdn\u00fd"
+              }
+            </h3>
+            <p>
+              {
+                "Vyber stanice v Ultimate Search a p\u0159idej je sem."
+              }
+            </p>
+          </div>
+        )}
 
-      {!loading && !error && selectedChannels.length > 0 && (
-        <div className="playlist-channel-list">
-          {selectedChannels.map((channel, index) => (
-            <article
-              className="playlist-channel-row"
-              key={channel.id}
-            >
-              <span className="playlist-position">
-                {index + 1}
-              </span>
+      {!loading &&
+        !error &&
+        selectedChannels.length > 0 && (
+          <div className="playlist-channel-list">
+            {selectedChannels.map(
+              (channel, index) => (
+                <article
+                  className="playlist-channel-row"
+                  key={channel.id}
+                >
+                  <span className="playlist-position">
+                    {index + 1}
+                  </span>
 
-              <div className="playlist-channel-info">
-                <strong>{channel.name}</strong>
+                  <div className="playlist-channel-info">
+                    <strong>{channel.name}</strong>
 
-                <span>
-                  {channel.country}
-                  {" \u2022 "}
-                  {channel.category}
-                  {" \u2022 "}
-                  {channel.status}
-                </span>
-              </div>
+                    <span>
+                      {channel.country}
+                      {" \u2022 "}
+                      {channel.category}
+                      {" \u2022 "}
+                      {channel.status}
+                    </span>
 
-              <button
-                type="button"
-                onClick={() => removeChannel(channel.id)}
-              >
-                {"\u2715"}
-              </button>
-            </article>
-          ))}
-        </div>
-      )}
+                    <label className="playlist-channel-note-field">
+                      <span>
+                        {"\u{1F4DD} Pozn\u00e1mka"}
+                      </span>
+
+                      <input
+                        type="text"
+                        placeholder={
+                          "Voliteln\u00e1 pozn\u00e1mka..."
+                        }
+                        value={
+                          channelNotes[channel.id] ?? ""
+                        }
+                        onChange={(event) =>
+                          updateChannelNote(
+                            channel.id,
+                            event.target.value,
+                          )
+                        }
+                      />
+                    </label>
+                  </div>
+
+                  <div className="playlist-channel-controls">
+                    <button
+                      type="button"
+                      disabled={index === 0}
+                      title="Posunout nahoru"
+                      onClick={() =>
+                        moveChannel(channel.id, -1)
+                      }
+                    >
+                      {"\u2191"}
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={
+                        index ===
+                        selectedChannels.length - 1
+                      }
+                      title="Posunout dolu"
+                      onClick={() =>
+                        moveChannel(channel.id, 1)
+                      }
+                    >
+                      {"\u2193"}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="playlist-remove"
+                      title="Odebrat"
+                      onClick={() =>
+                        removeChannel(channel.id)
+                      }
+                    >
+                      {"\u2715"}
+                    </button>
+                  </div>
+                </article>
+              ),
+            )}
+          </div>
+        )}
     </section>
   );
 }
@@ -756,18 +1024,54 @@ function SettingsPage({ theme, setTheme }) {
 
 function AppShell() {
   const [theme, setTheme] = useState("ultimate");
-  const [playlistIds, setPlaylistIds] = useState(loadStoredPlaylistIds);
+  const [playlistState, setPlaylistState] =
+    useState(loadStoredPlaylistState);
+
+  const playlistIds = playlistState.ids;
+
+  function setPlaylistIds(update) {
+    setPlaylistState((current) => {
+      const nextValue =
+        typeof update === "function"
+          ? update(current.ids)
+          : update;
+
+      if (!Array.isArray(nextValue)) {
+        return current;
+      }
+
+      const ids = [
+        ...new Set(
+          nextValue.filter(
+            (id) => typeof id === "string",
+          ),
+        ),
+      ];
+
+      const notes = Object.fromEntries(
+        Object.entries(current.notes).filter(
+          ([id]) => ids.includes(id),
+        ),
+      );
+
+      return {
+        ...current,
+        ids,
+        notes,
+      };
+    });
+  }
 
   useEffect(() => {
     try {
       window.localStorage.setItem(
         PLAYLIST_STORAGE_KEY,
-        JSON.stringify(playlistIds),
+        JSON.stringify(playlistState),
       );
     } catch {
       // Storage can be unavailable in restricted browser contexts.
     }
-  }, [playlistIds]);
+  }, [playlistState]);
 
   return (
     <div className={`app ${themes[theme].className}`}>
@@ -816,8 +1120,8 @@ function AppShell() {
             path="/playlists"
             element={
               <PlaylistPage
-                playlistIds={playlistIds}
-                setPlaylistIds={setPlaylistIds}
+                playlistState={playlistState}
+                setPlaylistState={setPlaylistState}
               />
             }
           />
