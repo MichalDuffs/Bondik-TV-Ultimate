@@ -47,33 +47,28 @@ function SearchPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
-  const [country, setCountry] = useState("all");
-  const [category, setCategory] = useState("all");
-  const [status, setStatus] = useState("stable");
+
+  const [countries, setCountries] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [statuses, setStatuses] = useState(["stable"]);
 
   const ui = {
     title: "Najdi p\u0159esn\u011b to, co chce\u0161",
     search: "Hledat stanici",
     placeholder: "Nap\u0159. \u00d3\u010dko, sport, POLAR...",
-    country: "Zem\u011b",
-    allCountries: "\u{1F30D} V\u0161echny zem\u011b",
-    czechia: "\u{1F1E8}\u{1F1FF} \u010cesko",
-    slovakia: "\u{1F1F8}\u{1F1F0} Slovensko",
-    czsk: "\u{1F1E8}\u{1F1FF} + \u{1F1F8}\u{1F1F0} CZ / SK",
-    category: "Kategorie",
-    allCategories: "\u{1F4FA} V\u0161echny kategorie",
-    state: "Stav",
-    stable: "\u2705 Stable",
-    testing: "\u{1F9EA} Testing",
-    all: "\u{1F4FA} V\u0161e",
+    countries: "Zem\u011b",
+    categories: "Kategorie",
+    statuses: "Stav",
     combination: "Aktivn\u00ed kombinace",
     loading: "Bond\u00edk na\u010d\u00edt\u00e1 katalog...",
     loadError: "Katalog se nepoda\u0159ilo na\u010d\u00edst",
     results: "v\u00fdsledk\u016f z",
     channels: "kan\u00e1l\u016f",
+    clear: "Vy\u010distit filtry",
+    all: "V\u0161e",
     noResults:
       "\u017d\u00e1dn\u00e1 stanice t\u00e9to kombinaci neodpov\u00edd\u00e1",
-    tryAgain: "Zkus zm\u011bnit zemi, kategorii nebo stav.",
+    tryAgain: "Zkus zm\u011bnit kombinaci filtr\u016f.",
     epg: "\u{1F4C5} EPG",
     noEpg: "\u2796 bez EPG",
     stream: "\u25B6 Stream",
@@ -96,6 +91,11 @@ function SearchPage() {
     series: "Seri\u00e1ly",
   };
 
+  const countryLabels = {
+    CZ: "\u{1F1E8}\u{1F1FF} CZ",
+    SK: "\u{1F1F8}\u{1F1F0} SK",
+  };
+
   useEffect(() => {
     fetch(`${import.meta.env.BASE_URL}data/channels.json`)
       .then((response) => {
@@ -115,6 +115,21 @@ function SearchPage() {
       });
   }, []);
 
+  function toggleSelection(value, setter) {
+    setter((current) =>
+      current.includes(value)
+        ? current.filter((item) => item !== value)
+        : [...current, value],
+    );
+  }
+
+  function clearFilters() {
+    setQuery("");
+    setCountries([]);
+    setCategories([]);
+    setStatuses(["stable"]);
+  }
+
   const results = useMemo(() => {
     if (!catalog?.channels) {
       return [];
@@ -124,18 +139,16 @@ function SearchPage() {
 
     return catalog.channels.filter((channel) => {
       const countryMatch =
-        country === "all" ||
-        channel.country === country ||
-        (country === "CZ+SK" &&
-          ["CZ", "SK"].includes(channel.country));
+        countries.length === 0 ||
+        countries.includes(channel.country);
 
       const categoryMatch =
-        category === "all" ||
-        channel.category === category;
+        categories.length === 0 ||
+        categories.includes(channel.category);
 
       const statusMatch =
-        status === "all" ||
-        channel.status === status;
+        statuses.length === 0 ||
+        statuses.includes(channel.status);
 
       const haystack = [
         channel.name,
@@ -159,7 +172,22 @@ function SearchPage() {
         textMatch
       );
     });
-  }, [catalog, query, country, category, status]);
+  }, [catalog, query, countries, categories, statuses]);
+
+  const countryQuery =
+    countries.length > 0
+      ? `(${countries.join(" OR ")})`
+      : "ALL";
+
+  const categoryQuery =
+    categories.length > 0
+      ? `(${categories.join(" OR ")})`
+      : "ALL";
+
+  const statusQuery =
+    statuses.length > 0
+      ? `(${statuses.join(" OR ")})`
+      : "ALL";
 
   return (
     <section className="page">
@@ -169,7 +197,7 @@ function SearchPage() {
         </div>
 
         <div>
-          <span className="eyebrow">ULTIMATE SEARCH</span>
+          <span className="eyebrow">ULTIMATE SEARCH V2</span>
           <h2>{ui.title}</h2>
         </div>
       </div>
@@ -185,69 +213,106 @@ function SearchPage() {
         />
       </label>
 
-      <div className="filter-grid">
-        <label>
-          {ui.country}
+      <div className="multi-filter-grid">
+        <section className="filter-section">
+          <strong>{ui.countries}</strong>
 
-          <select
-            value={country}
-            onChange={(event) => setCountry(event.target.value)}
-          >
-            <option value="all">{ui.allCountries}</option>
-            <option value="CZ">{ui.czechia}</option>
-            <option value="SK">{ui.slovakia}</option>
-            <option value="CZ+SK">{ui.czsk}</option>
+          <div className="filter-chips">
+            {catalog?.countries?.map((country) => {
+              const selected = countries.includes(country);
 
-            {catalog?.countries
-              ?.filter((code) => !["CZ", "SK"].includes(code))
-              .map((code) => (
-                <option key={code} value={code}>
-                  {code}
-                </option>
-              ))}
-          </select>
-        </label>
+              return (
+                <button
+                  key={country}
+                  type="button"
+                  className={`filter-chip ${selected ? "selected" : ""}`}
+                  aria-pressed={selected}
+                  onClick={() =>
+                    toggleSelection(country, setCountries)
+                  }
+                >
+                  {countryLabels[country] ?? country}
+                </button>
+              );
+            })}
+          </div>
+        </section>
 
-        <label>
-          {ui.category}
+        <section className="filter-section">
+          <strong>{ui.categories}</strong>
 
-          <select
-            value={category}
-            onChange={(event) => setCategory(event.target.value)}
-          >
-            <option value="all">
-              {ui.allCategories}
-            </option>
+          <div className="filter-chips">
+            {catalog?.categories?.map((category) => {
+              const selected = categories.includes(category);
 
-            {catalog?.categories?.map((item) => (
-              <option key={item} value={item}>
-                {categoryLabels[item] ?? item}
-              </option>
-            ))}
-          </select>
-        </label>
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  className={`filter-chip ${selected ? "selected" : ""}`}
+                  aria-pressed={selected}
+                  onClick={() =>
+                    toggleSelection(category, setCategories)
+                  }
+                >
+                  {categoryLabels[category] ?? category}
+                </button>
+              );
+            })}
+          </div>
+        </section>
 
-        <label>
-          {ui.state}
+        <section className="filter-section">
+          <strong>{ui.statuses}</strong>
 
-          <select
-            value={status}
-            onChange={(event) => setStatus(event.target.value)}
-          >
-            <option value="stable">{ui.stable}</option>
-            <option value="testing">{ui.testing}</option>
-            <option value="all">{ui.all}</option>
-          </select>
-        </label>
+          <div className="filter-chips">
+            {catalog?.statuses?.map((status) => {
+              const selected = statuses.includes(status);
+
+              return (
+                <button
+                  key={status}
+                  type="button"
+                  className={`filter-chip ${selected ? "selected" : ""}`}
+                  aria-pressed={selected}
+                  onClick={() =>
+                    toggleSelection(status, setStatuses)
+                  }
+                >
+                  {status === "stable"
+                    ? "\u2705 Stable"
+                    : status === "testing"
+                      ? "\u{1F9EA} Testing"
+                      : status}
+                </button>
+              );
+            })}
+          </div>
+        </section>
       </div>
 
-      <div className="query-preview">
-        <span>{ui.combination}</span>
+      <div className="filter-toolbar">
+        <div className="query-preview multi-query">
+          <span>{ui.combination}</span>
 
-        <strong>
-          {country} + {category} + {status}
-          {query ? ` + "${query}"` : ""}
-        </strong>
+          <strong>
+            {countryQuery}
+            {" AND "}
+            {categoryQuery}
+            {" AND "}
+            {statusQuery}
+            {query ? ` AND "${query}"` : ""}
+          </strong>
+        </div>
+
+        <button
+          type="button"
+          className="clear-filters"
+          onClick={clearFilters}
+        >
+          {"\u{1F9F9} "}
+          {ui.clear}
+        </button>
       </div>
 
       {loading && (
