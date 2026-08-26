@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bondik Hunter v0.5.1 Candidate Gate.
+"""Bondik Hunter v0.5.2 Candidate Gate.
 
 Turn Hunter result JSON files into a review queue without modifying channels.yaml.
 
@@ -34,7 +34,7 @@ from typing import Any, Iterable
 
 import yaml
 
-VERSION = "0.5.1"
+VERSION = "0.5.2"
 
 COUNTRY_SOURCE_RE = re.compile(r"/countries/([a-z]{2})\.m3u(?:$|[?#])", re.IGNORECASE)
 CATEGORY_SOURCE_RE = re.compile(r"/categories/([a-z0-9_-]+)\.m3u(?:$|[?#])", re.IGNORECASE)
@@ -69,6 +69,9 @@ CHANNEL_NAME_ALIASES = {
 # not "illegal" or "bad". Users can extend the list later if repeated batches justify it.
 PARK_DOMAIN_SUFFIXES = {
     "freeott.top",
+}
+
+PROVIDER_REVIEW_DOMAIN_SUFFIXES = {
     "antik.sk",
 }
 
@@ -98,6 +101,7 @@ REVIEW_FLAGS = {
     "category-unknown",
     "possible-existing-channel-alternative",
     "duplicate-name-multiple-streams",
+    "provider-host-review",
 }
 
 
@@ -362,6 +366,8 @@ def provenance_flags(url: str) -> tuple[str, list[str]]:
 
     if domain_matches(host, PARK_DOMAIN_SUFFIXES):
         flags.append("suspicious-restream-domain")
+    elif domain_matches(host, PROVIDER_REVIEW_DOMAIN_SUFFIXES):
+        flags.append("provider-host-review")
 
     try:
         parsed = urllib.parse.urlparse(url)
