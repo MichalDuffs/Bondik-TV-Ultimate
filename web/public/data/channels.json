@@ -1,0 +1,1081 @@
+{
+  "schema_version": 1,
+  "source_version": 1,
+  "channel_count": 39,
+  "countries": [
+    "CZ",
+    "ES",
+    "FR",
+    "SK",
+    "TR"
+  ],
+  "categories": [
+    "education",
+    "entertainment",
+    "general",
+    "movies",
+    "music",
+    "news",
+    "science",
+    "sport"
+  ],
+  "statuses": [
+    "stable",
+    "testing"
+  ],
+  "channels": [
+    {
+      "id": "polar-tv-cz",
+      "name": "POLAR",
+      "country": "CZ",
+      "language": "cs",
+      "category": "general",
+      "provider": "polar",
+      "status": "stable",
+      "stream": {
+        "url": "https://stream.polar.cz/polar/polarlive-1/playlist.m3u8",
+        "format": "hls",
+        "quality": "FHD"
+      },
+      "epg": {
+        "id": "POLAR.cz",
+        "source": "epgshare-cz",
+        "enabled": true
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://polar.cz/",
+        "notes": "Official/public regional television stream. Verified by Bondik checker."
+      }
+    },
+    {
+      "id": "praha-tv-cz",
+      "name": "Praha TV",
+      "country": "CZ",
+      "language": "cs",
+      "category": "general",
+      "provider": "praha-tv",
+      "status": "stable",
+      "stream": {
+        "url": "https://1977134029.rsc.cdn77.org/1977134029/index.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "PRAHA.TV.cz",
+        "source": "epgshare-cz",
+        "enabled": true
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://prahatv.eu/",
+        "notes": "Public HLS extracted from official Praha TV website. Verified by targeted Bondik checker."
+      }
+    },
+    {
+      "id": "tv-brno1-cz",
+      "name": "TV Brno 1",
+      "country": "CZ",
+      "language": "cs",
+      "category": "general",
+      "provider": "tv-brno1",
+      "status": "stable",
+      "stream": {
+        "url": "https://stream.polar.cz/tvbrno1/tvbrno1live-1/playlist.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "TV.Brno.1.cz",
+        "source": "epgshare-cz",
+        "enabled": true
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://tvbrno1.cz/",
+        "notes": "Public HLS stream. Verified by targeted Bondik checker."
+      }
+    },
+    {
+      "id": "v1-cz",
+      "name": "Východočeská TV V1",
+      "country": "CZ",
+      "language": "cs",
+      "category": "general",
+      "provider": "vctv",
+      "status": "stable",
+      "stream": {
+        "url": "https://stream.polar.cz/vctv/vctvlive-1/playlist.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "V1.cz",
+        "source": "epgshare-cz",
+        "enabled": true
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://vzpravy.cz/",
+        "notes": "Public HLS stream. Verified by targeted Bondik checker."
+      }
+    },
+    {
+      "id": "jtv-cz",
+      "name": "Jihočeská televize",
+      "country": "CZ",
+      "language": "cs",
+      "category": "general",
+      "provider": "jtv",
+      "status": "stable",
+      "stream": {
+        "url": "https://vysilani.zaktv.cz/broadcast/hls/jtv/index.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "Jihočeská.televize.cz",
+        "source": "epgshare-cz",
+        "enabled": true
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://www.jihoceskatelevize.cz/",
+        "notes": "Public HLS stream. Verified locally and by targeted Bondik checker."
+      }
+    },
+    {
+      "id": "ocko-cz",
+      "name": "Óčko",
+      "country": "CZ",
+      "language": "cs",
+      "category": "music",
+      "provider": "ocko",
+      "status": "stable",
+      "stream": {
+        "url": "https://ocko-live.ssl.cdn.cra.cz/channels/ocko/playlist.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "Óčko.cz",
+        "source": "epgshare-cz",
+        "enabled": true
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://ocko.tv/",
+        "notes": "Public HLS stream. Verified by Bondik checker."
+      }
+    },
+    {
+      "id": "ocko-star-cz",
+      "name": "Óčko Star",
+      "country": "CZ",
+      "language": "cs",
+      "category": "music",
+      "provider": "ocko",
+      "status": "stable",
+      "stream": {
+        "url": "https://ocko-live.ssl.cdn.cra.cz/channels/ocko_gold/playlist.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "Óčko.Star.cz",
+        "source": "epgshare-cz",
+        "enabled": true
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://ocko.tv/",
+        "notes": "Public HLS stream. Verified by Bondik checker."
+      }
+    },
+    {
+      "id": "ocko-expres-cz",
+      "name": "Óčko Expres",
+      "country": "CZ",
+      "language": "cs",
+      "category": "music",
+      "provider": "ocko",
+      "status": "stable",
+      "stream": {
+        "url": "https://ocko-live.ssl.cdn.cra.cz/channels/ocko_expres/playlist.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "Óčko.Expres.cz",
+        "source": "epgshare-cz",
+        "enabled": true
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://ocko.tv/",
+        "notes": "Public HLS stream. Verified by Bondik checker."
+      }
+    },
+    {
+      "id": "joj-sk",
+      "name": "JOJ",
+      "country": "SK",
+      "language": "sk",
+      "category": "general",
+      "provider": "joj",
+      "status": "stable",
+      "stream": {
+        "url": "https://live.cdn.joj.sk/live/joj.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "JOJ.HD.sk",
+        "source": "epgshare-sk",
+        "enabled": true
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://www.joj.sk/",
+        "notes": "Official JOJ HLS stream. Verified by Bondik checker with required headers."
+      }
+    },
+    {
+      "id": "joj24-sk",
+      "name": "JOJ 24",
+      "country": "SK",
+      "language": "sk",
+      "category": "news",
+      "provider": "joj",
+      "status": "stable",
+      "stream": {
+        "url": "https://live.cdn.joj.sk/live/andromeda/joj_news-1080.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "JOJ.24.HD.sk",
+        "source": "epgshare-sk",
+        "enabled": true
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://www.joj.sk/live/16-joj24",
+        "notes": "Official JOJ HLS stream. Verified by Bondik checker with required headers."
+      }
+    },
+    {
+      "id": "joj-plus-sk",
+      "name": "JOJ Plus",
+      "country": "SK",
+      "language": "sk",
+      "category": "entertainment",
+      "provider": "joj",
+      "status": "stable",
+      "stream": {
+        "url": "https://live.cdn.joj.sk/live/andromeda/plus-1080.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "Plus.HD.sk",
+        "source": "epgshare-sk",
+        "enabled": true
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://www.joj.sk/",
+        "notes": "Official JOJ HLS stream. Verified by Bondik checker with required headers."
+      }
+    },
+    {
+      "id": "wau-sk",
+      "name": "WAU",
+      "country": "SK",
+      "language": "sk",
+      "category": "entertainment",
+      "provider": "joj",
+      "status": "stable",
+      "stream": {
+        "url": "https://live.cdn.joj.sk/live/andromeda/wau-1080.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "Wau.HD.sk",
+        "source": "epgshare-sk",
+        "enabled": true
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://www.joj.sk/",
+        "notes": "Official JOJ HLS stream. Verified by Bondik checker with required headers."
+      }
+    },
+    {
+      "id": "utv-cz",
+      "name": "ÚTV",
+      "country": "CZ",
+      "language": "cs",
+      "category": "general",
+      "provider": "utv",
+      "status": "stable",
+      "stream": {
+        "url": "https://vysilani.zaktv.cz/broadcast/hls/utv/index.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": null,
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://www.televizeutv.cz/",
+        "notes": "Public internet television candidate. Hunter deep-HLS verified; provenance reviewed."
+      }
+    },
+    {
+      "id": "jc1-cz",
+      "name": "JČ1",
+      "country": "CZ",
+      "language": "cs",
+      "category": "general",
+      "provider": "jc1",
+      "status": "stable",
+      "stream": {
+        "url": "https://stream.jc1.cz/hls/jc1.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": null,
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://jc1.cz/",
+        "notes": "Official/public JČ1 stream. Hunter deep-HLS verified."
+      }
+    },
+    {
+      "id": "retro-music-tv-cz",
+      "name": "Retro Music Television",
+      "country": "CZ",
+      "language": "cs",
+      "category": "music",
+      "provider": "retro-music-tv",
+      "status": "stable",
+      "stream": {
+        "url": "https://stream.mediawork.cz/retrotv/retrotvHQ1/playlist.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": null,
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://retromusic.cz/",
+        "notes": "Public Retro Music Television stream. Hunter deep-HLS verified; provenance reviewed."
+      }
+    },
+    {
+      "id": "lifetv-sk",
+      "name": "LifeTV",
+      "country": "SK",
+      "language": "sk",
+      "category": "general",
+      "provider": "lifetv",
+      "status": "stable",
+      "stream": {
+        "url": "https://lifetv.mpks.sk/s.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": null,
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://www.lifetv.sk/",
+        "notes": "Public LifeTV internet stream. Hunter deep-HLS verified; provenance reviewed."
+      }
+    },
+    {
+      "id": "trt-eba-ortaokul-tr",
+      "name": "TRT EBA Ortaokul",
+      "country": "TR",
+      "language": "tr",
+      "category": "education",
+      "provider": "trt",
+      "status": "stable",
+      "stream": {
+        "url": "https://tv-e-okul01.medya.trt.com.tr/master.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": null,
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://www.eba.gov.tr/trt-ebatv",
+        "notes": "Official TRT/EBA educational television candidate. Hunter deep-HLS verified; provenance reviewed."
+      }
+    },
+    {
+      "id": "etb1-on-es",
+      "name": "ETB1 ON",
+      "country": "ES",
+      "language": "eu",
+      "category": "general",
+      "provider": "eitb",
+      "status": "stable",
+      "stream": {
+        "url": "https://cdn1.etbon.eus/etb1on/index.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": null,
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://etbon.eus/",
+        "notes": "Official EITB internet television candidate. Hunter deep-HLS verified to media segment; provenance reviewed."
+      }
+    },
+    {
+      "id": "etb2-on-es",
+      "name": "ETB2 ON",
+      "country": "ES",
+      "language": "es",
+      "category": "general",
+      "provider": "eitb",
+      "status": "stable",
+      "stream": {
+        "url": "https://cdn1.etbon.eus/etb2on/index.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": null,
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://etbon.eus/",
+        "notes": "Official EITB internet television candidate. Hunter deep-HLS verified to media segment; provenance reviewed."
+      }
+    },
+    {
+      "id": "tele-elx-es",
+      "name": "Tele Elx",
+      "country": "ES",
+      "language": "es",
+      "category": "general",
+      "provider": "teleelx",
+      "status": "stable",
+      "stream": {
+        "url": "https://tvdirecto.teleelx.es/stream/teleelx.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": null,
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://teleelx.es/directo/",
+        "notes": "Official/public Tele Elx internet stream. Hunter deep-HLS verified; first-party provenance reviewed."
+      }
+    },
+    {
+      "id": "france24-french-fr",
+      "name": "France 24 French",
+      "country": "FR",
+      "language": "fr",
+      "category": "news",
+      "provider": "france24",
+      "status": "stable",
+      "stream": {
+        "url": "https://live.france24.com/hls/live/2037179-b/F24_FR_HI_HLS/master_5000.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": null,
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://www.france24.com/",
+        "notes": "Official France 24 French internet stream candidate. First-party france24.com HLS; Hunter deep-HLS verified; provenance reviewed."
+      }
+    },
+    {
+      "id": "france24-spanish-fr",
+      "name": "France 24 Español",
+      "country": "FR",
+      "language": "es",
+      "category": "news",
+      "provider": "france24",
+      "status": "stable",
+      "stream": {
+        "url": "https://live.france24.com/hls/live/2037220-b/F24_ES_HI_HLS/master_5000.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": null,
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://www.france24.com/",
+        "notes": "Official France 24 Spanish-language internet stream candidate. First-party france24.com HLS; Hunter deep-HLS verified; provenance reviewed."
+      }
+    },
+    {
+      "id": "mtr-sk",
+      "name": "MTR",
+      "country": "SK",
+      "language": "sk",
+      "category": "general",
+      "provider": "mtr",
+      "status": "stable",
+      "stream": {
+        "url": "https://cdnsk003.panaccess.com/local/Ruzomberok/index.m3u8",
+        "format": "hls",
+        "quality": "FHD"
+      },
+      "epg": {
+        "id": null,
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://www.mtr.sk/",
+        "notes": "Official/public regional television candidate. Hunter deep-HLS verified; provenance reviewed."
+      }
+    },
+    {
+      "id": "tvt-sk",
+      "name": "TVT",
+      "country": "SK",
+      "language": "sk",
+      "category": "general",
+      "provider": "tvt",
+      "status": "stable",
+      "stream": {
+        "url": "https://5ca49f2417d90.streamlock.net/live/turzovka/playlist.m3u8",
+        "format": "hls",
+        "quality": "SD"
+      },
+      "epg": {
+        "id": null,
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://www.tvt.sk/",
+        "notes": "Turzovska televizia candidate. Hunter deep-HLS verified; provenance reviewed."
+      }
+    },
+    {
+      "id": "tv-mocenok-sk",
+      "name": "Televizia Mocenok",
+      "country": "SK",
+      "language": "sk",
+      "category": "general",
+      "provider": "tv-mocenok",
+      "status": "stable",
+      "stream": {
+        "url": "https://5ca49f2417d90.streamlock.net/mocenok/livestream/playlist.m3u8",
+        "format": "hls",
+        "quality": "HD"
+      },
+      "epg": {
+        "id": null,
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://mocenok.sk/",
+        "notes": "Municipal television candidate. Hunter deep-HLS verified; provenance reviewed."
+      }
+    },
+    {
+      "id": "plzen-tv-cz",
+      "name": "Plzeň TV",
+      "country": "CZ",
+      "language": "cs",
+      "category": "general",
+      "provider": "plzen-tv",
+      "status": "stable",
+      "stream": {
+        "url": "https://vysilani.zaktv.cz/broadcast/hls/ptv/index.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "PlzenTV.cz@SD",
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": null,
+        "notes": "Public Plzen TV HLS stream. Hunter deep-HLS verified; provenance reviewed; promoted after repeated Bondik QC."
+      }
+    },
+    {
+      "id": "tv-panorama-sk",
+      "name": "TV Panorama",
+      "country": "SK",
+      "language": "sk",
+      "category": "general",
+      "provider": "tv-panorama",
+      "status": "testing",
+      "stream": {
+        "url": "https://public.live.rebit.tv/live/20750f0b-e12d-4915-a4c3-47c5db9ccbf6/main.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "TVPanorama.sk@SD",
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": null,
+        "notes": "AUTO-PROMOTION v1: manually approved candidate. Inserted as testing; stable promotion still requires Bondik QC. Discovery source: https://iptv-org.github.io/iptv/countries/sk.m3u Stream host: public.live.rebit.tv"
+      }
+    },
+    {
+      "id": "elektrika-tv-cz",
+      "name": "Elektrika TV",
+      "country": "CZ",
+      "language": "cs",
+      "category": "science",
+      "provider": "elektrika-tv",
+      "status": "stable",
+      "stream": {
+        "url": "https://rtmp.elektrika.cz/live/myStream.sdp/playlist.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "ElektrikaTV.cz@SD",
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://elektrika.tv/",
+        "notes": "Public Elektrika TV HLS stream. Hunter deep-HLS verified; provenance reviewed; promoted after repeated Bondik QC."
+      }
+    },
+    {
+      "id": "dvtv-extra-cz",
+      "name": "DVTV Extra",
+      "country": "CZ",
+      "language": "cs",
+      "category": "news",
+      "provider": "dvtv-extra",
+      "status": "testing",
+      "stream": {
+        "url": "https://antik.streaming.tivio.studio/channels/IxLi19VRasgu94bIaXbH/index.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "DVTVExtra.cz@SD",
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://www.dvtv.cz/",
+        "notes": "AUTO-PROMOTION v1.1: manually approved candidate with verified provenance evidence. Inserted as testing; stable promotion still requires Bondik QC."
+      }
+    },
+    {
+      "id": "mnau-tv-cz",
+      "name": "Mňau TV",
+      "country": "CZ",
+      "language": "cs",
+      "category": "entertainment",
+      "provider": "mnau-tv",
+      "status": "testing",
+      "stream": {
+        "url": "https://5ca49f2417d90.streamlock.net/mnau/livestream/playlist.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "MnauTV.cz@SD",
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://imnau.cz/",
+        "notes": "AUTO-PROMOTION v1.1: manually approved candidate with verified provenance evidence. Inserted as testing; stable promotion still requires Bondik QC."
+      }
+    },
+    {
+      "id": "tv-nrsr-sk",
+      "name": "TV NRSR",
+      "country": "SK",
+      "language": "sk",
+      "category": "news",
+      "provider": "tv-nrsr",
+      "status": "testing",
+      "stream": {
+        "url": "https://n11.stv.livebox.sk/stv-tv/stv4.stream/playlist.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "TVNRSR.sk@SD",
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://tv.nrsr.sk/",
+        "notes": "AUTO-PROMOTION v1.1: manually approved candidate with verified provenance evidence. Inserted as testing; stable promotion still requires Bondik QC."
+      }
+    },
+    {
+      "id": "tv-dk-sk",
+      "name": "TV DK",
+      "country": "SK",
+      "language": "sk",
+      "category": "news",
+      "provider": "tv-dk",
+      "status": "stable",
+      "stream": {
+        "url": "https://5ca49f2417d90.streamlock.net/live/dolnykubin1/playlist.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "TVDK.sk@SD",
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://www.dolnykubin.sk/",
+        "notes": "Public TV DK regional stream. Hunter deep-HLS verified; provenance reviewed; promoted after repeated Bondik QC."
+      }
+    },
+    {
+      "id": "senzi-sk",
+      "name": "Senzi",
+      "country": "SK",
+      "language": "sk",
+      "category": "music",
+      "provider": "senzi",
+      "status": "testing",
+      "stream": {
+        "url": "https://lb.streaming.sk/senzi/stream/playlist.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "Senzi.sk@SD",
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://senzi.sk/",
+        "notes": "AUTO-PROMOTION v1.1: manually approved candidate with verified provenance evidence. Inserted as testing; stable promotion still requires Bondik QC."
+      }
+    },
+    {
+      "id": "tv-ruzinov-sk",
+      "name": "TV Ružinov",
+      "country": "SK",
+      "language": "sk",
+      "category": "news",
+      "provider": "tv-ruzinov",
+      "status": "stable",
+      "stream": {
+        "url": "https://lb.streaming.sk/tvruzinov/stream/playlist.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "TVRuzinov.sk@SD",
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://tvr.sk/",
+        "notes": "Public TV Ruzinov regional stream. Hunter deep-HLS verified; provenance reviewed; promoted after repeated Bondik QC."
+      }
+    },
+    {
+      "id": "kviff-tv-cz",
+      "name": "KVIFF TV",
+      "country": "CZ",
+      "language": "cs",
+      "category": "movies",
+      "provider": "kviff-tv",
+      "status": "testing",
+      "stream": {
+        "url": "https://antik.streaming.tivio.studio/channels/HC7JIqyyvQMl0mnqbbnI/index.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": null,
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://kviff.tv/",
+        "notes": "KVIFF.TV linear stream. Hunter deep-HLS verified to media segment; provenance reviewed. Keep in testing for stability/seasonality observation."
+      }
+    },
+    {
+      "id": "ballcasterz-cz",
+      "name": "Ballcasterz",
+      "country": "CZ",
+      "language": "cs",
+      "category": "sport",
+      "provider": "tivio-studio",
+      "status": "testing",
+      "stream": {
+        "url": "https://antik.streaming.tivio.studio/channels/yXDwkH0CbFfkhU7ZnHlT/index.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": null,
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": null,
+        "notes": "Licensed Czech 24/7 football-focused sports channel operated by Tivio Studio a.s. HTTPS stream deep-HLS verified to media segment by Bondik Hunter."
+      }
+    },
+    {
+      "id": "tv-noe-cz",
+      "name": "TV Noe",
+      "country": "CZ",
+      "language": "cs",
+      "category": "general",
+      "provider": "tv-noe",
+      "status": "testing",
+      "stream": {
+        "url": "https://n105.quickmedia.tv/noetv/live/noetv/Ifd4_1_4/chunks_dvr_timeshift-0-7200.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": null,
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://www.tvnoe.cz/",
+        "notes": "Public TV Noe HLS candidate discovered via iptv-org. Hunter deep-HLS verified to media segment; keep in testing pending provenance and stability observation."
+      }
+    },
+    {
+      "id": "tv-noe-plus-cz",
+      "name": "TV Noe+",
+      "country": "CZ",
+      "language": "cs",
+      "category": "general",
+      "provider": "tv-noe",
+      "status": "testing",
+      "stream": {
+        "url": "https://n105.quickmedia.tv/noetvplus/live/noetvplus/Shz3_1_1/chunks_dvr_timeshift-0-7200.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": null,
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://www.tvnoe.cz/",
+        "notes": "Public TV Noe+ HLS candidate discovered via iptv-org. Hunter deep-HLS verified to media segment; keep in testing pending provenance and stability observation."
+      }
+    },
+    {
+      "id": "current-time-tv-cz",
+      "name": "Настоящее Время",
+      "country": "CZ",
+      "language": "cs",
+      "category": "news",
+      "provider": "unknown",
+      "status": "testing",
+      "stream": {
+        "url": "https://rfe-ingest.akamaized.net/hls/live/2033043/tvmc05/master.m3u8",
+        "format": "hls",
+        "quality": "unknown"
+      },
+      "epg": {
+        "id": "CurrentTimeTV.cz@SD",
+        "source": null,
+        "enabled": false
+      },
+      "logo": {
+        "url": null,
+        "local": null
+      },
+      "metadata": {
+        "website": "https://www.currenttime.tv/p/6018.html",
+        "notes": "AUTO-PROMOTION v1.1: manually approved candidate with verified provenance evidence. Inserted as testing; stable promotion still requires Bondik QC."
+      }
+    }
+  ]
+}
