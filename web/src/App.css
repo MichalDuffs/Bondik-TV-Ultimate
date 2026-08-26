@@ -339,3 +339,123 @@ select:focus {
     min-height: 70vh;
   }
 }
+
+/* Ultimate Search catalog */
+
+.text-search {
+  margin-bottom: 20px;
+}
+
+.text-search input {
+  width: 100%;
+  color: white;
+  background: #11151b;
+  border: 1px solid #303641;
+  padding: 15px 16px;
+  border-radius: 10px;
+  font: inherit;
+}
+
+.text-search input:focus {
+  outline: 2px solid var(--accent);
+}
+
+.results-summary {
+  margin: 28px 0 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: #929aa6;
+}
+
+.results-summary strong {
+  color: var(--accent);
+  font-size: 30px;
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.channel-card {
+  background: rgba(17, 21, 27, 0.92);
+  border: 1px solid #2d333d;
+  border-radius: 14px;
+  padding: 20px;
+  transition: 0.18s ease;
+}
+
+.channel-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 0 26px var(--glow);
+}
+
+.channel-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.channel-card h3 {
+  margin: 5px 0 12px;
+  font-size: 22px;
+}
+
+.channel-country {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.status-badge {
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.status-stable {
+  background: rgba(48, 190, 110, 0.16);
+  color: #64df93;
+  border: 1px solid rgba(100, 223, 147, 0.35);
+}
+
+.status-testing {
+  background: rgba(255, 176, 0, 0.14);
+  color: #ffc857;
+  border: 1px solid rgba(255, 200, 87, 0.35);
+}
+
+.channel-meta {
+  display: grid;
+  gap: 7px;
+  color: #a4acb8;
+  font-size: 13px;
+}
+
+.channel-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.channel-actions a {
+  text-decoration: none;
+  color: #fff;
+  background: #1b2028;
+  border: 1px solid #343b47;
+  padding: 8px 11px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.channel-actions a:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}

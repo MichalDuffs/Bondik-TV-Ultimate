@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
 import "./App.css";
 
@@ -43,68 +43,318 @@ function HomePage() {
 }
 
 function SearchPage() {
-  const [country, setCountry] = useState("CZ");
-  const [category, setCategory] = useState("documentary");
+  const [catalog, setCatalog] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
+  const [country, setCountry] = useState("all");
+  const [category, setCategory] = useState("all");
   const [status, setStatus] = useState("stable");
+
+  const ui = {
+    title: "Najdi p\u0159esn\u011b to, co chce\u0161",
+    search: "Hledat stanici",
+    placeholder: "Nap\u0159. \u00d3\u010dko, sport, POLAR...",
+    country: "Zem\u011b",
+    allCountries: "\u{1F30D} V\u0161echny zem\u011b",
+    czechia: "\u{1F1E8}\u{1F1FF} \u010cesko",
+    slovakia: "\u{1F1F8}\u{1F1F0} Slovensko",
+    czsk: "\u{1F1E8}\u{1F1FF} + \u{1F1F8}\u{1F1F0} CZ / SK",
+    category: "Kategorie",
+    allCategories: "\u{1F4FA} V\u0161echny kategorie",
+    state: "Stav",
+    stable: "\u2705 Stable",
+    testing: "\u{1F9EA} Testing",
+    all: "\u{1F4FA} V\u0161e",
+    combination: "Aktivn\u00ed kombinace",
+    loading: "Bond\u00edk na\u010d\u00edt\u00e1 katalog...",
+    loadError: "Katalog se nepoda\u0159ilo na\u010d\u00edst",
+    results: "v\u00fdsledk\u016f z",
+    channels: "kan\u00e1l\u016f",
+    noResults:
+      "\u017d\u00e1dn\u00e1 stanice t\u00e9to kombinaci neodpov\u00edd\u00e1",
+    tryAgain: "Zkus zm\u011bnit zemi, kategorii nebo stav.",
+    epg: "\u{1F4C5} EPG",
+    noEpg: "\u2796 bez EPG",
+    stream: "\u25B6 Stream",
+    web: "\u{1F310} Web",
+  };
+
+  const categoryLabels = {
+    general: "Obecn\u00e9",
+    documentary: "Dokumenty",
+    music: "Hudba",
+    sport: "Sport",
+    sports: "Sport",
+    news: "Zpr\u00e1vy",
+    kids: "D\u011bti",
+    movies: "Filmy",
+    entertainment: "Z\u00e1bava",
+    education: "Vzd\u011bl\u00e1v\u00e1n\u00ed",
+    science: "V\u011bda",
+    nature: "P\u0159\u00edroda",
+    series: "Seri\u00e1ly",
+  };
+
+  useEffect(() => {
+    fetch(`${import.meta.env.BASE_URL}data/channels.json`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        return response.json();
+      })
+      .then((data) => {
+        setCatalog(data);
+        setLoading(false);
+      })
+      .catch((reason) => {
+        setError(String(reason));
+        setLoading(false);
+      });
+  }, []);
+
+  const results = useMemo(() => {
+    if (!catalog?.channels) {
+      return [];
+    }
+
+    const needle = query.trim().toLocaleLowerCase("cs");
+
+    return catalog.channels.filter((channel) => {
+      const countryMatch =
+        country === "all" ||
+        channel.country === country ||
+        (country === "CZ+SK" &&
+          ["CZ", "SK"].includes(channel.country));
+
+      const categoryMatch =
+        category === "all" ||
+        channel.category === category;
+
+      const statusMatch =
+        status === "all" ||
+        channel.status === status;
+
+      const haystack = [
+        channel.name,
+        channel.id,
+        channel.provider,
+        channel.category,
+        channel.country,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLocaleLowerCase("cs");
+
+      const textMatch =
+        needle === "" ||
+        haystack.includes(needle);
+
+      return (
+        countryMatch &&
+        categoryMatch &&
+        statusMatch &&
+        textMatch
+      );
+    });
+  }, [catalog, query, country, category, status]);
 
   return (
     <section className="page">
       <div className="page-heading">
-        <div className="character">🦮🔎</div>
+        <div className="character">
+          {"\u{1F415}\u{1F50E}"}
+        </div>
+
         <div>
           <span className="eyebrow">ULTIMATE SEARCH</span>
-          <h2>Najdi přesně to, co chceš</h2>
+          <h2>{ui.title}</h2>
         </div>
       </div>
 
+      <label className="text-search">
+        {ui.search}
+
+        <input
+          type="search"
+          placeholder={ui.placeholder}
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+      </label>
+
       <div className="filter-grid">
         <label>
-          Země
-          <select value={country} onChange={(e) => setCountry(e.target.value)}>
-            <option value="CZ">🇨🇿 Česko</option>
-            <option value="SK">🇸🇰 Slovensko</option>
-            <option value="CZ+SK">🇨🇿 + 🇸🇰 CZ / SK</option>
+          {ui.country}
+
+          <select
+            value={country}
+            onChange={(event) => setCountry(event.target.value)}
+          >
+            <option value="all">{ui.allCountries}</option>
+            <option value="CZ">{ui.czechia}</option>
+            <option value="SK">{ui.slovakia}</option>
+            <option value="CZ+SK">{ui.czsk}</option>
+
+            {catalog?.countries
+              ?.filter((code) => !["CZ", "SK"].includes(code))
+              .map((code) => (
+                <option key={code} value={code}>
+                  {code}
+                </option>
+              ))}
           </select>
         </label>
 
         <label>
-          Kategorie
+          {ui.category}
+
           <select
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            onChange={(event) => setCategory(event.target.value)}
           >
-            <option value="documentary">🌍 Dokumenty</option>
-            <option value="music">🎵 Hudba</option>
-            <option value="sport">⚽ Sport</option>
-            <option value="news">📰 Zprávy</option>
-            <option value="kids">🧸 Děti</option>
+            <option value="all">
+              {ui.allCategories}
+            </option>
+
+            {catalog?.categories?.map((item) => (
+              <option key={item} value={item}>
+                {categoryLabels[item] ?? item}
+              </option>
+            ))}
           </select>
         </label>
 
         <label>
-          Stav
-          <select value={status} onChange={(e) => setStatus(e.target.value)}>
-            <option value="stable">✅ Stable</option>
-            <option value="testing">🧪 Testing</option>
-            <option value="all">📺 Vše</option>
+          {ui.state}
+
+          <select
+            value={status}
+            onChange={(event) => setStatus(event.target.value)}
+          >
+            <option value="stable">{ui.stable}</option>
+            <option value="testing">{ui.testing}</option>
+            <option value="all">{ui.all}</option>
           </select>
         </label>
       </div>
 
       <div className="query-preview">
-        <span>Aktivní kombinace</span>
+        <span>{ui.combination}</span>
+
         <strong>
           {country} + {category} + {status}
+          {query ? ` + "${query}"` : ""}
         </strong>
       </div>
 
-      <div className="empty-results">
-        <div>🚧</div>
-        <h3>Datový motor připojíme jako další krok</h3>
-        <p>
-          Filtry už jsou připravené pro skutečná data z channels.yaml.
-        </p>
-      </div>
+      {loading && (
+        <div className="empty-results">
+          <div>{"\u{1F415}"}</div>
+          <h3>{ui.loading}</h3>
+        </div>
+      )}
+
+      {error && (
+        <div className="empty-results">
+          <div>{"\u26A0\uFE0F"}</div>
+          <h3>{ui.loadError}</h3>
+          <p>{error}</p>
+        </div>
+      )}
+
+      {!loading && !error && (
+        <>
+          <div className="results-summary">
+            <strong>{results.length}</strong>
+
+            <span>
+              {ui.results} {catalog.channel_count} {ui.channels}
+            </span>
+          </div>
+
+          {results.length === 0 ? (
+            <div className="empty-results">
+              <div>{"\u{1F50E}"}</div>
+              <h3>{ui.noResults}</h3>
+              <p>{ui.tryAgain}</p>
+            </div>
+          ) : (
+            <div className="results-grid">
+              {results.map((channel) => (
+                <article
+                  className="channel-card"
+                  key={channel.id}
+                >
+                  <div className="channel-card-head">
+                    <div>
+                      <span className="channel-country">
+                        {channel.country}
+                      </span>
+
+                      <h3>{channel.name}</h3>
+                    </div>
+
+                    <span
+                      className={
+                        `status-badge status-${channel.status}`
+                      }
+                    >
+                      {channel.status}
+                    </span>
+                  </div>
+
+                  <div className="channel-meta">
+                    <span>
+                      {"\u{1F4C2} "}
+                      {categoryLabels[channel.category] ??
+                        channel.category}
+                    </span>
+
+                    <span>
+                      {"\u{1F4E1} "}
+                      {channel.provider}
+                    </span>
+
+                    <span>
+                      {"\u{1F39E}\uFE0F "}
+                      {channel.stream.quality}
+                    </span>
+
+                    <span>
+                      {channel.epg.enabled
+                        ? ui.epg
+                        : ui.noEpg}
+                    </span>
+                  </div>
+
+                  <div className="channel-actions">
+                    <a
+                      href={channel.stream.url}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {ui.stream}
+                    </a>
+
+                    {channel.metadata.website && (
+                      <a
+                        href={channel.metadata.website}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {ui.web}
+                      </a>
+                    )}
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </section>
   );
 }
