@@ -75,6 +75,18 @@ def _hostname_has_unsafe_characters(
         ):
             return True
 
+        if (
+            next_hostname.count(".")
+            > decoded_hostname.count(".")
+        ):
+            return True
+
+        if (
+            next_hostname.count(".")
+            > decoded_hostname.count(".")
+        ):
+            return True
+
         if next_hostname == decoded_hostname:
             return any(
                 _hostname_character_is_unsafe(character)

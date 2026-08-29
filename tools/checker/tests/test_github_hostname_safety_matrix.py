@@ -63,6 +63,8 @@ class GitHubHostnameSafetyMatrixTests(
         "%255D",
         "%25",
         "%2525",
+        "%2E",
+        "%252E",
         "%21",
         "%24",
         "%26",
