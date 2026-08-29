@@ -88,7 +88,8 @@ def _hostname_has_unsafe_characters(
         MAX_HOSTNAME_DECODE_ROUNDS
     ):
         next_hostname = urllib.parse.unquote(
-            decoded_hostname
+            decoded_hostname,
+            errors="strict",
         )
 
         if (
@@ -112,7 +113,8 @@ def _hostname_has_unsafe_characters(
         decoded_hostname = next_hostname
 
     next_hostname = urllib.parse.unquote(
-        decoded_hostname
+        decoded_hostname,
+        errors="strict",
     )
 
     if next_hostname != decoded_hostname:
