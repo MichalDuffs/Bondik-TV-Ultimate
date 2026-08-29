@@ -14,6 +14,10 @@ UNSAFE_HOSTNAME_CHARACTERS = frozenset(
     "/\\?#[]%!$&'()*+,;="
 )
 
+IDNA_DOT_SEPARATORS = frozenset(
+    "\u3002\uff0e\uff61"
+)
+
 
 def _hostname_character_is_unsafe(
     character: str,
@@ -29,6 +33,8 @@ def _hostname_character_is_unsafe(
         in {"Cc", "Cf"}
         or character
         in UNSAFE_HOSTNAME_CHARACTERS
+        or character
+        in IDNA_DOT_SEPARATORS
         or (
             normalized_character != character
             and any(
