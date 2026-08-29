@@ -9,6 +9,24 @@ import urllib.request
 
 MAX_HOSTNAME_DECODE_ROUNDS = 10
 
+UNSAFE_HOSTNAME_CHARACTERS = frozenset(
+    "/\\?#[]%"
+)
+
+
+def _hostname_character_is_unsafe(
+    character: str,
+) -> bool:
+    codepoint = ord(character)
+
+    return (
+        character.isspace()
+        or codepoint < 32
+        or codepoint == 127
+        or character
+        in UNSAFE_HOSTNAME_CHARACTERS
+    )
+
 
 def _url_has_credentials(
     parsed_url,
@@ -59,12 +77,7 @@ def _hostname_has_unsafe_characters(
 
         if next_hostname == decoded_hostname:
             return any(
-                (
-                    character.isspace()
-                    or ord(character) < 32
-                    or ord(character) == 127
-                    or character in "/\\?#[]%"
-                )
+                _hostname_character_is_unsafe(character)
                 for character in decoded_hostname
             )
 
@@ -80,12 +93,7 @@ def _hostname_has_unsafe_characters(
         )
 
     return any(
-        (
-            character.isspace()
-            or ord(character) < 32
-            or ord(character) == 127
-            or character in "/\\?#[]%"
-        )
+        _hostname_character_is_unsafe(character)
         for character in decoded_hostname
     )
 
