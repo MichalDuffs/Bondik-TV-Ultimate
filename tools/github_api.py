@@ -10,7 +10,7 @@ import urllib.request
 MAX_HOSTNAME_DECODE_ROUNDS = 10
 
 UNSAFE_HOSTNAME_CHARACTERS = frozenset(
-    "/\\?#[]%"
+    "/\\?#[]%!$&'()*+,;="
 )
 
 
