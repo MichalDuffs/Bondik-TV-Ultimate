@@ -18,12 +18,29 @@ UNSAFE_HOSTNAME_CHARACTERS = frozenset(
 def _hostname_character_is_unsafe(
     character: str,
 ) -> bool:
+    normalized_character = unicodedata.normalize(
+        "NFKC",
+        character,
+    )
+
     return (
         character.isspace()
         or unicodedata.category(character)
         in {"Cc", "Cf"}
         or character
         in UNSAFE_HOSTNAME_CHARACTERS
+        or (
+            normalized_character != character
+            and any(
+                normalized
+                in (
+                    UNSAFE_HOSTNAME_CHARACTERS
+                    | frozenset(".:@")
+                )
+                for normalized
+                in normalized_character
+            )
+        )
     )
 
 
