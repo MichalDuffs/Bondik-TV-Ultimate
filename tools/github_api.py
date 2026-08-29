@@ -61,6 +61,8 @@ def _hostname_has_unsafe_characters(
             return any(
                 (
                     character.isspace()
+                    or ord(character) < 32
+                    or ord(character) == 127
                     or character in "/\\?#"
                 )
                 for character in decoded_hostname
@@ -80,6 +82,8 @@ def _hostname_has_unsafe_characters(
     return any(
         (
             character.isspace()
+            or ord(character) < 32
+            or ord(character) == 127
             or character in "/\\?#"
         )
         for character in decoded_hostname
