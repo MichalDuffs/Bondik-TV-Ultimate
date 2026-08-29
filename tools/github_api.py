@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import ipaddress
 import json
 import unicodedata
 import urllib.error
@@ -48,6 +49,51 @@ def _hostname_character_is_unsafe(
             )
         )
     )
+
+
+def _hostname_is_valid_dns_or_ip(
+    hostname: str,
+) -> bool:
+    try:
+        ipaddress.ip_address(hostname)
+    except ValueError:
+        pass
+    else:
+        return True
+
+    try:
+        ascii_hostname = hostname.encode(
+            "idna"
+        ).decode("ascii")
+    except UnicodeError:
+        return False
+
+    if len(ascii_hostname) > 253:
+        return False
+
+    labels = ascii_hostname.split(".")
+
+    for label in labels:
+        if not label or len(label) > 63:
+            return False
+
+        if (
+            label.startswith("-")
+            or label.endswith("-")
+        ):
+            return False
+
+        if not all(
+            character.isascii()
+            and (
+                character.isalnum()
+                or character == "-"
+            )
+            for character in label
+        ):
+            return False
+
+    return True
 
 
 def _url_has_credentials(
@@ -105,9 +151,14 @@ def _hostname_has_unsafe_characters(
             return True
 
         if next_hostname == decoded_hostname:
-            return any(
-                _hostname_character_is_unsafe(character)
-                for character in decoded_hostname
+            return (
+                any(
+                    _hostname_character_is_unsafe(character)
+                    for character in decoded_hostname
+                )
+                or not _hostname_is_valid_dns_or_ip(
+                    decoded_hostname
+                )
             )
 
         decoded_hostname = next_hostname
@@ -122,9 +173,14 @@ def _hostname_has_unsafe_characters(
             "hostname encoding depth exceeds safety limit"
         )
 
-    return any(
-        _hostname_character_is_unsafe(character)
-        for character in decoded_hostname
+    return (
+        any(
+            _hostname_character_is_unsafe(character)
+            for character in decoded_hostname
+        )
+        or not _hostname_is_valid_dns_or_ip(
+            decoded_hostname
+        )
     )
 
 

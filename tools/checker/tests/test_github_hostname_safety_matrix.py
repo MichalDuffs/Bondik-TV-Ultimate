@@ -96,6 +96,8 @@ class GitHubHostnameSafetyMatrixTests(
         "%C0%AF",
         "%E0%80%AF",
         "%F0%80%80%AF",
+        "%EF%BF%BD",
+        "%5F",
     )
 
     def check_initial_url_is_rejected(
@@ -127,6 +129,28 @@ class GitHubHostnameSafetyMatrixTests(
                         )
 
                     opener.open.assert_not_called()
+
+        with self.subTest(
+            encoded_value="%2D-trailing"
+        ):
+            with mock.patch.object(
+                module,
+                "OPENER",
+            ) as opener:
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "hostname",
+                ):
+                    module.github_request(
+                        (
+                            "https://"
+                            "api.github.test%2D/"
+                            "repos/bondik"
+                        ),
+                        "secret",
+                    )
+
+                opener.open.assert_not_called()
 
     def check_redirect_is_rejected(
         self,
@@ -164,6 +188,28 @@ class GitHubHostnameSafetyMatrixTests(
                 self.assertIsNone(
                     redirected
                 )
+
+        with self.subTest(
+            encoded_value="%2D-trailing"
+        ):
+            handler = module.SafeRedirectHandler()
+
+            redirected = handler.redirect_request(
+                request,
+                None,
+                302,
+                "Found",
+                {},
+                (
+                    "https://"
+                    "api.github.test%2D/"
+                    "target"
+                ),
+            )
+
+            self.assertIsNone(
+                redirected
+            )
 
     def test_stream_initial_url_matrix(
         self,
