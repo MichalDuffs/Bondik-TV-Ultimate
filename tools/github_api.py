@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -17,12 +18,10 @@ UNSAFE_HOSTNAME_CHARACTERS = frozenset(
 def _hostname_character_is_unsafe(
     character: str,
 ) -> bool:
-    codepoint = ord(character)
-
     return (
         character.isspace()
-        or codepoint < 32
-        or codepoint == 127
+        or unicodedata.category(character)
+        in {"Cc", "Cf"}
         or character
         in UNSAFE_HOSTNAME_CHARACTERS
     )

@@ -80,6 +80,10 @@ class GitHubHostnameSafetyMatrixTests(
         "%01",
         "%1F",
         "%7F",
+        "%E2%80%8B",
+        "%C2%AD",
+        "%E2%80%AE",
+        "%E2%81%A6",
     )
 
     def check_initial_url_is_rejected(
