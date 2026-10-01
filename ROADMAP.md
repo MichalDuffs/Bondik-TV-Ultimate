@@ -1,6 +1,6 @@
 # 🗺️ Bondik TV Ultimate Roadmap
 
-Last refreshed: **2026-08-26**
+Last synchronized: **2026-10-01**
 
 > **Quality before quantity.**
 
@@ -58,6 +58,9 @@ No candidate can move directly from discovery into the stable public playlist.
 - [x] Bondík mascot / team branding
 - [x] README refresh with Quick Start and quality pipeline
 - [x] CI validation on push and pull request
+- [x] Android / Android TV application foundation
+- [x] Web application foundation
+- [x] Current-state synchronization document
 
 ---
 
@@ -183,6 +186,67 @@ Progress:
 
 ---
 
+## 📱 Android / Android TV
+
+A real Android application foundation exists under `android/`.
+
+Verified implementation includes:
+
+- [x] Kotlin / Jetpack Compose
+- [x] Media3 / ExoPlayer
+- [x] HLS playback
+- [x] Bondik catalog loading
+- [x] Channel selection and integrated player
+- [x] Bondík launcher assets
+- [x] Local Gradle verification: BUILD SUCCESSFUL on 2026-10-01
+- [ ] Real-device smoke test
+- [ ] Android TV remote / focus UX pass
+- [ ] Release workflow
+
+Current status: **prototype / MVP foundation exists**.
+
+---
+
+## 🌐 Web Application
+
+A real web application foundation exists under `web/`.
+
+Verified implementation includes:
+
+- [x] React / Vite
+- [x] hls.js
+- [x] Search and channel filtering
+- [x] Live preview
+- [x] Playlist management
+- [x] Playlist interoperability
+- [x] Production build
+- [x] `npm run build` PASS on 2026-10-01
+- [x] `npm run lint` PASS on 2026-10-01
+- [ ] Deployment model decision
+- [ ] Further responsive / TV UX work
+
+Current status: **working application foundation exists**.
+
+---
+
+## 🤖 NIKOLA-assisted Operations
+
+The NIKOLA project already contains a Bondik-TV assistance track.
+
+The V341–V357 sequence covers project evidence, outage review,
+quarantine/proposal workflows, guarded maintenance, sandboxed playlist
+regeneration, bounded discovery work, source research and country attribution.
+
+- [x] Existing Bondik-TV assistance track
+- [x] Read-only / bounded project evidence work
+- [x] Guarded maintenance and discovery work
+- [ ] Ground Nikča on `docs/CURRENT_STATE.md`
+- [ ] Detect stale project state explicitly
+- [ ] Let Nikča propose the next safe task from synchronized evidence
+- [ ] Preserve independent QC and human control of irreversible actions
+
+---
+
 ## 🧪 Quality
 
 - [x] Hunter tests
@@ -194,7 +258,7 @@ Progress:
 - [x] Stream and EPG automation tests
 - [x] CI compiles production Python tooling
 - [x] CI verifies generated playlists remain synchronized
-- [x] **359 tests passing + 22 subtests passing**
+- [x] **381 tests passing + 270 subtests passing**
 
 A working stream is not automatically trusted.
 
@@ -225,21 +289,24 @@ A high-scoring candidate is not automatically published.
 
 ## 🎯 Next Priorities
 
-1. Expand verified CZ/SK candidates while preserving the quality floor.
-2. Improve EPG mappings, channel logos and provenance metadata.
-3. Finish documentation/release review and prepare the next stable public release.
+1. Complete PROJECT SYNC and ground Nikča on the verified current state.
+2. Continue verified CZ/SK expansion without lowering the quality floor.
+3. Improve EPG mappings, logos and provenance metadata.
+4. Continue Android / Web development from the foundations that already exist.
+5. Decide separately whether a dedicated Windows / Linux application is wanted.
 
 ---
 
 ## 🌍 Future
 
 - [ ] Community contribution workflow
-- [ ] Statistics dashboard
-- [ ] Android / Android TV application
-- [ ] Windows / Linux application
-- [ ] Web interface
+- [ ] Richer statistics / operational dashboard
+- [ ] Windows / Linux standalone application, if desired
+- [ ] Android / Android TV production UX
+- [ ] Controlled web deployment
 
-Applications come after the core playlist and QC pipeline is mature.
+Android and Web are no longer future-only concepts; working foundations
+already exist in the repository.
 
 ---
 
