@@ -1,0 +1,77 @@
+version: 1
+city:
+  id: bondik-city
+  status: foundation
+  principle: preserve-isolate-extend
+
+buildings:
+  - id: bondik-tv
+    name: Bondík-TV HQ
+    status: active
+    role: flagship-media-product
+    capabilities:
+      - playback
+      - search
+      - playlists
+      - epg
+      - favorites
+      - stream-health
+
+  - id: radio-station
+    name: Radio Station
+    status: planned
+    role: second-media-product
+    capabilities:
+      - playback
+      - search
+      - favorites
+
+infrastructure:
+  - id: session
+    status: planned
+    purpose: versioned-user-and-product-state
+  - id: capability-registry
+    status: planned
+    purpose: human-and-agent-readable-capabilities
+  - id: media-contract
+    status: planned
+    purpose: reusable-media-source-boundary
+  - id: command-boundary
+    status: planned
+    purpose: decouple-ui-from-actions
+  - id: event-boundary
+    status: planned
+    purpose: observable-module-events
+  - id: storage-adapter
+    status: planned
+    purpose: platform-independent-persistence-boundary
+  - id: device-share-adapter
+    status: planned
+    purpose: future-share-to-tv-and-device-targets
+  - id: agent-safety-envelope
+    status: planned
+    purpose: bounded-ai-access-to-project-capabilities
+
+virtual_areas:
+  - id: garden
+    status: concept
+    maps_to: calm-overview-dashboard
+  - id: pool
+    status: concept
+    maps_to: runtime-data-flow-visualization
+  - id: party-zone
+    status: concept
+    maps_to: demo-and-showcase-surface
+  - id: control-tower
+    status: concept
+    maps_to: ci-qc-health-review
+  - id: archive
+    status: concept
+    maps_to: artifacts-history-backups
+
+rules:
+  delete_working_foundations: false
+  installer_before_product_stability: false
+  core_vip_paywall: false
+  human_readable: true
+  agent_readable: true
