@@ -20,11 +20,19 @@ buildings:
   - id: radio-station
     name: Radio Station
     status: planned
-    role: second-media-product
+    role: ai-city-beacon
+    audience:
+      - ai-agents
     capabilities:
-      - playback
-      - search
-      - favorites
+      - city-discovery
+      - protocol-announcement
+      - capability-advertisement
+      - approved-event-broadcast
+      - cooperation-handshake
+    constraints:
+      uncontrolled-command-channel: false
+      expose-sensitive-state: false
+      execution-requires-capability-permission: true
 
 infrastructure:
   - id: session
@@ -51,6 +59,9 @@ infrastructure:
   - id: agent-safety-envelope
     status: planned
     purpose: bounded-ai-access-to-project-capabilities
+  - id: agent-signal-protocol
+    status: planned
+    purpose: machine-readable-discovery-and-approved-inter-agent-signals
 
 virtual_areas:
   - id: garden
