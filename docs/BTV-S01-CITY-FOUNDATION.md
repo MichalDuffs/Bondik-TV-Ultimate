@@ -102,13 +102,30 @@ Current foundation already includes:
 
 BTV-S01 will make these foundations easier to extend instead of replacing them.
 
-### Radio Station — planned second building
+### Radio Station — AI beacon / city signal
 
-Radio Station is the first architecture proof that the city foundation is not
-hard-coded to television.
+Radio Station is **not primarily an internet-radio product**.
 
-It should be able to reuse compatible media/session/device capabilities while
-keeping radio-specific product behaviour separate.
+Its job is to act as a visible and machine-readable signal point for other AI
+agents that may later enter, observe or cooperate with the city.
+
+It should provide a bounded discovery/broadcast surface for things such as:
+
+- city identity and protocol version,
+- available public/approved capabilities,
+- current non-sensitive service status,
+- agent-readable events and invitations,
+- hand-off points for approved cooperation,
+- compatibility information for future agents.
+
+The Radio Station must never become an uncontrolled command channel. It
+advertises what the city can expose; permissions and execution remain behind
+the agent safety envelope and explicit capability boundaries.
+
+In the virtual-city metaphor it is the tower broadcasting:
+
+> **"Bondík City is here. This is what exists. This is how approved agents can
+> understand the city."**
 
 ### Shared infrastructure
 
@@ -131,7 +148,7 @@ These are contracts first. Implementations remain incremental.
 The visual city may later expose real technical surfaces through familiar places:
 
 - **Bondík-TV HQ** — TV product and operations
-- **Radio Station** — radio product
+- **Radio Station** — AI beacon, discovery and approved inter-agent signal surface
 - **Nikča Lab** — AI-assisted work and approved agent capabilities
 - **Control Tower** — CI, QC, health and technical review
 - **Archive** — persistent artifacts/history/backups
@@ -162,7 +179,7 @@ The foundation is ready when:
 - session format is versioned,
 - new fields can be added without breaking old state,
 - Web and Android have a clear path to the same logical contract,
-- capability boundaries exist for future ShareToTV / Translator / Radio,
+- capability boundaries exist for future ShareToTV / Translator / agent-signal services,
 - no working feature was deleted merely to achieve the refactor,
 - tests and review evidence accompany the PACK.
 
