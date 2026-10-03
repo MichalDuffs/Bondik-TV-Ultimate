@@ -1,0 +1,17 @@
+{
+  "protocol": "bondik-city-execution-evidence/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "receiptProtocol": "bondik-city-read-only-dispatch-receipt/1",
+  "storageNamespace": "city.dispatch.spent",
+  "evidenceProtocol": "bondik-city-execution-evidence-record/1",
+  "authority": "evidence-only",
+  "evidenceState": "verified-completed",
+  "exposure": {
+    "execution": "not-exposed",
+    "mutation": "not-allowed",
+    "network": "not-exposed",
+    "permissionGrant": "not-allowed",
+    "resultContent": "digest-only"
+  }
+}
