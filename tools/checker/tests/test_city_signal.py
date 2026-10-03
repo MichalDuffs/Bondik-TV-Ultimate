@@ -1,5 +1,7 @@
 import json
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -119,3 +121,27 @@ def test_handoff_cannot_be_enabled_in_v1():
             payload,
             registry_payload(),
         )
+
+
+def test_signal_validator_runs_as_direct_script():
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(
+                ROOT
+                / "tools"
+                / "city"
+                / "validate_city_signal.py"
+            ),
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert (
+        "Bondik City signal OK:"
+        in result.stdout
+    )
