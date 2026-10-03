@@ -31,6 +31,18 @@ buildings:
       mutation: false
       token-exposure: false
 
+  - id: archive
+    name: Archive
+    status: active
+    role: evidence-provenance-catalog
+    capabilities:
+      - evidence-availability-index
+      - protocol-identification
+      - sha256-provenance
+    constraints:
+      copy-source-content: false
+      mutation: false
+
   - id: radio-station
     name: Radio Station
     status: planned
@@ -49,6 +61,9 @@ buildings:
       execution-requires-capability-permission: true
 
 infrastructure:
+  - id: archive-evidence-index
+    status: active
+    purpose: read-only-evidence-provenance-catalog
   - id: github-evidence-gateway
     status: active
     purpose: bounded-read-only-repository-evidence
@@ -94,7 +109,7 @@ virtual_areas:
     status: active
     maps_to: ci-qc-health-review
   - id: archive
-    status: concept
+    status: active
     maps_to: artifacts-history-backups
 
 rules:
