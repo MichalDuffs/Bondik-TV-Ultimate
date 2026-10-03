@@ -2,6 +2,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
 import LivePreview from "./components/LivePreview";
 import PlaylistIOPanel from "./components/PlaylistIOPanel";
+import {
+  loadStoredSession,
+  saveStoredSession,
+} from "./lib/session";
 import "./App.css";
 
 const navigation = [
@@ -1853,14 +1857,37 @@ function SettingsPage({ theme, setTheme }) {
 }
 
 function AppShell() {
+  const [initialAppState] = useState(() => {
+    const playlistLibrary =
+      loadStoredPlaylistLibrary();
+
+    const session = loadStoredSession(
+      window.localStorage,
+      {
+        validThemes:
+          Object.keys(themes),
+        playlistLibrary,
+      },
+    );
+
+    return {
+      theme: session.theme,
+      playlistLibrary: {
+        ...playlistLibrary,
+        activeId:
+          session.activePlaylistId,
+      },
+    };
+  });
+
   const [theme, setTheme] =
-    useState("ultimate");
+    useState(initialAppState.theme);
 
   const [
     playlistLibrary,
     setPlaylistLibrary,
   ] = useState(
-    loadStoredPlaylistLibrary,
+    initialAppState.playlistLibrary,
   );
 
   const playlistState =
@@ -1992,6 +2019,22 @@ function AppShell() {
       // Storage can be unavailable in restricted browser contexts.
     }
   }, [playlistLibrary]);
+
+  useEffect(() => {
+    saveStoredSession(
+      window.localStorage,
+      {
+        theme,
+        activePlaylistId:
+          playlistLibrary.activeId,
+      },
+      {
+        validThemes:
+          Object.keys(themes),
+        playlistLibrary,
+      },
+    );
+  }, [theme, playlistLibrary]);
 
   return (
     <div className={`app ${themes[theme].className}`}>
