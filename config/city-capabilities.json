@@ -547,6 +547,22 @@
         "discoverable": true,
         "execution": "not-exposed"
       }
+    },
+    {
+      "id": "city.runtime-grant.execution-evidence",
+      "buildingId": "receipt-office",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Verified execution evidence",
+        "description": "Cross-check a completed read-only dispatch receipt against the single-use consumption ledger and expose digest-only completion evidence without copying result content or granting any authority."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
     }
   ]
 }
