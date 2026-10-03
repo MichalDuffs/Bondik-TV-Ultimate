@@ -345,6 +345,23 @@ buildings:
       mutation: false
       network: false
 
+  - id: dispatch-gate
+    name: Dispatch Gate
+    status: active
+    role: final-read-only-dispatch-preflight
+    capabilities:
+      - current-registration-revalidation
+      - current-topology-revalidation
+      - non-dispatching-final-preflight
+    constraints:
+      grant-consumption: false
+      consumer-connected: false
+      command-dispatch: false
+      handler-call: false
+      execution: false
+      mutation: false
+      network: false
+
   - id: radio-station
     name: Radio Station
     status: active
@@ -440,6 +457,9 @@ infrastructure:
   - id: authorized-command-packet
     status: active
     purpose: bind-exact-command-and-provenance-without-dispatch
+  - id: dispatch-preflight
+    status: active
+    purpose: revalidate-current-registration-and-topology-before-dispatch
 
 virtual_areas:
   - id: garden
