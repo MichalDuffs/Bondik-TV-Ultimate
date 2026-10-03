@@ -483,6 +483,22 @@
         "discoverable": true,
         "execution": "not-exposed"
       }
+    },
+    {
+      "id": "city.runtime-grant.command-lease",
+      "buildingId": "relay-office",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Exact read-only command lease",
+        "description": "Narrow an admitted runtime grant to one exact registered read-only command without consuming the grant, connecting a consumer, dispatching a command, or executing an action."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
     }
   ]
 }
