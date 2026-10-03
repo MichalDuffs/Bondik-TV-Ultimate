@@ -27,8 +27,8 @@ def test_current_directory_summary():
     directory = build_directory()
 
     assert directory["summary"] == {
-        "locations": 24,
-        "activeCapabilities": 28,
+        "locations": 25,
+        "activeCapabilities": 29,
         "plannedCapabilities": 0,
     }
 
@@ -180,7 +180,7 @@ def test_direct_cli_builds_directory():
     assert result.returncode == 0, result.stdout
     assert (
         "Bondik City Directory OK: "
-        "24 locations / 28 active / "
+        "25 locations / 29 active / "
         "0 planned / "
         "bondik-city-service-directory/1"
         in result.stdout
