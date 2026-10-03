@@ -371,6 +371,22 @@
         "discoverable": true,
         "execution": "not-exposed"
       }
+    },
+    {
+      "id": "city.audit.review-ledger",
+      "buildingId": "audit-office",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Human review audit ledger",
+        "description": "Create a create-once auditable evidence record linking a permit ticket to its human review without granting permission, changing policy, or executing the action."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
     }
   ]
 }
