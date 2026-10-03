@@ -212,6 +212,22 @@ buildings:
       execution: false
       network: false
 
+  - id: seal-office
+    name: Seal Office
+    status: active
+    role: inactive-approval-certificate-issuer
+    capabilities:
+      - approved-review-seal
+      - exact-scope-certificate
+      - audit-evidence-binding
+    constraints:
+      runtime-authority: false
+      permission-grant: false
+      policy-activation: false
+      execution: false
+      mutation: false
+      network: false
+
   - id: radio-station
     name: Radio Station
     status: active
@@ -283,6 +299,9 @@ infrastructure:
   - id: human-review-audit-ledger
     status: active
     purpose: create-once-auditable-permit-review-evidence
+  - id: inactive-approval-certificate
+    status: active
+    purpose: seal-approved-audit-evidence-without-runtime-authority
 
 virtual_areas:
   - id: garden
