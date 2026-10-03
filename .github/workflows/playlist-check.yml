@@ -46,6 +46,7 @@ jobs:
           python -m py_compile tools/city/validate_capability_registry.py
           python -m py_compile tools/city/validate_city_signal.py
           python -m py_compile tools/city/build_health_snapshot.py
+          python -m py_compile tools/city/render_status_board.py
 
       - name: Run automated test suite
         run: |
