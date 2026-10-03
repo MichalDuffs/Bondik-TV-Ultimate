@@ -339,6 +339,22 @@
         "discoverable": true,
         "execution": "not-exposed"
       }
+    },
+    {
+      "id": "city.permit.request",
+      "buildingId": "permit-office",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Permit request ticket",
+        "description": "Prepare a human-review ticket for a high-impact city operation while preserving the current Gatehouse deny decision and granting no authority."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
     }
   ]
 }
