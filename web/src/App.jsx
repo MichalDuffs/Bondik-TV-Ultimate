@@ -6,6 +6,16 @@ import {
   loadStoredSession,
   saveStoredSession,
 } from "./lib/session";
+import {
+  loadStoredFavorites,
+  saveStoredFavorites,
+} from "./lib/favorites";
+import {
+  countByField,
+  epgChannels,
+  favoriteChannels,
+  summarizeCatalog,
+} from "./lib/catalog";
 import "./App.css";
 
 const navigation = [
@@ -319,7 +329,13 @@ function HomePage() {
   );
 }
 
-function SearchPage({ playlistIds, playlistName, setPlaylistIds }) {
+function SearchPage({
+  playlistIds,
+  playlistName,
+  setPlaylistIds,
+  favoriteIds,
+  toggleFavorite,
+}) {
   const [catalog, setCatalog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -891,6 +907,7 @@ function SearchPage({ playlistIds, playlistName, setPlaylistIds }) {
             <div className="results-grid">
               {results.map((channel) => {
                 const inPlaylist = playlistIds.includes(channel.id);
+                const isFavorite = favoriteIds.includes(channel.id);
 
                 return (
                   <article
@@ -962,6 +979,19 @@ function SearchPage({ playlistIds, playlistName, setPlaylistIds }) {
                     </div>
 
                     <div className="channel-actions">
+                      <button
+                        type="button"
+                        className={`favorite-toggle ${isFavorite ? "selected" : ""}`}
+                        aria-pressed={isFavorite}
+                        onClick={() =>
+                          toggleFavorite(channel.id)
+                        }
+                      >
+                        {isFavorite
+                          ? "\u2605 Obl\u00edben\u00e9"
+                          : "\u2606 Obl\u00edbit"}
+                      </button>
+
                       <button
                         type="button"
                         className={`playlist-toggle ${inPlaylist ? "selected" : ""}`}
@@ -1814,13 +1844,606 @@ function PlaylistPage({
   );
 }
 
-function PlaceholderPage({ title, character, text }) {
+function useProductCatalog() {
+  const [catalog, setCatalog] =
+    useState(null);
+  const [loading, setLoading] =
+    useState(true);
+  const [error, setError] =
+    useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch(
+      `${import.meta.env.BASE_URL}data/channels.json`,
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            `HTTP ${response.status}`,
+          );
+        }
+
+        return response.json();
+      })
+      .then((data) => {
+        if (cancelled) {
+          return;
+        }
+
+        setCatalog(data);
+        setLoading(false);
+      })
+      .catch((reason) => {
+        if (cancelled) {
+          return;
+        }
+
+        setError(String(reason));
+        setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return {
+    catalog,
+    loading,
+    error,
+  };
+}
+
+function FavoritesPage({
+  favoriteIds,
+  toggleFavorite,
+  setPlaylistIds,
+}) {
+  const {
+    catalog,
+    loading,
+    error,
+  } = useProductCatalog();
+  const [activePreviewId, setActivePreviewId] =
+    useState(null);
+
+  const channels = useMemo(
+    () =>
+      favoriteChannels(
+        catalog,
+        favoriteIds,
+      ),
+    [catalog, favoriteIds],
+  );
+
+  function addToPlaylist(channelId) {
+    setPlaylistIds((current) => [
+      ...new Set([
+        ...current,
+        channelId,
+      ]),
+    ]);
+  }
+
   return (
-    <section className="page placeholder">
-      <div className="character big">{character}</div>
-      <span className="eyebrow">BONDÍK TV ULTIMATE</span>
-      <h2>{title}</h2>
-      <p>{text}</p>
+    <section className="page">
+      <div className="page-heading">
+        <div className="character">⭐</div>
+        <div>
+          <span className="eyebrow">
+            OBLÍBENÉ
+          </span>
+          <h2>Tvoje uložené stanice</h2>
+        </div>
+      </div>
+
+      {loading && (
+        <div className="empty-results">
+          <div>🦮</div>
+          <h3>Načítám oblíbené...</h3>
+        </div>
+      )}
+
+      {error && (
+        <div className="empty-results">
+          <div>⚠️</div>
+          <h3>Katalog se nepodařilo načíst</h3>
+          <p>{error}</p>
+        </div>
+      )}
+
+      {!loading &&
+        !error &&
+        channels.length === 0 && (
+          <div className="empty-results">
+            <div>⭐</div>
+            <h3>Zatím tu nic není</h3>
+            <p>
+              V Search klikni u stanice na
+              {" "}
+              <strong>☆ Oblíbit</strong>.
+            </p>
+            <NavLink
+              className="primary-button"
+              to="/search"
+            >
+              🦮🔎 Otevřít Search
+            </NavLink>
+          </div>
+        )}
+
+      {!loading &&
+        !error &&
+        channels.length > 0 && (
+          <>
+            <div className="results-summary">
+              <strong>{channels.length}</strong>
+              <span>
+                uložených oblíbených stanic
+              </span>
+            </div>
+
+            <div className="results-grid">
+              {channels.map((channel) => (
+                <article
+                  className="channel-card"
+                  key={channel.id}
+                >
+                  <LivePreview
+                    channel={channel}
+                    active={
+                      activePreviewId ===
+                      channel.id
+                    }
+                    onToggle={() =>
+                      setActivePreviewId(
+                        (current) =>
+                          current === channel.id
+                            ? null
+                            : channel.id,
+                      )
+                    }
+                  />
+
+                  <div className="channel-card-head">
+                    <div>
+                      <span className="channel-country">
+                        {channel.country}
+                      </span>
+                      <h3>{channel.name}</h3>
+                    </div>
+
+                    <span
+                      className={
+                        `status-badge status-${channel.status}`
+                      }
+                    >
+                      {channel.status}
+                    </span>
+                  </div>
+
+                  <div className="channel-meta">
+                    <span>
+                      📂 {channel.category}
+                    </span>
+                    <span>
+                      📡 {channel.provider}
+                    </span>
+                    <span>
+                      {channel.epg?.enabled
+                        ? "📅 EPG"
+                        : "➖ bez EPG"}
+                    </span>
+                  </div>
+
+                  <div className="channel-actions">
+                    <button
+                      type="button"
+                      className="favorite-toggle selected"
+                      onClick={() =>
+                        toggleFavorite(
+                          channel.id,
+                        )
+                      }
+                    >
+                      ★ Odebrat
+                    </button>
+
+                    <button
+                      type="button"
+                      className="playlist-toggle"
+                      onClick={() =>
+                        addToPlaylist(
+                          channel.id,
+                        )
+                      }
+                    >
+                      ＋ Do playlistu
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </>
+        )}
+    </section>
+  );
+}
+
+function EpgPage() {
+  const {
+    catalog,
+    loading,
+    error,
+  } = useProductCatalog();
+
+  const channels = useMemo(
+    () => epgChannels(catalog),
+    [catalog],
+  );
+
+  const total =
+    catalog?.channels?.length ?? 0;
+
+  return (
+    <section className="page">
+      <div className="page-heading">
+        <div className="character">🦮📅</div>
+        <div>
+          <span className="eyebrow">
+            EPG COVERAGE
+          </span>
+          <h2>Programová metadata</h2>
+        </div>
+      </div>
+
+      {loading && (
+        <div className="empty-results">
+          <div>📅</div>
+          <h3>Načítám EPG metadata...</h3>
+        </div>
+      )}
+
+      {error && (
+        <div className="empty-results">
+          <div>⚠️</div>
+          <h3>EPG přehled není dostupný</h3>
+          <p>{error}</p>
+        </div>
+      )}
+
+      {!loading && !error && (
+        <>
+          <div className="stat-grid">
+            <article className="stat-card">
+              <span>EPG zapnuto</span>
+              <strong>{channels.length}</strong>
+            </article>
+            <article className="stat-card">
+              <span>Celkem stanic</span>
+              <strong>{total}</strong>
+            </article>
+            <article className="stat-card">
+              <span>Pokrytí</span>
+              <strong>
+                {total > 0
+                  ? Math.round(
+                      (channels.length /
+                        total) *
+                        100,
+                    )
+                  : 0}
+                %
+              </strong>
+            </article>
+          </div>
+
+          <p className="product-note">
+            Tohle je ověřený přehled
+            dostupných EPG vazeb. Samotný
+            programový feed se tu nevymýšlí:
+            bez ověřených dat se program
+            nezobrazuje jako hotový.
+          </p>
+
+          <div className="product-list">
+            {channels.map((channel) => (
+              <article
+                className="product-row"
+                key={channel.id}
+              >
+                <div>
+                  <strong>
+                    {channel.name}
+                  </strong>
+                  <span>
+                    {channel.country}
+                    {" • "}
+                    {channel.status}
+                  </span>
+                </div>
+
+                <div className="product-row-meta">
+                  <span>
+                    ID:{" "}
+                    <code>
+                      {channel.epg?.id ??
+                        "—"}
+                    </code>
+                  </span>
+                  <span>
+                    Zdroj:{" "}
+                    <code>
+                      {channel.epg?.source ??
+                        "—"}
+                    </code>
+                  </span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
+function StatisticsPage({
+  favoriteCount,
+  playlistCount,
+}) {
+  const {
+    catalog,
+    loading,
+    error,
+  } = useProductCatalog();
+
+  const summary = useMemo(
+    () => summarizeCatalog(catalog),
+    [catalog],
+  );
+  const countries = useMemo(
+    () =>
+      countByField(
+        catalog,
+        "country",
+      ),
+    [catalog],
+  );
+  const categories = useMemo(
+    () =>
+      countByField(
+        catalog,
+        "category",
+      ),
+    [catalog],
+  );
+
+  return (
+    <section className="page">
+      <div className="page-heading">
+        <div className="character">🤖📊</div>
+        <div>
+          <span className="eyebrow">
+            STATISTIKY
+          </span>
+          <h2>Skutečný stav katalogu</h2>
+        </div>
+      </div>
+
+      {loading && (
+        <div className="empty-results">
+          <div>🤖</div>
+          <h3>Počítám katalog...</h3>
+        </div>
+      )}
+
+      {error && (
+        <div className="empty-results">
+          <div>⚠️</div>
+          <h3>Statistiky nejsou dostupné</h3>
+          <p>{error}</p>
+        </div>
+      )}
+
+      {!loading && !error && (
+        <>
+          <div className="stat-grid">
+            <article className="stat-card">
+              <span>Stanice</span>
+              <strong>
+                {summary.channels}
+              </strong>
+            </article>
+            <article className="stat-card">
+              <span>Stable</span>
+              <strong>
+                {summary.stable}
+              </strong>
+            </article>
+            <article className="stat-card">
+              <span>Testing</span>
+              <strong>
+                {summary.testing}
+              </strong>
+            </article>
+            <article className="stat-card">
+              <span>EPG</span>
+              <strong>
+                {summary.epgEnabled}
+              </strong>
+            </article>
+            <article className="stat-card">
+              <span>Země</span>
+              <strong>
+                {summary.countries}
+              </strong>
+            </article>
+            <article className="stat-card">
+              <span>Kategorie</span>
+              <strong>
+                {summary.categories}
+              </strong>
+            </article>
+            <article className="stat-card">
+              <span>Poskytovatelé</span>
+              <strong>
+                {summary.providers}
+              </strong>
+            </article>
+            <article className="stat-card">
+              <span>Oblíbené</span>
+              <strong>
+                {favoriteCount}
+              </strong>
+            </article>
+            <article className="stat-card">
+              <span>Playlisty</span>
+              <strong>
+                {playlistCount}
+              </strong>
+            </article>
+          </div>
+
+          <div className="breakdown-grid">
+            <section className="breakdown-card">
+              <h3>🌍 Země</h3>
+              {countries.map((item) => (
+                <div
+                  className="breakdown-row"
+                  key={item.name}
+                >
+                  <span>{item.name}</span>
+                  <strong>
+                    {item.count}
+                  </strong>
+                </div>
+              ))}
+            </section>
+
+            <section className="breakdown-card">
+              <h3>📂 Kategorie</h3>
+              {categories.map((item) => (
+                <div
+                  className="breakdown-row"
+                  key={item.name}
+                >
+                  <span>{item.name}</span>
+                  <strong>
+                    {item.count}
+                  </strong>
+                </div>
+              ))}
+            </section>
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
+function ToolsPage({
+  theme,
+  favoriteCount,
+  playlistLibrary,
+}) {
+  const {
+    catalog,
+    loading,
+    error,
+  } = useProductCatalog();
+  const summary = useMemo(
+    () => summarizeCatalog(catalog),
+    [catalog],
+  );
+
+  const activePlaylist =
+    playlistLibrary.playlists.find(
+      (playlist) =>
+        playlist.id ===
+        playlistLibrary.activeId,
+    );
+
+  return (
+    <section className="page">
+      <div className="page-heading">
+        <div className="character">🚜</div>
+        <div>
+          <span className="eyebrow">
+            NÁSTROJE
+          </span>
+          <h2>TV rychlá kontrola</h2>
+        </div>
+      </div>
+
+      <div className="finish-grid">
+        <article className="finish-card">
+          <span>Katalog</span>
+          <strong>
+            {loading
+              ? "načítám"
+              : error
+                ? "chyba"
+                : `${summary.channels} stanic`}
+          </strong>
+        </article>
+        <article className="finish-card">
+          <span>Aktivní playlist</span>
+          <strong>
+            {activePlaylist?.name ??
+              "—"}
+          </strong>
+        </article>
+        <article className="finish-card">
+          <span>Stanice v playlistu</span>
+          <strong>
+            {activePlaylist?.ids?.length ??
+              0}
+          </strong>
+        </article>
+        <article className="finish-card">
+          <span>Oblíbené</span>
+          <strong>
+            {favoriteCount}
+          </strong>
+        </article>
+        <article className="finish-card">
+          <span>Theme</span>
+          <strong>{theme}</strong>
+        </article>
+      </div>
+
+      {error && (
+        <p className="product-note error-note">
+          Katalog: {error}
+        </p>
+      )}
+
+      <div className="tool-links">
+        <NavLink to="/search">
+          🦮🔎 Search
+        </NavLink>
+        <NavLink to="/playlists">
+          📺 Playlisty
+        </NavLink>
+        <NavLink to="/epg">
+          🦮📅 EPG
+        </NavLink>
+        <NavLink to="/statistics">
+          🤖📊 Statistiky
+        </NavLink>
+        <NavLink to="/settings">
+          🤖⚙️ Nastavení
+        </NavLink>
+      </div>
+
+      <p className="product-note">
+        Tohle je produktový panel. Neprovádí
+        GitHub merge, diagnostiku sítě ani
+        destruktivní zásahy.
+      </p>
     </section>
   );
 }
@@ -1882,6 +2505,15 @@ function AppShell() {
 
   const [theme, setTheme] =
     useState(initialAppState.theme);
+
+  const [
+    favoriteIds,
+    setFavoriteIds,
+  ] = useState(() =>
+    loadStoredFavorites(
+      window.localStorage,
+    ),
+  );
 
   const [
     playlistLibrary,
@@ -2007,6 +2639,30 @@ function AppShell() {
     });
   }
 
+  function toggleFavorite(channelId) {
+    if (
+      typeof channelId !== "string" ||
+      channelId.length === 0
+    ) {
+      return;
+    }
+
+    setFavoriteIds((current) =>
+      current.includes(channelId)
+        ? current.filter(
+            (id) => id !== channelId,
+          )
+        : [...current, channelId],
+    );
+  }
+
+  useEffect(() => {
+    saveStoredFavorites(
+      window.localStorage,
+      favoriteIds,
+    );
+  }, [favoriteIds]);
+
   useEffect(() => {
     try {
       window.localStorage.setItem(
@@ -2079,6 +2735,8 @@ function AppShell() {
                   playlistState.name
                 }
                 setPlaylistIds={setPlaylistIds}
+                favoriteIds={favoriteIds}
+                toggleFavorite={toggleFavorite}
               />
             }
           />
@@ -2104,22 +2762,16 @@ function AppShell() {
 
           <Route
             path="/epg"
-            element={
-              <PlaceholderPage
-                character="🦮📅"
-                title="EPG"
-                text="Program stanic a časová osa."
-              />
-            }
+            element={<EpgPage />}
           />
 
           <Route
             path="/favorites"
             element={
-              <PlaceholderPage
-                character="⭐"
-                title="Oblíbené"
-                text="Tvoje uložené stanice."
+              <FavoritesPage
+                favoriteIds={favoriteIds}
+                toggleFavorite={toggleFavorite}
+                setPlaylistIds={setPlaylistIds}
               />
             }
           />
@@ -2127,10 +2779,14 @@ function AppShell() {
           <Route
             path="/tools"
             element={
-              <PlaceholderPage
-                character="🚜"
-                title="Nástroje"
-                text="Tady bude mít Krtek BAGTOP, testy a diagnostiku."
+              <ToolsPage
+                theme={theme}
+                favoriteCount={
+                  favoriteIds.length
+                }
+                playlistLibrary={
+                  playlistLibrary
+                }
               />
             }
           />
@@ -2138,10 +2794,13 @@ function AppShell() {
           <Route
             path="/statistics"
             element={
-              <PlaceholderPage
-                character="🤖📊"
-                title="Statistiky"
-                text="Boris bude počítat kvalitu, dostupnost a odezvu."
+              <StatisticsPage
+                favoriteCount={
+                  favoriteIds.length
+                }
+                playlistCount={
+                  playlistLibrary.playlists.length
+                }
               />
             }
           />
