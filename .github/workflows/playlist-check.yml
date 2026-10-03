@@ -50,6 +50,7 @@ jobs:
           python -m py_compile tools/city/build_github_service_snapshot.py
           python -m py_compile tools/city/build_archive_index.py
           python -m py_compile tools/city/event_bus.py
+          python -m py_compile tools/city/command_boundary.py
 
       - name: Run automated test suite
         run: |
