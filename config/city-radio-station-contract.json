@@ -1,0 +1,24 @@
+{
+  "protocol": "bondik-city-radio-station/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "signalProtocol": "bondik-city-agent-signal/1",
+  "signalPath": "config/city-signal.json",
+  "capabilityRegistryPath": "config/city-capabilities.json",
+  "mode": "static-discovery-manifest",
+  "audience": [
+    "ai-agents"
+  ],
+  "delivery": {
+    "state": "static-manifest",
+    "publication": "repository-file",
+    "endpoint": null
+  },
+  "exposure": {
+    "sensitiveState": "not-exposed",
+    "execution": "not-exposed",
+    "commandEndpoint": null,
+    "networkBroadcast": "not-enabled",
+    "handoff": "not-enabled"
+  }
+}
