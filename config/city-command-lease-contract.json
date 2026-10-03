@@ -1,0 +1,24 @@
+{
+  "protocol": "bondik-city-command-lease/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "grantProtocol": "bondik-city-runtime-grant-token/1",
+  "admissionProtocol": "bondik-city-grant-admission-record/1",
+  "leaseProtocol": "bondik-city-command-lease-token/1",
+  "commandBoundaryCapability": "city.command-boundary.local",
+  "authority": "scope-narrowing-only",
+  "leaseState": "prepared-unconsumed",
+  "constraints": {
+    "readOnly": true,
+    "singleUse": true,
+    "localOnly": true,
+    "consumerConnected": false
+  },
+  "exposure": {
+    "execution": "not-exposed",
+    "mutation": "not-allowed",
+    "network": "not-exposed",
+    "permissionGrant": "not-allowed",
+    "grantConsumption": "not-allowed"
+  }
+}

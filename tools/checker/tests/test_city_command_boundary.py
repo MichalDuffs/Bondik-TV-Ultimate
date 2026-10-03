@@ -266,3 +266,22 @@ def test_direct_cli_runs_self_test():
         "bondik-city-command/1"
         in result.stdout
     )
+
+
+def test_registration_metadata_can_be_described_without_dispatch():
+    registration = (
+        dispatcher().describe_registration(
+            "city.status.read"
+        )
+    )
+
+    assert registration.command_type == (
+        "city.status.read"
+    )
+    assert registration.building_id == (
+        "control-tower"
+    )
+    assert registration.capability_id == (
+        "city.control-tower.status-board"
+    )
+    assert registration.mutation == "read-only"

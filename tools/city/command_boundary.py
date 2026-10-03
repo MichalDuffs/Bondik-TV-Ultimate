@@ -301,6 +301,27 @@ class LocalCommandDispatcher:
             handler,
         )
 
+    def describe_registration(
+        self,
+        command_type: str,
+    ) -> CommandRegistration:
+        if not isinstance(command_type, str):
+            raise CityCommandError(
+                "command type is not registered"
+            )
+
+        pair = self._registrations.get(
+            command_type
+        )
+
+        if pair is None:
+            raise CityCommandError(
+                "command type is not registered"
+            )
+
+        registration, _handler = pair
+        return registration
+
     def dispatch(
         self,
         command: dict[str, Any],
