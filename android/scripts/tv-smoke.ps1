@@ -13,6 +13,38 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $AndroidDir = Split-Path -Parent $ScriptDir
 $ApkPath = Join-Path $AndroidDir "app\build\outputs\apk\debug\app-debug.apk"
 
+function Resolve-AdbPath {
+    $command = Get-Command adb -ErrorAction SilentlyContinue
+
+    if ($command) {
+        return $command.Source
+    }
+
+    $candidates = @()
+
+    if ($env:ANDROID_SDK_ROOT) {
+        $candidates += Join-Path $env:ANDROID_SDK_ROOT "platform-tools\adb.exe"
+    }
+
+    if ($env:ANDROID_HOME) {
+        $candidates += Join-Path $env:ANDROID_HOME "platform-tools\adb.exe"
+    }
+
+    if ($env:LOCALAPPDATA) {
+        $candidates += Join-Path $env:LOCALAPPDATA "Android\Sdk\platform-tools\adb.exe"
+    }
+
+    foreach ($candidate in $candidates | Select-Object -Unique) {
+        if (Test-Path $candidate) {
+            return $candidate
+        }
+    }
+
+    return $null
+}
+
+$AdbPath = Resolve-AdbPath
+
 function Invoke-Adb {
     param(
         [Parameter(Mandatory = $true)]
@@ -25,22 +57,22 @@ function Invoke-Adb {
         $base += @("-s", $Serial)
     }
 
-    & adb @base @Arguments
+    & $AdbPath @base @Arguments
 
     if ($LASTEXITCODE -ne 0) {
         throw "adb command failed: adb $($Arguments -join ' ')"
     }
 }
 
-if (-not (Get-Command adb -ErrorAction SilentlyContinue)) {
-    throw "adb was not found in PATH. Install Android platform-tools first."
+if (-not $AdbPath) {
+    throw "adb was not found in PATH, ANDROID_SDK_ROOT, ANDROID_HOME, or the default Windows Android SDK location."
 }
 
 if (-not (Test-Path $ApkPath)) {
     throw "Debug APK not found at $ApkPath. Run .\gradlew.bat assembleDebug first."
 }
 
-$deviceLines = & adb devices |
+$deviceLines = & $AdbPath devices |
     Select-Object -Skip 1 |
     Where-Object { $_ -match "\tdevice$" }
 
@@ -51,6 +83,7 @@ if (-not $Serial -and $deviceLines.Count -ne 1) {
 Write-Host ""
 Write-Host "Bondik TV Android TV smoke" -ForegroundColor Cyan
 Write-Host "APK: $ApkPath"
+Write-Host "ADB: $AdbPath"
 
 Write-Host ""
 Write-Host "[1/5] Installing debug APK..." -ForegroundColor Yellow
