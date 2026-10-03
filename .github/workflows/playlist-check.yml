@@ -68,6 +68,7 @@ jobs:
           python -m py_compile tools/city/runtime_grant.py
           python -m py_compile tools/city/grant_admission.py
           python -m py_compile tools/city/command_lease.py
+          python -m py_compile tools/city/dispatch_packet.py
 
       - name: Run automated test suite
         run: |
@@ -148,6 +149,10 @@ jobs:
       - name: Validate Bondik City relay office
         run: |
           python tools/city/command_lease.py
+
+      - name: Validate Bondik City switchboard office
+        run: |
+          python tools/city/dispatch_packet.py
 
       - name: Validate channel metadata
         run: |

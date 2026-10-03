@@ -499,6 +499,22 @@
         "discoverable": true,
         "execution": "not-exposed"
       }
+    },
+    {
+      "id": "city.runtime-grant.dispatch-packet",
+      "buildingId": "switchboard-office",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Authorized command packet",
+        "description": "Prepare a fully evidence-bound, human-confirmed read-only command packet from the admitted grant and exact command lease without dispatching or consuming it."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
     }
   ]
 }

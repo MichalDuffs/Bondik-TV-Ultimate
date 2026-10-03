@@ -1,0 +1,19 @@
+{
+  "protocol": "bondik-city-dispatch-packet/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "grantProtocol": "bondik-city-runtime-grant-token/1",
+  "admissionProtocol": "bondik-city-grant-admission-record/1",
+  "leaseProtocol": "bondik-city-command-lease-token/1",
+  "directoryProtocol": "bondik-city-service-directory/1",
+  "packetProtocol": "bondik-city-authorized-command-packet/1",
+  "authority": "dispatch-preparation-only",
+  "packetState": "ready-not-dispatched",
+  "exposure": {
+    "execution": "not-exposed",
+    "mutation": "not-allowed",
+    "network": "not-exposed",
+    "permissionGrant": "not-allowed",
+    "grantConsumption": "not-allowed"
+  }
+}

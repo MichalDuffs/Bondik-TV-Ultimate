@@ -328,6 +328,23 @@ buildings:
       mutation: false
       network: false
 
+  - id: switchboard-office
+    name: Switchboard Office
+    status: active
+    role: authorized-command-packet-preparation
+    capabilities:
+      - source-chain-integrity-revalidation
+      - exact-read-only-command-packet
+      - human-confirmed-request-provenance
+    constraints:
+      grant-consumption: false
+      consumer-connected: false
+      command-dispatch: false
+      handler-call: false
+      execution: false
+      mutation: false
+      network: false
+
   - id: radio-station
     name: Radio Station
     status: active
@@ -420,6 +437,9 @@ infrastructure:
   - id: command-lease
     status: active
     purpose: narrow-admitted-grant-to-one-registered-read-only-command
+  - id: authorized-command-packet
+    status: active
+    purpose: bind-exact-command-and-provenance-without-dispatch
 
 virtual_areas:
   - id: garden
