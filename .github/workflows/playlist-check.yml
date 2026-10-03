@@ -51,6 +51,7 @@ jobs:
           python -m py_compile tools/city/build_archive_index.py
           python -m py_compile tools/city/event_bus.py
           python -m py_compile tools/city/command_boundary.py
+          python -m py_compile tools/city/agent_safety.py
 
       - name: Run automated test suite
         run: |
@@ -63,6 +64,10 @@ jobs:
       - name: Validate Bondik City static AI signal
         run: |
           python tools/city/validate_city_signal.py
+
+      - name: Validate Bondik City agent safety policy
+        run: |
+          python tools/city/agent_safety.py
 
       - name: Validate channel metadata
         run: |
