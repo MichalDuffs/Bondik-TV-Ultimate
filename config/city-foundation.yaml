@@ -127,7 +127,7 @@ buildings:
 
   - id: radio-station
     name: Radio Station
-    status: planned
+    status: active
     role: ai-city-beacon
     audience:
       - ai-agents
@@ -135,9 +135,11 @@ buildings:
       - city-discovery
       - protocol-announcement
       - capability-advertisement
-      - approved-event-broadcast
-      - cooperation-handshake
+      - static-agent-signal
     constraints:
+      network-broadcast: false
+      approved-event-broadcast: false
+      cooperation-handshake: false
       uncontrolled-command-channel: false
       expose-sensitive-state: false
       execution-requires-capability-permission: true
