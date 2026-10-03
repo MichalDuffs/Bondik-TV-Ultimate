@@ -355,6 +355,38 @@ def prepare_dispatch_packet(
         "sha256:" + _sha256(admission)
     )
 
+    admission_consumer = admission.get(
+        "consumer"
+    )
+
+    if (
+        not isinstance(admission_consumer, dict)
+        or not isinstance(
+            admission_consumer.get("id"),
+            str,
+        )
+        or not admission_consumer.get("id")
+    ):
+        raise CityDispatchPacketError(
+            "admission consumer invalid"
+        )
+
+    expected_admission_id = (
+        "admit-"
+        + hashlib.sha256(
+            (
+                grant_id
+                + "|"
+                + admission_consumer["id"]
+            ).encode("utf-8")
+        ).hexdigest()[:24]
+    )
+
+    if admission_id != expected_admission_id:
+        raise CityDispatchPacketError(
+            "admissionId integrity mismatch"
+        )
+
     admission_evidence = admission.get(
         "evidence"
     )
@@ -459,6 +491,30 @@ def prepare_dispatch_packet(
     ):
         raise CityDispatchPacketError(
             "lease target invalid"
+        )
+
+    expected_lease_id = (
+        "lease-"
+        + hashlib.sha256(
+            (
+                grant_id
+                + "|"
+                + admission_id
+                + "|"
+                + command_type
+                + "|"
+                + building_id
+                + "|"
+                + capability_id
+                + "|"
+                + _sha256(arguments)
+            ).encode("utf-8")
+        ).hexdigest()[:24]
+    )
+
+    if lease_id != expected_lease_id:
+        raise CityDispatchPacketError(
+            "leaseId integrity mismatch"
         )
 
     directory = (
