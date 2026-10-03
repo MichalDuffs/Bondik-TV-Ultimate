@@ -43,6 +43,19 @@ buildings:
       copy-source-content: false
       mutation: false
 
+  - id: post-office
+    name: Post Office
+    status: active
+    role: local-event-routing
+    capabilities:
+      - event-envelope-validation
+      - typed-subscription
+      - local-event-delivery
+    constraints:
+      network-transport: false
+      persistent-queue: false
+      command-execution: false
+
   - id: radio-station
     name: Radio Station
     status: planned
@@ -80,7 +93,7 @@ infrastructure:
     status: planned
     purpose: decouple-ui-from-actions
   - id: event-boundary
-    status: planned
+    status: active
     purpose: observable-module-events
   - id: storage-adapter
     status: planned
