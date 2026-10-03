@@ -355,6 +355,22 @@
         "discoverable": true,
         "execution": "not-exposed"
       }
+    },
+    {
+      "id": "city.review.human-record",
+      "buildingId": "review-board",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Human review record",
+        "description": "Record a human review decision for a pending permit ticket while granting no permission, changing no policy, and executing no action."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
     }
   ]
 }

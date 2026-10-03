@@ -181,6 +181,21 @@ buildings:
       mutation: false
       network: false
 
+  - id: review-board
+    name: Review Board
+    status: active
+    role: human-review-record-boundary
+    capabilities:
+      - human-decision-record
+      - permit-evidence-preservation
+      - non-granting-review-outcome
+    constraints:
+      permission-grant: false
+      policy-change: false
+      execution: false
+      mutation: false
+      network: false
+
   - id: radio-station
     name: Radio Station
     status: active
@@ -246,6 +261,9 @@ infrastructure:
   - id: permit-office
     status: active
     purpose: prepare-human-review-tickets-without-granting-permission
+  - id: human-review-record
+    status: active
+    purpose: record-human-review-without-applying-runtime-authority
 
 virtual_areas:
   - id: garden

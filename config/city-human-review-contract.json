@@ -1,0 +1,23 @@
+{
+  "protocol": "bondik-city-human-review/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "permitProtocol": "bondik-city-permit-request/1",
+  "authority": "record-only",
+  "decisions": [
+    "approve",
+    "deny",
+    "needs-info"
+  ],
+  "reviewEffect": "recorded-only",
+  "limits": {
+    "noteChars": 2048
+  },
+  "exposure": {
+    "execution": "not-exposed",
+    "mutation": "not-allowed",
+    "network": "not-exposed",
+    "permissionGrant": "not-allowed",
+    "policyChange": "not-allowed"
+  }
+}
