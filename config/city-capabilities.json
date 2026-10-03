@@ -133,6 +133,22 @@
       }
     },
     {
+      "id": "city.github.repository-snapshot",
+      "buildingId": "github-service",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "GitHub repository snapshot",
+        "description": "Read repository, default-branch, pull-request, issue, and workflow evidence from GitHub without mutation authority."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
+    },
+    {
       "id": "radio-station.agent-signal",
       "buildingId": "radio-station",
       "status": "planned",
