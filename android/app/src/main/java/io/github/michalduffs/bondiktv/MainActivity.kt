@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -98,6 +99,9 @@ private fun BondikTvScreen() {
         DefaultChannelSelector()
     }
 
+    val channelListState =
+        rememberLazyListState()
+
     val sessionRepository = remember {
         AndroidSessionRepository(
             SharedPreferencesAndroidSessionStore(
@@ -109,7 +113,10 @@ private fun BondikTvScreen() {
         )
     }
 
-    fun selectChannel(channel: BondikChannel) {
+    fun selectChannel(
+        channel: BondikChannel,
+        autoplay: Boolean,
+    ) {
         val selection = channelSelector.select(channel)
 
         selectedChannel = selection.channel
@@ -118,7 +125,7 @@ private fun BondikTvScreen() {
             MediaItem.fromUri(selection.mediaUri)
         )
         player.prepare()
-        player.playWhenReady = false
+        player.playWhenReady = autoplay
 
         sessionRepository.save(
             selection.channel
@@ -148,7 +155,10 @@ private fun BondikTvScreen() {
                 statusText =
                     "Bond\u00EDk katalog je pr\u00E1zdn\u00FD."
             } else {
-                selectChannel(restoredChannel)
+                selectChannel(
+                    restoredChannel,
+                    autoplay = false,
+                )
 
                 statusText =
                     "${loadedChannels.size} kan\u00E1l\u016F p\u0159ipraveno."
@@ -162,6 +172,22 @@ private fun BondikTvScreen() {
     DisposableEffect(player) {
         onDispose {
             player.release()
+        }
+    }
+
+    LaunchedEffect(
+        channels,
+        selectedChannel?.url,
+    ) {
+        val selectedIndex =
+            channels.indexOfFirst { channel ->
+                channel.url == selectedChannel?.url
+            }
+
+        if (selectedIndex >= 0) {
+            channelListState.animateScrollToItem(
+                selectedIndex
+            )
         }
     }
 
@@ -194,6 +220,10 @@ private fun BondikTvScreen() {
                 PlayerView(playerContext).apply {
                     this.player = player
                     keepScreenOn = true
+                    useController = true
+                    controllerShowTimeoutMs = 0
+                    isFocusable = true
+                    isFocusableInTouchMode = true
                 }
             },
             update = { playerView ->
@@ -222,6 +252,7 @@ private fun BondikTvScreen() {
         )
 
         LazyColumn(
+            state = channelListState,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
@@ -237,7 +268,10 @@ private fun BondikTvScreen() {
                     channel = channel,
                     selected = selected,
                     onSelect = {
-                        selectChannel(channel)
+                        selectChannel(
+                            channel,
+                            autoplay = true,
+                        )
                     },
                 )
 
