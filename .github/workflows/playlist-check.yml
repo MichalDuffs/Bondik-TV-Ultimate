@@ -53,6 +53,7 @@ jobs:
           python -m py_compile tools/city/command_boundary.py
           python -m py_compile tools/city/agent_safety.py
           python -m py_compile tools/city/storage_adapter.py
+          python -m py_compile tools/city/media_contract.py
 
       - name: Run automated test suite
         run: |
@@ -73,6 +74,10 @@ jobs:
       - name: Validate Bondik City storage adapter
         run: |
           python tools/city/storage_adapter.py
+
+      - name: Validate Bondik City media contract
+        run: |
+          python tools/city/media_contract.py
 
       - name: Validate channel metadata
         run: |
