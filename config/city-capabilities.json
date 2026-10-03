@@ -279,11 +279,13 @@
     {
       "id": "radio-station.agent-signal",
       "buildingId": "radio-station",
-      "status": "planned",
-      "surfaces": [],
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
       "human": {
         "name": "AI city signal",
-        "description": "Future bounded discovery and approved inter-agent signal surface."
+        "description": "Expose the Bondik City static AI discovery signal for protocol announcement and bounded capability discovery without network broadcast or execution authority."
       },
       "agent": {
         "discoverable": true,
