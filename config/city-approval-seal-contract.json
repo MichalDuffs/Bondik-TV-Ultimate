@@ -1,0 +1,17 @@
+{
+  "protocol": "bondik-city-approval-seal/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "auditEntryProtocol": "bondik-city-audit-entry/1",
+  "certificateProtocol": "bondik-city-approval-certificate/1",
+  "authority": "certificate-only",
+  "certificateState": "issued-inactive",
+  "acceptedDecision": "approve",
+  "exposure": {
+    "execution": "not-exposed",
+    "mutation": "not-allowed",
+    "network": "not-exposed",
+    "permissionGrant": "not-allowed",
+    "policyActivation": "not-allowed"
+  }
+}
