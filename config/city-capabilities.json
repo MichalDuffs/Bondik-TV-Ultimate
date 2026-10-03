@@ -419,6 +419,22 @@
         "discoverable": true,
         "execution": "not-exposed"
       }
+    },
+    {
+      "id": "city.ignition.activation-intent",
+      "buildingId": "ignition-office",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Human activation intent",
+        "description": "Prepare an exact-scope human activation intent from a registered inactive certificate without activating policy, granting runtime permission, or executing the action."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
     }
   ]
 }
