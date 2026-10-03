@@ -72,6 +72,7 @@ jobs:
           python -m py_compile tools/city/dispatch_preflight.py
           python -m py_compile tools/city/authorized_dispatch.py
           python -m py_compile tools/city/execution_evidence.py
+          python -m py_compile tools/city/result_return.py
 
       - name: Run automated test suite
         run: |
@@ -168,6 +169,10 @@ jobs:
       - name: Validate Bondik City receipt office
         run: |
           python tools/city/execution_evidence.py
+
+      - name: Validate Bondik City result office
+        run: |
+          python tools/city/result_return.py
 
       - name: Validate channel metadata
         run: |
