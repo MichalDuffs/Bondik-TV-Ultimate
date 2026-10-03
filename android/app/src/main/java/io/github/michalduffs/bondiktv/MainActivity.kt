@@ -36,6 +36,10 @@ import androidx.media3.ui.PlayerView
 import io.github.michalduffs.bondiktv.catalog.BondikCatalogRepository
 import io.github.michalduffs.bondiktv.catalog.BondikChannel
 import io.github.michalduffs.bondiktv.selection.DefaultChannelSelector
+import io.github.michalduffs.bondiktv.session.ANDROID_SESSION_PREFERENCES
+import io.github.michalduffs.bondiktv.session.AndroidSessionRepository
+import io.github.michalduffs.bondiktv.session.SharedPreferencesAndroidSessionStore
+import io.github.michalduffs.bondiktv.session.selectSessionChannel
 import io.github.michalduffs.bondiktv.ui.theme.BondikTVTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -87,6 +91,17 @@ private fun BondikTvScreen() {
         DefaultChannelSelector()
     }
 
+    val sessionRepository = remember {
+        AndroidSessionRepository(
+            SharedPreferencesAndroidSessionStore(
+                context.getSharedPreferences(
+                    ANDROID_SESSION_PREFERENCES,
+                    android.content.Context.MODE_PRIVATE,
+                )
+            )
+        )
+    }
+
     fun selectChannel(channel: BondikChannel) {
         val selection = channelSelector.select(channel)
 
@@ -97,6 +112,10 @@ private fun BondikTvScreen() {
         )
         player.prepare()
         player.playWhenReady = false
+
+        sessionRepository.save(
+            selection.channel
+        )
     }
 
     LaunchedEffect(Unit) {
@@ -107,13 +126,22 @@ private fun BondikTvScreen() {
 
             channels = loadedChannels
 
-            val firstChannel = loadedChannels.firstOrNull()
+            val session =
+                sessionRepository.load(
+                    loadedChannels
+                )
 
-            if (firstChannel == null) {
+            val restoredChannel =
+                selectSessionChannel(
+                    session,
+                    loadedChannels,
+                )
+
+            if (restoredChannel == null) {
                 statusText =
                     "Bond\u00EDk katalog je pr\u00E1zdn\u00FD."
             } else {
-                selectChannel(firstChannel)
+                selectChannel(restoredChannel)
 
                 statusText =
                     "${loadedChannels.size} kan\u00E1l\u016F p\u0159ipraveno."
