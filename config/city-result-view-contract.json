@@ -1,0 +1,36 @@
+{
+  "protocol": "bondik-city-result-view/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "inputProtocol": "bondik-city-verified-result-envelope/1",
+  "cardProtocol": "bondik-city-result-card/1",
+  "authority": "presentation-only",
+  "inputAuthority": "human-local-result-return-only",
+  "inputState": "verified-result-ready",
+  "cardState": "rendered-local",
+  "audience": {
+    "kind": "human-local",
+    "agentReadable": false
+  },
+  "allowedCommands": {
+    "city.status.read": {
+      "targetBuildingId": "control-tower",
+      "targetCapabilityId": "city.control-tower.status-board",
+      "mutation": "read-only",
+      "transport": "local-in-process",
+      "allowedResultKeys": [
+        "status"
+      ],
+      "allowedStatusValues": [
+        "available"
+      ]
+    }
+  },
+  "exposure": {
+    "execution": "not-exposed",
+    "mutation": "not-allowed",
+    "network": "not-exposed",
+    "permissionGrant": "not-allowed",
+    "agentResult": "not-exposed"
+  }
+}
