@@ -1,10 +1,16 @@
 import copy
+import subprocess
+import sys
+from pathlib import Path
 
 import pytest
 
 from tools.city.permit_office import (
     prepare_permit_request,
 )
+ROOT = Path(__file__).resolve().parents[3]
+
+
 from tools.city.review_board import (
     REVIEW_PROTOCOL,
     CityReviewError,
@@ -249,3 +255,30 @@ def test_contract_is_record_only():
         "permissionGrant": "not-allowed",
         "policyChange": "not-allowed",
     }
+
+
+def test_direct_cli_records_without_granting():
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(
+                ROOT
+                / "tools"
+                / "city"
+                / "review_board.py"
+            ),
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stdout
+    assert (
+        "Bondik City Review Board OK: "
+        "approve / recorded-only / "
+        "permission=false / "
+        "bondik-city-human-review/1"
+        in result.stdout
+    )
