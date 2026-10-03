@@ -155,8 +155,13 @@ def load_contract(
 
 
 def _validate_timestamp(
-    value: str,
+    value: Any,
 ) -> str:
+    if not isinstance(value, str):
+        raise CityDeviceShareError(
+            "requestedAt must be a string"
+        )
+
     normalized = (
         value[:-1] + "+00:00"
         if value.endswith("Z")
