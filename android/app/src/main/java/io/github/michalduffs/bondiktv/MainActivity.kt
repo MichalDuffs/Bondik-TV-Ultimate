@@ -35,6 +35,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import io.github.michalduffs.bondiktv.catalog.BondikCatalogRepository
 import io.github.michalduffs.bondiktv.catalog.BondikChannel
+import io.github.michalduffs.bondiktv.selection.DefaultChannelSelector
 import io.github.michalduffs.bondiktv.ui.theme.BondikTVTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -82,11 +83,17 @@ private fun BondikTvScreen() {
             }
     }
 
+    val channelSelector = remember {
+        DefaultChannelSelector()
+    }
+
     fun selectChannel(channel: BondikChannel) {
-        selectedChannel = channel
+        val selection = channelSelector.select(channel)
+
+        selectedChannel = selection.channel
 
         player.setMediaItem(
-            MediaItem.fromUri(channel.url)
+            MediaItem.fromUri(selection.mediaUri)
         )
         player.prepare()
         player.playWhenReady = false
