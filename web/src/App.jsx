@@ -1933,23 +1933,23 @@ function FavoritesPage({
         <div className="character">⭐</div>
         <div>
           <span className="eyebrow">
-            OBL\u00cdBEN\u00c9
+            OBLÍBENÉ
           </span>
-          <h2>Tvoje ulo\u017een\u00e9 stanice</h2>
+          <h2>Tvoje uložené stanice</h2>
         </div>
       </div>
 
       {loading && (
         <div className="empty-results">
           <div>🦮</div>
-          <h3>Na\u010d\u00edt\u00e1m obl\u00edben\u00e9...</h3>
+          <h3>Načítám oblíbené...</h3>
         </div>
       )}
 
       {error && (
         <div className="empty-results">
           <div>⚠️</div>
-          <h3>Katalog se nepoda\u0159ilo na\u010d\u00edst</h3>
+          <h3>Katalog se nepodařilo načíst</h3>
           <p>{error}</p>
         </div>
       )}
@@ -1959,17 +1959,17 @@ function FavoritesPage({
         channels.length === 0 && (
           <div className="empty-results">
             <div>⭐</div>
-            <h3>Zat\u00edm tu nic nen\u00ed</h3>
+            <h3>Zatím tu nic není</h3>
             <p>
               V Search klikni u stanice na
               {" "}
-              <strong>☆ Obl\u00edbit</strong>.
+              <strong>☆ Oblíbit</strong>.
             </p>
             <NavLink
               className="primary-button"
               to="/search"
             >
-              🦮🔎 Otev\u0159\u00edt Search
+              🦮🔎 Otevřít Search
             </NavLink>
           </div>
         )}
@@ -1981,7 +1981,7 @@ function FavoritesPage({
             <div className="results-summary">
               <strong>{channels.length}</strong>
               <span>
-                ulo\u017een\u00fdch obl\u00edben\u00fdch stanic
+                uložených oblíbených stanic
               </span>
             </div>
 
@@ -2095,21 +2095,21 @@ function EpgPage() {
           <span className="eyebrow">
             EPG COVERAGE
           </span>
-          <h2>Programov\u00e1 metadata</h2>
+          <h2>Programová metadata</h2>
         </div>
       </div>
 
       {loading && (
         <div className="empty-results">
           <div>📅</div>
-          <h3>Na\u010d\u00edt\u00e1m EPG metadata...</h3>
+          <h3>Načítám EPG metadata...</h3>
         </div>
       )}
 
       {error && (
         <div className="empty-results">
           <div>⚠️</div>
-          <h3>EPG p\u0159ehled nen\u00ed dostupn\u00fd</h3>
+          <h3>EPG přehled není dostupný</h3>
           <p>{error}</p>
         </div>
       )}
@@ -2126,7 +2126,7 @@ function EpgPage() {
               <strong>{total}</strong>
             </article>
             <article className="stat-card">
-              <span>Pokryt\u00ed</span>
+              <span>Pokrytí</span>
               <strong>
                 {total > 0
                   ? Math.round(
@@ -2141,11 +2141,11 @@ function EpgPage() {
           </div>
 
           <p className="product-note">
-            Tohle je ov\u011b\u0159en\u00fd p\u0159ehled
-            dostupn\u00fdch EPG vazeb. Samotn\u00fd
-            programov\u00fd feed se tu nevym\u00fd\u0161l\u00ed:
-            bez ov\u011b\u0159en\u00fdch dat se program
-            nezobrazuje jako hotov\u00fd.
+            Tohle je ověřený přehled
+            dostupných EPG vazeb. Samotný
+            programový feed se tu nevymýšlí:
+            bez ověřených dat se program
+            nezobrazuje jako hotový.
           </p>
 
           <div className="product-list">
@@ -2229,21 +2229,21 @@ function StatisticsPage({
           <span className="eyebrow">
             STATISTIKY
           </span>
-          <h2>Skute\u010dn\u00fd stav katalogu</h2>
+          <h2>Skutečný stav katalogu</h2>
         </div>
       </div>
 
       {loading && (
         <div className="empty-results">
           <div>🤖</div>
-          <h3>Po\u010d\u00edt\u00e1m katalog...</h3>
+          <h3>Počítám katalog...</h3>
         </div>
       )}
 
       {error && (
         <div className="empty-results">
           <div>⚠️</div>
-          <h3>Statistiky nejsou dostupn\u00e9</h3>
+          <h3>Statistiky nejsou dostupné</h3>
           <p>{error}</p>
         </div>
       )}
@@ -2276,7 +2276,7 @@ function StatisticsPage({
               </strong>
             </article>
             <article className="stat-card">
-              <span>Zem\u011b</span>
+              <span>Země</span>
               <strong>
                 {summary.countries}
               </strong>
@@ -2288,13 +2288,13 @@ function StatisticsPage({
               </strong>
             </article>
             <article className="stat-card">
-              <span>Provide\u0159i</span>
+              <span>Poskytovatelé</span>
               <strong>
                 {summary.providers}
               </strong>
             </article>
             <article className="stat-card">
-              <span>Obl\u00edben\u00e9</span>
+              <span>Oblíbené</span>
               <strong>
                 {favoriteCount}
               </strong>
@@ -2309,7 +2309,7 @@ function StatisticsPage({
 
           <div className="breakdown-grid">
             <section className="breakdown-card">
-              <h3>🌍 Zem\u011b</h3>
+              <h3>🌍 Země</h3>
               {countries.map((item) => (
                 <div
                   className="breakdown-row"
@@ -2372,9 +2372,9 @@ function ToolsPage({
         <div className="character">🚜</div>
         <div>
           <span className="eyebrow">
-            N\u00c1STROJE
+            NÁSTROJE
           </span>
-          <h2>TV rychl\u00e1 kontrola</h2>
+          <h2>TV rychlá kontrola</h2>
         </div>
       </div>
 
@@ -2383,14 +2383,14 @@ function ToolsPage({
           <span>Katalog</span>
           <strong>
             {loading
-              ? "na\u010d\u00edt\u00e1m"
+              ? "načítám"
               : error
                 ? "chyba"
                 : `${summary.channels} stanic`}
           </strong>
         </article>
         <article className="finish-card">
-          <span>Aktivn\u00ed playlist</span>
+          <span>Aktivní playlist</span>
           <strong>
             {activePlaylist?.name ??
               "—"}
@@ -2404,7 +2404,7 @@ function ToolsPage({
           </strong>
         </article>
         <article className="finish-card">
-          <span>Obl\u00edben\u00e9</span>
+          <span>Oblíbené</span>
           <strong>
             {favoriteCount}
           </strong>
@@ -2435,14 +2435,14 @@ function ToolsPage({
           🤖📊 Statistiky
         </NavLink>
         <NavLink to="/settings">
-          🤖⚙️ Nastaven\u00ed
+          🤖⚙️ Nastavení
         </NavLink>
       </div>
 
       <p className="product-note">
-        Tohle je produktov\u00fd panel. Neprov\u00e1d\u00ed
-        GitHub merge, diagnostiku s\u00edt\u011b ani
-        destruktivn\u00ed z\u00e1sahy.
+        Tohle je produktový panel. Neprovádí
+        GitHub merge, diagnostiku sítě ani
+        destruktivní zásahy.
       </p>
     </section>
   );
