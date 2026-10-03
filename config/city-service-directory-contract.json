@@ -1,0 +1,13 @@
+{
+  "protocol": "bondik-city-service-directory/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "foundationPath": "config/city-foundation.yaml",
+  "capabilityRegistryPath": "config/city-capabilities.json",
+  "authority": "descriptive-only",
+  "exposure": {
+    "execution": "not-exposed",
+    "mutation": "not-allowed",
+    "network": "not-exposed"
+  }
+}
