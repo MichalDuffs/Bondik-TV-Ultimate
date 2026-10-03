@@ -181,6 +181,22 @@
       }
     },
     {
+      "id": "city.event-bus.local",
+      "buildingId": "post-office",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Local Event Bus",
+        "description": "Publish validated Bondik City events to in-process subscribers without network transport or execution authority."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
+    },
+    {
       "id": "radio-station.agent-signal",
       "buildingId": "radio-station",
       "status": "planned",
