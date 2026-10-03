@@ -56,6 +56,19 @@ buildings:
       persistent-queue: false
       command-execution: false
 
+  - id: dispatch-office
+    name: Dispatch Office
+    status: active
+    role: local-command-routing
+    capabilities:
+      - command-envelope-validation
+      - explicit-command-registration
+      - read-only-local-dispatch
+    constraints:
+      network-transport: false
+      mutation: false
+      agent-execution: false
+
   - id: radio-station
     name: Radio Station
     status: planned
@@ -90,7 +103,7 @@ infrastructure:
     status: planned
     purpose: reusable-media-source-boundary
   - id: command-boundary
-    status: planned
+    status: active
     purpose: decouple-ui-from-actions
   - id: event-boundary
     status: active
