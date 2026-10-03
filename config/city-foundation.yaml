@@ -312,6 +312,22 @@ buildings:
       policy-mutation: false
       network: false
 
+  - id: relay-office
+    name: Relay Office
+    status: active
+    role: exact-read-only-command-scope-lock
+    capabilities:
+      - registered-command-inspection
+      - exact-command-scope-narrowing
+      - non-dispatching-command-lease
+    constraints:
+      grant-consumption: false
+      consumer-connected: false
+      command-dispatch: false
+      execution: false
+      mutation: false
+      network: false
+
   - id: radio-station
     name: Radio Station
     status: active
@@ -401,6 +417,9 @@ infrastructure:
   - id: grant-admission
     status: active
     purpose: validate-runtime-grant-against-exact-local-capability-owner
+  - id: command-lease
+    status: active
+    purpose: narrow-admitted-grant-to-one-registered-read-only-command
 
 virtual_areas:
   - id: garden
