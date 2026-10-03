@@ -1,0 +1,17 @@
+{
+  "protocol": "bondik-city-dispatch-preflight/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "packetProtocol": "bondik-city-authorized-command-packet/1",
+  "directoryProtocol": "bondik-city-service-directory/1",
+  "preflightProtocol": "bondik-city-dispatch-preflight-record/1",
+  "authority": "final-preflight-only",
+  "preflightState": "validated-not-dispatched",
+  "exposure": {
+    "execution": "not-exposed",
+    "mutation": "not-allowed",
+    "network": "not-exposed",
+    "permissionGrant": "not-allowed",
+    "grantConsumption": "not-allowed"
+  }
+}
