@@ -307,6 +307,22 @@
         "discoverable": true,
         "execution": "not-exposed"
       }
+    },
+    {
+      "id": "city.navigation.access-route",
+      "buildingId": "navigator-office",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Access Route Planner",
+        "description": "Combine a Gatehouse access decision with the exact city location of a capability without granting permission or executing the route."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
     }
   ]
 }
