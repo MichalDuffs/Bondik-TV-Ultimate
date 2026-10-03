@@ -229,6 +229,22 @@
       }
     },
     {
+      "id": "city.storage.adapter",
+      "buildingId": "storage-hub",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Storage Adapter",
+        "description": "Provide versioned namespaced local persistence semantics with monotonic per-key revisions and explicit conflict detection."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
+    },
+    {
       "id": "radio-station.agent-signal",
       "buildingId": "radio-station",
       "status": "planned",
