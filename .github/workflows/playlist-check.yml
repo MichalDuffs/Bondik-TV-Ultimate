@@ -49,6 +49,18 @@ jobs:
           npm run lint
           npm run build
 
+      - name: Set up Java for Android
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Validate Bondik TV Android app
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon testDebugUnitTest assembleDebug
+
       - name: Compile Python tools
         run: |
           python -m py_compile tools/checker/check_channels.py

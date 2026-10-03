@@ -200,10 +200,10 @@ Verified implementation includes:
 - [x] Bondík launcher assets
 - [x] Local Gradle verification: BUILD SUCCESSFUL on 2026-10-01
 - [ ] Real-device smoke test
-- [ ] Android TV remote / focus UX pass
+- [ ] Android TV remote / focus UX pass — implementation in TV FINISH 02, Black/device acceptance pending
 - [ ] Release workflow
 
-Current status: **prototype / MVP foundation exists**.
+Current status: **Android MVP plus TV-remote/focus implementation; final device acceptance remains**.
 
 ---
 

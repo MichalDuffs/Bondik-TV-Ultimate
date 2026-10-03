@@ -3,6 +3,8 @@ package io.github.michalduffs.bondiktv
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -27,8 +30,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
@@ -91,6 +98,9 @@ private fun BondikTvScreen() {
         DefaultChannelSelector()
     }
 
+    val channelListState =
+        rememberLazyListState()
+
     val sessionRepository = remember {
         AndroidSessionRepository(
             SharedPreferencesAndroidSessionStore(
@@ -102,7 +112,10 @@ private fun BondikTvScreen() {
         )
     }
 
-    fun selectChannel(channel: BondikChannel) {
+    fun selectChannel(
+        channel: BondikChannel,
+        autoplay: Boolean,
+    ) {
         val selection = channelSelector.select(channel)
 
         selectedChannel = selection.channel
@@ -111,7 +124,7 @@ private fun BondikTvScreen() {
             MediaItem.fromUri(selection.mediaUri)
         )
         player.prepare()
-        player.playWhenReady = false
+        player.playWhenReady = autoplay
 
         sessionRepository.save(
             selection.channel
@@ -141,7 +154,10 @@ private fun BondikTvScreen() {
                 statusText =
                     "Bond\u00EDk katalog je pr\u00E1zdn\u00FD."
             } else {
-                selectChannel(restoredChannel)
+                selectChannel(
+                    restoredChannel,
+                    autoplay = false,
+                )
 
                 statusText =
                     "${loadedChannels.size} kan\u00E1l\u016F p\u0159ipraveno."
@@ -155,6 +171,22 @@ private fun BondikTvScreen() {
     DisposableEffect(player) {
         onDispose {
             player.release()
+        }
+    }
+
+    LaunchedEffect(
+        channels,
+        selectedChannel?.url,
+    ) {
+        val selectedIndex =
+            channels.indexOfFirst { channel ->
+                channel.url == selectedChannel?.url
+            }
+
+        if (selectedIndex >= 0) {
+            channelListState.animateScrollToItem(
+                selectedIndex
+            )
         }
     }
 
@@ -187,6 +219,10 @@ private fun BondikTvScreen() {
                 PlayerView(playerContext).apply {
                     this.player = player
                     keepScreenOn = true
+                    useController = true
+                    controllerShowTimeoutMs = 0
+                    isFocusable = true
+                    isFocusableInTouchMode = true
                 }
             },
             update = { playerView ->
@@ -215,6 +251,7 @@ private fun BondikTvScreen() {
         )
 
         LazyColumn(
+            state = channelListState,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
@@ -226,28 +263,15 @@ private fun BondikTvScreen() {
                 val selected =
                     channel.url == selectedChannel?.url
 
-                Text(
-                    text =
-                        if (selected) {
-                            "\u25B6 ${channel.name} \u2022 ${channel.country ?: "WORLD"}"
-                        } else {
-                            "${channel.name} \u2022 ${channel.country ?: "WORLD"}"
-                        },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            selectChannel(channel)
-                        }
-                        .padding(
-                            vertical = 12.dp,
-                            horizontal = 4.dp,
-                        ),
-                    style =
-                        if (selected) {
-                            MaterialTheme.typography.titleMedium
-                        } else {
-                            MaterialTheme.typography.bodyLarge
-                        },
+                ChannelRow(
+                    channel = channel,
+                    selected = selected,
+                    onSelect = {
+                        selectChannel(
+                            channel,
+                            autoplay = true,
+                        )
+                    },
                 )
 
                 HorizontalDivider()
@@ -255,10 +279,93 @@ private fun BondikTvScreen() {
         }
 
         Text(
-            text = "v0.1.0 ? ?? P?pa",
+            text = "D-PAD: \u2191\u2193 stanice \u2022 OK vybrat \u2022 ovl\u00E1d\u00E1n\u00ED p\u0159ehr\u00E1va\u010De v obrazu",
             modifier = Modifier.padding(top = 6.dp),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+
+        Text(
+            text = "v0.1.0 \u2022 \uD83D\uDC3E Bond\u00EDk",
+            modifier = Modifier.padding(top = 4.dp),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
+}
+
+
+@Composable
+private fun ChannelRow(
+    channel: BondikChannel,
+    selected: Boolean,
+    onSelect: () -> Unit,
+) {
+    var focused by remember(channel.url) {
+        mutableStateOf(false)
+    }
+
+    val focusRequester = remember(channel.url) {
+        FocusRequester()
+    }
+
+    val shape = RoundedCornerShape(10.dp)
+
+    LaunchedEffect(selected) {
+        if (selected) {
+            focusRequester.requestFocus()
+        }
+    }
+
+    Text(
+        text =
+            if (selected) {
+                "\u25B6 ${channel.name} \u2022 ${channel.country ?: "WORLD"}"
+            } else {
+                "${channel.name} \u2022 ${channel.country ?: "WORLD"}"
+            },
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(focusRequester)
+            .onFocusChanged { state ->
+                focused = state.isFocused
+            }
+            .background(
+                color =
+                    if (focused || selected) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surface
+                    },
+                shape = shape,
+            )
+            .border(
+                width =
+                    if (focused) 2.dp else 1.dp,
+                color =
+                    if (focused) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.outlineVariant
+                    },
+                shape = shape,
+            )
+            .clickable(onClick = onSelect)
+            .padding(
+                vertical = 14.dp,
+                horizontal = 14.dp,
+            ),
+        style =
+            if (focused || selected) {
+                MaterialTheme.typography.titleMedium
+            } else {
+                MaterialTheme.typography.bodyLarge
+            },
+        color =
+            if (focused || selected) {
+                MaterialTheme.colorScheme.onPrimaryContainer
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
+    )
 }
