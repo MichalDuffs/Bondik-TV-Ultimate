@@ -166,6 +166,21 @@ buildings:
       mutation: false
       network: false
 
+  - id: permit-office
+    name: Permit Office
+    status: active
+    role: human-review-request-boundary
+    capabilities:
+      - high-impact-request-ticket
+      - current-policy-snapshot
+      - human-review-placeholder
+    constraints:
+      auto-approval: false
+      permission-grant: false
+      execution: false
+      mutation: false
+      network: false
+
   - id: radio-station
     name: Radio Station
     status: active
@@ -228,6 +243,9 @@ infrastructure:
   - id: visitor-guide
     status: active
     purpose: permission-aware-capability-guide-without-granting-authority
+  - id: permit-office
+    status: active
+    purpose: prepare-human-review-tickets-without-granting-permission
 
 virtual_areas:
   - id: garden

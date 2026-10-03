@@ -1,0 +1,25 @@
+{
+  "protocol": "bondik-city-permit-request/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "routeProtocol": "bondik-city-access-route/1",
+  "authority": "request-only",
+  "ticketStatus": "pending-human-review",
+  "requestableOperations": [
+    "command",
+    "handoff",
+    "mutate",
+    "publish-event",
+    "execute"
+  ],
+  "limits": {
+    "reasonChars": 1024
+  },
+  "exposure": {
+    "execution": "not-exposed",
+    "mutation": "not-allowed",
+    "network": "not-exposed",
+    "permissionGrant": "not-allowed",
+    "autoApproval": "not-allowed"
+  }
+}
