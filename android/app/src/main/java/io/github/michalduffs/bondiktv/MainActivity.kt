@@ -3,7 +3,10 @@ package io.github.michalduffs.bondiktv
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -27,8 +30,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
@@ -226,28 +233,12 @@ private fun BondikTvScreen() {
                 val selected =
                     channel.url == selectedChannel?.url
 
-                Text(
-                    text =
-                        if (selected) {
-                            "\u25B6 ${channel.name} \u2022 ${channel.country ?: "WORLD"}"
-                        } else {
-                            "${channel.name} \u2022 ${channel.country ?: "WORLD"}"
-                        },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            selectChannel(channel)
-                        }
-                        .padding(
-                            vertical = 12.dp,
-                            horizontal = 4.dp,
-                        ),
-                    style =
-                        if (selected) {
-                            MaterialTheme.typography.titleMedium
-                        } else {
-                            MaterialTheme.typography.bodyLarge
-                        },
+                ChannelRow(
+                    channel = channel,
+                    selected = selected,
+                    onSelect = {
+                        selectChannel(channel)
+                    },
                 )
 
                 HorizontalDivider()
@@ -255,10 +246,94 @@ private fun BondikTvScreen() {
         }
 
         Text(
-            text = "v0.1.0 ? ?? P?pa",
+            text = "D-PAD: \u2191\u2193 stanice \u2022 OK vybrat \u2022 ovl\u00E1d\u00E1n\u00ED p\u0159ehr\u00E1va\u010De v obrazu",
             modifier = Modifier.padding(top = 6.dp),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+
+        Text(
+            text = "v0.1.0 \u2022 \uD83D\uDC3E Bond\u00EDk",
+            modifier = Modifier.padding(top = 4.dp),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
+}
+
+
+@Composable
+private fun ChannelRow(
+    channel: BondikChannel,
+    selected: Boolean,
+    onSelect: () -> Unit,
+) {
+    var focused by remember(channel.url) {
+        mutableStateOf(false)
+    }
+
+    val focusRequester = remember(channel.url) {
+        FocusRequester()
+    }
+
+    val shape = RoundedCornerShape(10.dp)
+
+    LaunchedEffect(selected) {
+        if (selected) {
+            focusRequester.requestFocus()
+        }
+    }
+
+    Text(
+        text =
+            if (selected) {
+                "\u25B6 ${channel.name} \u2022 ${channel.country ?: "WORLD"}"
+            } else {
+                "${channel.name} \u2022 ${channel.country ?: "WORLD"}"
+            },
+        modifier = Modifier
+            .fillMaxWidth()
+            .focusRequester(focusRequester)
+            .onFocusChanged { state ->
+                focused = state.isFocused
+            }
+            .focusable()
+            .background(
+                color =
+                    if (focused || selected) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surface
+                    },
+                shape = shape,
+            )
+            .border(
+                width =
+                    if (focused) 2.dp else 1.dp,
+                color =
+                    if (focused) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.outlineVariant
+                    },
+                shape = shape,
+            )
+            .clickable(onClick = onSelect)
+            .padding(
+                vertical = 14.dp,
+                horizontal = 14.dp,
+            ),
+        style =
+            if (focused || selected) {
+                MaterialTheme.typography.titleMedium
+            } else {
+                MaterialTheme.typography.bodyLarge
+            },
+        color =
+            if (focused || selected) {
+                MaterialTheme.colorScheme.onPrimaryContainer
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
+    )
 }
