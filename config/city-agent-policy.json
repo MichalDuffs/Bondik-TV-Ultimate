@@ -1,0 +1,54 @@
+{
+  "protocol": "bondik-city-agent-safety/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "mode": "default-deny",
+  "defaultDecision": "deny",
+  "roles": {
+    "observer": {
+      "allow": {
+        "operations": [
+          "discover",
+          "inspect-evidence"
+        ],
+        "capabilities": [
+          "city.discovery-manifest",
+          "city.control-tower.health-snapshot",
+          "city.control-tower.status-board",
+          "city.github.repository-snapshot",
+          "city.control-tower.github-panel",
+          "city.archive.evidence-index"
+        ]
+      }
+    },
+    "builder": {
+      "allow": {
+        "operations": [
+          "discover",
+          "inspect-evidence"
+        ],
+        "capabilities": [
+          "city.discovery-manifest",
+          "city.control-tower.health-snapshot",
+          "city.control-tower.status-board",
+          "city.github.repository-snapshot",
+          "city.control-tower.github-panel",
+          "city.archive.evidence-index"
+        ]
+      }
+    }
+  },
+  "deniedOperations": [
+    "execute",
+    "command",
+    "mutate",
+    "handoff",
+    "publish-event"
+  ],
+  "exposure": {
+    "sensitiveState": "not-exposed",
+    "commandAuthority": "none",
+    "mutationAuthority": "none",
+    "networkAuthority": "none"
+  }
+}
