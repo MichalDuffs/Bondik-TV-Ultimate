@@ -1,4 +1,7 @@
 import copy
+import subprocess
+import sys
+from pathlib import Path
 
 import pytest
 
@@ -18,6 +21,9 @@ from tools.city.review_board import (
 from tools.city.storage_adapter import (
     MemoryStorageAdapter,
 )
+
+
+ROOT = Path(__file__).resolve().parents[3]
 
 
 def permit():
@@ -262,3 +268,30 @@ def test_underlying_storage_revision_stays_one():
     stored = ledger.record(p, r)
 
     assert stored["revision"] == 1
+
+
+def test_direct_cli_records_create_once_entry():
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(
+                ROOT
+                / "tools"
+                / "city"
+                / "audit_office.py"
+            ),
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stdout
+    assert (
+        "Bondik City Audit Office OK: "
+        "review-recorded / revision=1 / "
+        "permission=false / "
+        "bondik-city-audit-entry/1"
+        in result.stdout
+    )
