@@ -1,0 +1,18 @@
+{
+  "protocol": "bondik-city-key-vault/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "certificateProtocol": "bondik-city-approval-certificate/1",
+  "entryProtocol": "bondik-city-key-vault-entry/1",
+  "namespace": "city.keys.inactive",
+  "authority": "registry-only",
+  "writePolicy": "create-once",
+  "acceptedState": "issued-inactive",
+  "exposure": {
+    "execution": "not-exposed",
+    "mutation": "append-only-wrapper",
+    "network": "not-exposed",
+    "permissionGrant": "not-allowed",
+    "policyActivation": "not-allowed"
+  }
+}

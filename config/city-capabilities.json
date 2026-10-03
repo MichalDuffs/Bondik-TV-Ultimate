@@ -403,6 +403,22 @@
         "discoverable": true,
         "execution": "not-exposed"
       }
+    },
+    {
+      "id": "city.key-vault.inactive-certificate",
+      "buildingId": "key-vault",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Inactive certificate registry",
+        "description": "Register a sealed inactive approval certificate as create-once evidence without activating policy, granting runtime permission, or executing the approved action."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
     }
   ]
 }

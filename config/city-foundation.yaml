@@ -228,6 +228,24 @@ buildings:
       mutation: false
       network: false
 
+  - id: key-vault
+    name: Key Vault
+    status: active
+    role: inactive-certificate-registry
+    capabilities:
+      - create-once-certificate-registration
+      - certificate-digest-preservation
+      - inactive-certificate-readout
+    constraints:
+      activation: false
+      overwrite: false
+      delete-through-wrapper: false
+      runtime-authority: false
+      permission-grant: false
+      policy-activation: false
+      execution: false
+      network: false
+
   - id: radio-station
     name: Radio Station
     status: active
@@ -302,6 +320,9 @@ infrastructure:
   - id: inactive-approval-certificate
     status: active
     purpose: seal-approved-audit-evidence-without-runtime-authority
+  - id: inactive-certificate-registry
+    status: active
+    purpose: create-once-registration-of-sealed-inactive-certificates
 
 virtual_areas:
   - id: garden
