@@ -1,0 +1,26 @@
+{
+  "protocol": "bondik-city-media-contract/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "sourceProtocol": "bondik-city-media-source/1",
+  "catalogPath": "channels/channels.yaml",
+  "catalogVersion": 1,
+  "sourceKind": "live-tv-channel",
+  "supportedFormats": [
+    "hls"
+  ],
+  "urlSchemes": [
+    "http",
+    "https"
+  ],
+  "headerPolicy": "preserve-string-map",
+  "exposure": {
+    "playbackExecution": "not-exposed",
+    "agentExecution": "not-exposed",
+    "networkMutation": "not-exposed"
+  },
+  "platformMigration": {
+    "web": "planned",
+    "android": "planned"
+  }
+}
