@@ -69,6 +69,20 @@ buildings:
       mutation: false
       agent-execution: false
 
+  - id: gatehouse
+    name: Gatehouse
+    status: active
+    role: agent-permission-boundary
+    capabilities:
+      - default-deny-policy
+      - role-access-evaluation
+      - capability-access-evaluation
+    constraints:
+      command-authority: false
+      mutation-authority: false
+      network-authority: false
+      handoff-authority: false
+
   - id: radio-station
     name: Radio Station
     status: planned
@@ -115,7 +129,7 @@ infrastructure:
     status: planned
     purpose: future-share-to-tv-and-device-targets
   - id: agent-safety-envelope
-    status: planned
+    status: active
     purpose: bounded-ai-access-to-project-capabilities
   - id: agent-signal-protocol
     status: active
