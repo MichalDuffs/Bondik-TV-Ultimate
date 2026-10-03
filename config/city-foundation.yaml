@@ -152,6 +152,20 @@ buildings:
       mutation: false
       network: false
 
+  - id: visitor-center
+    name: Visitor Center
+    status: active
+    role: permission-aware-city-guide
+    capabilities:
+      - allowed-capability-guide
+      - denied-capability-explanation
+      - location-aware-access-advice
+    constraints:
+      permission-grant: false
+      execution: false
+      mutation: false
+      network: false
+
   - id: radio-station
     name: Radio Station
     status: active
@@ -211,6 +225,9 @@ infrastructure:
   - id: access-route-planner
     status: active
     purpose: combine-location-and-gatehouse-decision-without-execution
+  - id: visitor-guide
+    status: active
+    purpose: permission-aware-capability-guide-without-granting-authority
 
 virtual_areas:
   - id: garden
