@@ -17,6 +17,20 @@ buildings:
       - favorites
       - stream-health
 
+  - id: github-service
+    name: GitHub Service
+    status: active
+    role: repository-evidence-gateway
+    capabilities:
+      - repository-metadata-read
+      - default-branch-head-read
+      - pull-request-read
+      - issue-read
+      - workflow-run-read
+    constraints:
+      mutation: false
+      token-exposure: false
+
   - id: radio-station
     name: Radio Station
     status: planned
@@ -35,6 +49,9 @@ buildings:
       execution-requires-capability-permission: true
 
 infrastructure:
+  - id: github-evidence-gateway
+    status: active
+    purpose: bounded-read-only-repository-evidence
   - id: session
     status: active
     purpose: versioned-user-and-product-state
