@@ -381,6 +381,26 @@ buildings:
       handoff: false
       network: false
 
+  - id: receipt-office
+    name: Receipt Office
+    status: active
+    role: post-dispatch-execution-evidence
+    capabilities:
+      - receipt-storage-cross-check
+      - result-digest-verification
+      - single-use-consumption-verification
+      - digest-only-completion-evidence
+    constraints:
+      result-content-copy: false
+      permission-grant: false
+      runtime-authority: false
+      command-dispatch: false
+      execution: false
+      policy-mutation: false
+      event-publishing: false
+      handoff: false
+      network: false
+
   - id: radio-station
     name: Radio Station
     status: active
@@ -482,6 +502,9 @@ infrastructure:
   - id: authorized-read-only-dispatch
     status: active
     purpose: consume-one-grant-and-execute-one-exact-local-read-only-command
+  - id: execution-evidence
+    status: active
+    purpose: verify-completed-dispatch-against-single-use-consumption-ledger
 
 virtual_areas:
   - id: garden
