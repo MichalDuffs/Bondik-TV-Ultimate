@@ -197,6 +197,22 @@
       }
     },
     {
+      "id": "city.command-boundary.local",
+      "buildingId": "dispatch-office",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Local Command Boundary",
+        "description": "Route explicitly registered read-only local UI commands to exact city capabilities without agent or network execution authority."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
+    },
+    {
       "id": "radio-station.agent-signal",
       "buildingId": "radio-station",
       "status": "planned",
