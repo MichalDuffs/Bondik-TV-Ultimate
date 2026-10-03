@@ -56,6 +56,7 @@ jobs:
           python -m py_compile tools/city/media_contract.py
           python -m py_compile tools/city/device_share_adapter.py
           python -m py_compile tools/city/service_directory.py
+          python -m py_compile tools/city/access_route_planner.py
 
       - name: Run automated test suite
         run: |
@@ -88,6 +89,10 @@ jobs:
       - name: Validate Bondik City service directory
         run: |
           python tools/city/service_directory.py
+
+      - name: Validate Bondik City access route planner
+        run: |
+          python tools/city/access_route_planner.py
 
       - name: Validate channel metadata
         run: |
