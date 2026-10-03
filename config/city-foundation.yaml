@@ -138,6 +138,20 @@ buildings:
       mutation: false
       network: false
 
+  - id: navigator-office
+    name: Navigator Office
+    status: active
+    role: permission-aware-route-planning
+    capabilities:
+      - capability-location-resolution
+      - gatehouse-decision-projection
+      - non-executing-access-route-plan
+    constraints:
+      permission-grant: false
+      execution: false
+      mutation: false
+      network: false
+
   - id: radio-station
     name: Radio Station
     status: active
@@ -194,6 +208,9 @@ infrastructure:
   - id: service-directory
     status: active
     purpose: descriptive-city-topology-and-capability-location-map
+  - id: access-route-planner
+    status: active
+    purpose: combine-location-and-gatehouse-decision-without-execution
 
 virtual_areas:
   - id: garden
