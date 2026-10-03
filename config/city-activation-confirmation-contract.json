@@ -1,0 +1,19 @@
+{
+  "protocol": "bondik-city-activation-confirmation/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "intentProtocol": "bondik-city-activation-intent/1",
+  "authority": "confirmation-only",
+  "confirmationState": "confirmed-not-active",
+  "actorKind": "human",
+  "limits": {
+    "reasonChars": 1024
+  },
+  "exposure": {
+    "execution": "not-exposed",
+    "mutation": "not-allowed",
+    "network": "not-exposed",
+    "permissionGrant": "not-allowed",
+    "policyActivation": "not-allowed"
+  }
+}
