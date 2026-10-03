@@ -65,6 +65,7 @@ jobs:
           python -m py_compile tools/city/key_vault.py
           python -m py_compile tools/city/ignition_office.py
           python -m py_compile tools/city/activation_confirmation.py
+          python -m py_compile tools/city/runtime_grant.py
 
       - name: Run automated test suite
         run: |
@@ -133,6 +134,10 @@ jobs:
       - name: Validate Bondik City key turn office
         run: |
           python tools/city/activation_confirmation.py
+
+      - name: Validate Bondik City grant office
+        run: |
+          python tools/city/runtime_grant.py
 
       - name: Validate channel metadata
         run: |
