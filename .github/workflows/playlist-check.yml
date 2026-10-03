@@ -64,6 +64,7 @@ jobs:
           python -m py_compile tools/city/seal_office.py
           python -m py_compile tools/city/key_vault.py
           python -m py_compile tools/city/ignition_office.py
+          python -m py_compile tools/city/activation_confirmation.py
 
       - name: Run automated test suite
         run: |
@@ -128,6 +129,10 @@ jobs:
       - name: Validate Bondik City ignition office
         run: |
           python tools/city/ignition_office.py
+
+      - name: Validate Bondik City key turn office
+        run: |
+          python tools/city/activation_confirmation.py
 
       - name: Validate channel metadata
         run: |
