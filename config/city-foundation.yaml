@@ -263,6 +263,23 @@ buildings:
       mutation: false
       network: false
 
+  - id: key-turn-office
+    name: Key Turn Office
+    status: active
+    role: human-activation-confirmation-boundary
+    capabilities:
+      - exact-intent-human-confirmation
+      - intent-digest-binding
+      - confirmed-not-active-record
+    constraints:
+      activation: false
+      runtime-authority: false
+      permission-grant: false
+      policy-activation: false
+      execution: false
+      mutation: false
+      network: false
+
   - id: radio-station
     name: Radio Station
     status: active
@@ -343,6 +360,9 @@ infrastructure:
   - id: activation-intent
     status: active
     purpose: prepare-human-activation-intent-without-runtime-authority
+  - id: activation-confirmation
+    status: active
+    purpose: record-explicit-human-confirmation-without-activation
 
 virtual_areas:
   - id: garden

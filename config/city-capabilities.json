@@ -435,6 +435,22 @@
         "discoverable": true,
         "execution": "not-exposed"
       }
+    },
+    {
+      "id": "city.ignition.activation-confirmation",
+      "buildingId": "key-turn-office",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Human activation confirmation",
+        "description": "Record an explicit human confirmation of one exact prepared activation intent while remaining confirmed-not-active and granting no runtime authority."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
     }
   ]
 }
