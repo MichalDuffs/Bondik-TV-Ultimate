@@ -96,13 +96,13 @@ Invoke-Adb @(
 
 Start-Sleep -Seconds 2
 
-$pid = Invoke-Adb @(
+$appPid = Invoke-Adb @(
     "shell",
     "pidof",
     $PackageName
 )
 
-if ([string]::IsNullOrWhiteSpace(($pid | Out-String))) {
+if ([string]::IsNullOrWhiteSpace(($appPid | Out-String))) {
     throw "Bondik TV is not running after launch."
 }
 
