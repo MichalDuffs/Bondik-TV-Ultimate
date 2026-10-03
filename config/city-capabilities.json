@@ -579,6 +579,22 @@
         "discoverable": true,
         "execution": "not-exposed"
       }
+    },
+    {
+      "id": "city.runtime-grant.result-view",
+      "buildingId": "result-window",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Bounded verified result view",
+        "description": "Render one verified K35 result through an exact command-specific local-human presentation allowlist without exposing arbitrary result content to agents."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
     }
   ]
 }
