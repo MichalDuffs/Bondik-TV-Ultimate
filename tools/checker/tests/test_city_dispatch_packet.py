@@ -46,6 +46,9 @@ from tools.city.runtime_grant import (
 from tools.city.seal_office import (
     issue_inactive_certificate,
 )
+from tools.city.service_directory import (
+    build_directory,
+)
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -422,22 +425,52 @@ def test_subject_mismatch_is_rejected():
         )
 
 
-def test_unknown_current_target_fails_closed():
+def test_current_directory_target_drift_fails_closed():
     grant, admission, lease = sources()
-    lease["command"]["target"][
-        "capabilityId"
-    ] = "city.missing"
-    lease["command"][
-        "argumentsDigest"
-    ] = _digest(
-        lease["command"][
-            "arguments"
+    directory = build_directory()
+
+    for location in directory["locations"]:
+        location["capabilities"] = [
+            item
+            for item in location["capabilities"]
+            if item["id"]
+            != "city.control-tower.status-board"
         ]
-    )
 
     with pytest.raises(
         CityDispatchPacketError,
         match="resolve exactly once",
+    ):
+        packet(
+            grant,
+            admission,
+            lease,
+            directory=directory,
+        )
+
+
+def test_tampered_admission_id_is_rejected():
+    grant, admission, lease = sources()
+    admission["admissionId"] = "admit-tampered"
+
+    with pytest.raises(
+        CityDispatchPacketError,
+        match="admissionId integrity mismatch",
+    ):
+        packet(
+            grant,
+            admission,
+            lease,
+        )
+
+
+def test_tampered_lease_id_is_rejected():
+    grant, admission, lease = sources()
+    lease["leaseId"] = "lease-tampered"
+
+    with pytest.raises(
+        CityDispatchPacketError,
+        match="leaseId integrity mismatch",
     ):
         packet(
             grant,
