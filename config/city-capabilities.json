@@ -515,6 +515,22 @@
         "discoverable": true,
         "execution": "not-exposed"
       }
+    },
+    {
+      "id": "city.runtime-grant.dispatch-preflight",
+      "buildingId": "dispatch-gate",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Final read-only dispatch preflight",
+        "description": "Revalidate a fully authorized command packet against the current dispatcher registration and current city topology without dispatching, consuming the grant, or executing the action."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
     }
   ]
 }
