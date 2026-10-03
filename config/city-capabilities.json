@@ -545,7 +545,7 @@
       },
       "agent": {
         "discoverable": true,
-        "execution": "human-confirmed-only"
+        "execution": "not-exposed"
       }
     }
   ]
