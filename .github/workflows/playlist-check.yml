@@ -61,6 +61,7 @@ jobs:
           python -m py_compile tools/city/permit_office.py
           python -m py_compile tools/city/review_board.py
           python -m py_compile tools/city/audit_office.py
+          python -m py_compile tools/city/seal_office.py
 
       - name: Run automated test suite
         run: |
@@ -113,6 +114,10 @@ jobs:
       - name: Validate Bondik City audit office
         run: |
           python tools/city/audit_office.py
+
+      - name: Validate Bondik City seal office
+        run: |
+          python tools/city/seal_office.py
 
       - name: Validate channel metadata
         run: |
