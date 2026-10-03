@@ -362,6 +362,25 @@ buildings:
       mutation: false
       network: false
 
+  - id: contactor-office
+    name: Contactor Office
+    status: active
+    role: single-use-authorized-read-only-executor
+    capabilities:
+      - fresh-preflight-revalidation
+      - claim-before-dispatch
+      - exact-read-only-handler-execution
+      - at-most-once-consumption
+    constraints:
+      single-use: true
+      read-only: true
+      local-only: true
+      claim-before-dispatch: true
+      policy-mutation: false
+      event-publishing: false
+      handoff: false
+      network: false
+
   - id: radio-station
     name: Radio Station
     status: active
@@ -460,6 +479,9 @@ infrastructure:
   - id: dispatch-preflight
     status: active
     purpose: revalidate-current-registration-and-topology-before-dispatch
+  - id: authorized-read-only-dispatch
+    status: active
+    purpose: consume-one-grant-and-execute-one-exact-local-read-only-command
 
 virtual_areas:
   - id: garden

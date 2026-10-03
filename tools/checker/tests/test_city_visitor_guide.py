@@ -36,7 +36,7 @@ def test_observer_guide_current_counts():
 
     assert guide["summary"] == {
         "allowed": 6,
-        "denied": 27,
+        "denied": 28,
     }
 
 
@@ -121,7 +121,7 @@ def test_unknown_role_denies_everything():
 
     assert guide["summary"] == {
         "allowed": 0,
-        "denied": 33,
+        "denied": 34,
     }
     assert {
         item["reason"]
@@ -191,7 +191,7 @@ def test_direct_cli_builds_guide():
     assert result.returncode == 0, result.stdout
     assert (
         "Bondik City Visitor Guide OK: "
-        "6 allowed / 27 denied / "
+        "6 allowed / 28 denied / "
         "bondik-city-visitor-guide/1"
         in result.stdout
     )

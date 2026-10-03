@@ -1,0 +1,24 @@
+{
+  "protocol": "bondik-city-authorized-dispatch/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "grantProtocol": "bondik-city-runtime-grant-token/1",
+  "packetProtocol": "bondik-city-authorized-command-packet/1",
+  "preflightProtocol": "bondik-city-dispatch-preflight-record/1",
+  "receiptProtocol": "bondik-city-read-only-dispatch-receipt/1",
+  "authority": "exact-read-only-executor",
+  "receiptState": "dispatched-consumed",
+  "consumptionNamespace": "city.dispatch.spent",
+  "constraints": {
+    "readOnly": true,
+    "singleUse": true,
+    "localOnly": true,
+    "claimBeforeDispatch": true
+  },
+  "exposure": {
+    "network": "not-exposed",
+    "policyMutation": "not-allowed",
+    "eventPublishing": "not-allowed",
+    "handoff": "not-allowed"
+  }
+}

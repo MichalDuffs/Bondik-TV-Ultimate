@@ -322,16 +322,60 @@ class LocalCommandDispatcher:
         registration, _handler = pair
         return registration
 
-    def dispatch(
+    def _dispatch_registered_read_only(
         self,
-        command: dict[str, Any],
+        *,
+        command_id: str,
+        command_type: str,
+        building_id: str,
+        capability_id: str,
+        arguments: dict[str, Any],
     ) -> DispatchReport:
-        validated = validate_command(
-            command
+        if (
+            not isinstance(command_id, str)
+            or not COMMAND_ID_RE.fullmatch(
+                command_id
+            )
+        ):
+            raise CityCommandError(
+                "commandId is invalid"
+            )
+
+        if (
+            not isinstance(command_type, str)
+            or not NAMESPACED_ID_RE.fullmatch(
+                command_type
+            )
+        ):
+            raise CityCommandError(
+                "commandType is invalid"
+            )
+
+        if (
+            not isinstance(building_id, str)
+            or not BUILDING_ID_RE.fullmatch(
+                building_id
+            )
+        ):
+            raise CityCommandError(
+                "target buildingId is invalid"
+            )
+
+        if (
+            not isinstance(capability_id, str)
+            or not NAMESPACED_ID_RE.fullmatch(
+                capability_id
+            )
+        ):
+            raise CityCommandError(
+                "target capabilityId is invalid"
+            )
+
+        arguments = _validate_json_object(
+            arguments,
+            label="arguments",
+            byte_limit=MAX_ARGUMENT_BYTES,
         )
-        command_type = validated[
-            "commandType"
-        ]
 
         pair = self._registrations.get(
             command_type
@@ -343,12 +387,16 @@ class LocalCommandDispatcher:
             )
 
         registration, handler = pair
-        target = validated["target"]
+
+        if registration.mutation != "read-only":
+            raise CityCommandError(
+                "registration must be read-only"
+            )
 
         if (
-            target["buildingId"]
+            building_id
             != registration.building_id
-            or target["capabilityId"]
+            or capability_id
             != registration.capability_id
         ):
             raise CityCommandError(
@@ -356,9 +404,7 @@ class LocalCommandDispatcher:
                 "registration"
             )
 
-        result = handler(
-            validated["arguments"]
-        )
+        result = handler(arguments)
         result = _validate_json_object(
             result,
             label="result",
@@ -366,12 +412,33 @@ class LocalCommandDispatcher:
         )
 
         return DispatchReport(
-            command_id=validated["commandId"],
+            command_id=command_id,
             command_type=command_type,
             target_building_id=(
                 registration.building_id
             ),
             result=result,
+        )
+
+    def dispatch(
+        self,
+        command: dict[str, Any],
+    ) -> DispatchReport:
+        validated = validate_command(
+            command
+        )
+        target = validated["target"]
+
+        return self._dispatch_registered_read_only(
+            command_id=validated["commandId"],
+            command_type=validated[
+                "commandType"
+            ],
+            building_id=target["buildingId"],
+            capability_id=target[
+                "capabilityId"
+            ],
+            arguments=validated["arguments"],
         )
 
 
