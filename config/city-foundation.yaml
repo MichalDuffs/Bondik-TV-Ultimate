@@ -420,6 +420,26 @@ buildings:
       handoff: false
       network: false
 
+  - id: result-window
+    name: Result Window
+    status: active
+    role: bounded-human-result-presentation
+    capabilities:
+      - exact-command-presentation-allowlist
+      - result-digest-revalidation
+      - named-human-local-result-card
+    constraints:
+      arbitrary-result-presentation: false
+      agent-readable-result: false
+      permission-grant: false
+      runtime-authority: false
+      command-dispatch: false
+      execution: false
+      policy-mutation: false
+      event-publishing: false
+      handoff: false
+      network: false
+
   - id: radio-station
     name: Radio Station
     status: active
@@ -527,6 +547,9 @@ infrastructure:
   - id: verified-result-return
     status: active
     purpose: return-verified-command-result-to-named-local-human-only
+  - id: bounded-result-view
+    status: active
+    purpose: project-one-verified-command-result-through-explicit-human-local-allowlist
 
 virtual_areas:
   - id: garden
