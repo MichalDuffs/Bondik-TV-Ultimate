@@ -1,0 +1,19 @@
+{
+  "protocol": "bondik-city-device-share-adapter/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "handoffProtocol": "bondik-city-device-handoff/1",
+  "supportedTargetKinds": [
+    "android-tv"
+  ],
+  "deliveryState": "prepared",
+  "transport": "not-selected",
+  "endpoint": "not-exposed",
+  "sourceProtocol": "bondik-city-media-source/1",
+  "exposure": {
+    "network": "not-exposed",
+    "execution": "not-exposed",
+    "agentExecution": "not-exposed",
+    "mutation": "not-allowed"
+  }
+}
