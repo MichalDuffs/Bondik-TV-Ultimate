@@ -563,6 +563,22 @@
         "discoverable": true,
         "execution": "not-exposed"
       }
+    },
+    {
+      "id": "city.runtime-grant.result-return",
+      "buildingId": "result-office",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Verified human-local result return",
+        "description": "Return verified command result content to one named local human only after K34 execution evidence proves the completed K33 receipt and ledger agree."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
     }
   ]
 }

@@ -1,0 +1,21 @@
+{
+  "protocol": "bondik-city-result-return/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "receiptProtocol": "bondik-city-read-only-dispatch-receipt/1",
+  "evidenceProtocol": "bondik-city-execution-evidence-record/1",
+  "resultProtocol": "bondik-city-verified-result-envelope/1",
+  "authority": "human-local-result-return-only",
+  "resultState": "verified-result-ready",
+  "audience": {
+    "kind": "human-local",
+    "agentReadable": false
+  },
+  "exposure": {
+    "execution": "not-exposed",
+    "mutation": "not-allowed",
+    "network": "not-exposed",
+    "permissionGrant": "not-allowed",
+    "agentResult": "not-exposed"
+  }
+}
