@@ -291,6 +291,22 @@
         "discoverable": true,
         "execution": "not-exposed"
       }
+    },
+    {
+      "id": "city.directory.service-map",
+      "buildingId": "directory-office",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "City service directory",
+        "description": "Describe Bondik City locations and map registered capabilities to their city location without granting execution authority."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
     }
   ]
 }
