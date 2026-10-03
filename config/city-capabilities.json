@@ -149,6 +149,22 @@
       }
     },
     {
+      "id": "city.control-tower.github-panel",
+      "buildingId": "control-tower",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Control Tower GitHub panel",
+        "description": "Project GitHub repository, PR, issue, and workflow evidence into the human Control Tower board without mutation authority."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
+    },
+    {
       "id": "radio-station.agent-signal",
       "buildingId": "radio-station",
       "status": "planned",

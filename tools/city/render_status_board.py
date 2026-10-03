@@ -35,6 +35,9 @@ DEFAULT_SIGNAL_PATH = (
 DEFAULT_HEALTH_PATH = (
     ROOT / "city-health-snapshot.json"
 )
+DEFAULT_GITHUB_PATH = (
+    ROOT / "city-github-snapshot.json"
+)
 DEFAULT_OUTPUT = (
     ROOT / "city-status.md"
 )
@@ -131,6 +134,94 @@ def load_health(
     return payload
 
 
+def load_github(
+    path: Path,
+) -> dict[str, Any] | None:
+    if not path.is_file():
+        return None
+
+    payload = _load_json(
+        path,
+        label="GitHub snapshot",
+    )
+
+    if not isinstance(payload, dict):
+        raise CityStatusBoardError(
+            "GitHub snapshot must be an object"
+        )
+
+    if payload.get("protocol") != (
+        "bondik-city-github-service/1"
+    ):
+        raise CityStatusBoardError(
+            "unsupported GitHub snapshot protocol"
+        )
+
+    if payload.get("cityId") != "bondik-city":
+        raise CityStatusBoardError(
+            "GitHub snapshot cityId mismatch"
+        )
+
+    repository = payload.get("repository")
+
+    if not isinstance(repository, dict):
+        raise CityStatusBoardError(
+            "GitHub snapshot repository missing"
+        )
+
+    head = repository.get(
+        "defaultBranchHead"
+    )
+
+    if (
+        not isinstance(head, str)
+        or not head
+    ):
+        raise CityStatusBoardError(
+            "GitHub snapshot default branch "
+            "HEAD missing"
+        )
+
+    workflows = payload.get("workflows")
+
+    if not isinstance(workflows, dict):
+        raise CityStatusBoardError(
+            "GitHub snapshot workflows missing"
+        )
+
+    latest = workflows.get(
+        "defaultBranchLatest"
+    )
+
+    if not isinstance(latest, list):
+        raise CityStatusBoardError(
+            "GitHub snapshot workflow list "
+            "missing"
+        )
+
+    exposure = payload.get("exposure")
+
+    if not isinstance(exposure, dict):
+        raise CityStatusBoardError(
+            "GitHub snapshot exposure missing"
+        )
+
+    if (
+        exposure.get("mutation")
+        != "not-allowed"
+        or exposure.get("execution")
+        != "not-exposed"
+        or exposure.get("token")
+        != "not-exported"
+    ):
+        raise CityStatusBoardError(
+            "GitHub snapshot safety contract "
+            "invalid"
+        )
+
+    return payload
+
+
 def _status_emoji(status: str) -> str:
     return {
         "healthy": "🟢",
@@ -198,6 +289,119 @@ def _health_lines(
                     f"{failure.get('streak')})"
                 )
             )
+
+    return lines
+
+
+def _workflow_emoji(
+    status: str | None,
+    conclusion: str | None,
+) -> str:
+    if status != "completed":
+        return "🟡"
+
+    if conclusion == "success":
+        return "🟢"
+
+    if conclusion in {
+        "failure",
+        "cancelled",
+        "timed_out",
+        "action_required",
+    }:
+        return "🔴"
+
+    return "⚪"
+
+
+def _github_lines(
+    github: dict[str, Any] | None,
+) -> list[str]:
+    if github is None:
+        return [
+            "## GitHub Service",
+            "",
+            (
+                "⚪ **UNKNOWN** — GitHub snapshot "
+                "is not available in this workspace."
+            ),
+        ]
+
+    repository = github["repository"]
+    head = repository["defaultBranchHead"]
+    branch = repository.get(
+        "defaultBranch",
+        "unknown",
+    )
+    pulls = github.get("pullRequests", {})
+    issues = github.get("issues", {})
+    workflows = github.get("workflows", {})
+    latest = workflows.get(
+        "defaultBranchLatest",
+        [],
+    )
+    tick = chr(96)
+
+    lines = [
+        "## GitHub Service",
+        "",
+        (
+            "- repository: "
+            f"{tick}{repository.get('fullName')}{tick}"
+        ),
+        (
+            f"- {branch} HEAD: "
+            f"{tick}{head}{tick}"
+        ),
+        (
+            "- open PRs: "
+            f"**{pulls.get('openCount', 0)}**"
+        ),
+        (
+            "- open issues: "
+            f"**{issues.get('openCount', 0)}**"
+        ),
+        (
+            "- workflow source window: "
+            f"**{workflows.get('sourceRunWindow', 0)}**"
+        ),
+        (
+            "- workflow window truncated: "
+            f"{tick}{workflows.get('truncated', False)}{tick}"
+        ),
+        "",
+        "### Latest default-branch workflows",
+        "",
+    ]
+
+    if not latest:
+        lines.append(
+            "⚪ No workflow evidence in snapshot."
+        )
+        return lines
+
+    for run in latest:
+        if not isinstance(run, dict):
+            continue
+
+        status = run.get("status")
+        conclusion = run.get("conclusion")
+        run_sha = run.get("headSha")
+        freshness = (
+            "current-main"
+            if run_sha == head
+            else "stale-vs-main"
+        )
+
+        lines.append(
+            (
+                f"- {_workflow_emoji(status, conclusion)} "
+                f"{run.get('name')} — "
+                f"{status}/{conclusion}; "
+                f"{tick}{freshness}{tick}; "
+                f"run #{run.get('runNumber')}"
+            )
+        )
 
     return lines
 
@@ -293,6 +497,7 @@ def render_status_board(
     registry: dict[str, Any],
     signal: dict[str, Any],
     health: dict[str, Any] | None,
+    github: dict[str, Any] | None = None,
 ) -> str:
     lines = [
         "# 🏙️ Bondík City — Status Board",
@@ -311,6 +516,10 @@ def render_status_board(
 
     lines.extend(
         _health_lines(health)
+    )
+    lines.extend(["", ""])
+    lines.extend(
+        _github_lines(github)
     )
     lines.extend(["", ""])
     lines.extend(
@@ -373,6 +582,11 @@ def parse_arguments():
         default=DEFAULT_HEALTH_PATH,
     )
     parser.add_argument(
+        "--github",
+        type=Path,
+        default=DEFAULT_GITHUB_PATH,
+    )
+    parser.add_argument(
         "--output",
         type=Path,
         default=DEFAULT_OUTPUT,
@@ -394,10 +608,14 @@ def main() -> int:
         health = load_health(
             args.health
         )
+        github = load_github(
+            args.github
+        )
         rendered = render_status_board(
             registry=registry,
             signal=signal,
             health=health,
+            github=github,
         )
         write_status_board(
             args.output,
