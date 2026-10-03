@@ -34,6 +34,21 @@ jobs:
           python -m pip install -r requirements.txt
           python -m pip install pytest
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Validate Bondik TV web app
+        working-directory: web
+        run: |
+          npm ci
+          npm test
+          npm run lint
+          npm run build
+
       - name: Compile Python tools
         run: |
           python -m py_compile tools/checker/check_channels.py
