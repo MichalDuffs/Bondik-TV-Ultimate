@@ -146,6 +146,22 @@ def test_tampered_receipt_digest_is_rejected():
 def test_tampered_receipt_result_is_rejected():
     receipt, evidence = source()
     receipt["command"]["result"]["status"] = "tampered"
+
+    # Rebind the evidence receipt digest so this test reaches the
+    # independent result-digest check instead of correctly failing
+    # earlier at full receipt-integrity verification.
+    evidence["receipt"]["receiptDigest"] = (
+        "sha256:"
+        + __import__("hashlib").sha256(
+            __import__("json").dumps(
+                receipt,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
+    )
+
     with pytest.raises(
         CityResultReturnError,
         match="receipt result digest mismatch",
