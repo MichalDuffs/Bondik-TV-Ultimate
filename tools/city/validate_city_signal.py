@@ -5,10 +5,19 @@ import json
 from pathlib import Path
 from typing import Any
 
-from tools.city.validate_capability_registry import (
-    REGISTRY_PROTOCOL,
-    load_capability_registry,
-)
+try:
+    from tools.city.validate_capability_registry import (
+        REGISTRY_PROTOCOL,
+        load_capability_registry,
+    )
+except ModuleNotFoundError as error:
+    if error.name != "tools":
+        raise
+
+    from validate_capability_registry import (
+        REGISTRY_PROTOCOL,
+        load_capability_registry,
+    )
 
 SIGNAL_PROTOCOL = "bondik-city-agent-signal/1"
 SIGNAL_VERSION = 1
