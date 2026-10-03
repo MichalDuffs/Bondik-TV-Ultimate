@@ -246,6 +246,23 @@ buildings:
       execution: false
       network: false
 
+  - id: ignition-office
+    name: Ignition Office
+    status: active
+    role: human-activation-intent-boundary
+    capabilities:
+      - inactive-key-intent
+      - exact-scope-human-intent
+      - vault-evidence-verification
+    constraints:
+      activation: false
+      runtime-authority: false
+      permission-grant: false
+      policy-activation: false
+      execution: false
+      mutation: false
+      network: false
+
   - id: radio-station
     name: Radio Station
     status: active
@@ -323,6 +340,9 @@ infrastructure:
   - id: inactive-certificate-registry
     status: active
     purpose: create-once-registration-of-sealed-inactive-certificates
+  - id: activation-intent
+    status: active
+    purpose: prepare-human-activation-intent-without-runtime-authority
 
 virtual_areas:
   - id: garden
