@@ -45,6 +45,7 @@ jobs:
           python -m py_compile tools/updater/plan_epg_maintenance.py
           python -m py_compile tools/city/validate_capability_registry.py
           python -m py_compile tools/city/validate_city_signal.py
+          python -m py_compile tools/city/build_health_snapshot.py
 
       - name: Run automated test suite
         run: |
