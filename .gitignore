@@ -11,3 +11,9 @@ hunt-decisions-*.json
 hunt-approved-*.m3u
 
 .pytest_cache/
+
+# Bondik City local evidence outputs
+city-health-snapshot.json
+city-github-snapshot.json
+city-status.md
+city-archive-index.json
