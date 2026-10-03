@@ -1,0 +1,17 @@
+{
+  "protocol": "bondik-city-grant-admission/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "grantProtocol": "bondik-city-runtime-grant-token/1",
+  "directoryProtocol": "bondik-city-service-directory/1",
+  "admissionProtocol": "bondik-city-grant-admission-record/1",
+  "authority": "admission-only",
+  "admissionState": "admitted-not-consumed",
+  "exposure": {
+    "execution": "not-exposed",
+    "mutation": "not-allowed",
+    "network": "not-exposed",
+    "permissionGrant": "not-allowed",
+    "policyMutation": "not-allowed"
+  }
+}
