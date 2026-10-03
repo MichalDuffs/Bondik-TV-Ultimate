@@ -280,6 +280,22 @@ buildings:
       mutation: false
       network: false
 
+  - id: grant-office
+    name: Grant Office
+    status: active
+    role: human-confirmed-runtime-grant-issuer
+    capabilities:
+      - exact-scope-runtime-grant
+      - human-confirmation-binding
+      - single-use-local-grant-token
+    constraints:
+      consumer-connected: false
+      single-use: true
+      local-only: true
+      policy-mutation: false
+      execution: false
+      network: false
+
   - id: radio-station
     name: Radio Station
     status: active
@@ -363,6 +379,9 @@ infrastructure:
   - id: activation-confirmation
     status: active
     purpose: record-explicit-human-confirmation-without-activation
+  - id: runtime-grant
+    status: active
+    purpose: issue-exact-scope-human-confirmed-grants-without-consumer-execution
 
 virtual_areas:
   - id: garden

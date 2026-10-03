@@ -1,0 +1,22 @@
+{
+  "protocol": "bondik-city-runtime-grant/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "intentProtocol": "bondik-city-activation-intent/1",
+  "confirmationProtocol": "bondik-city-activation-confirmation/1",
+  "grantProtocol": "bondik-city-runtime-grant-token/1",
+  "authority": "grant-issuer",
+  "grantState": "issued-unconsumed",
+  "actorKind": "human",
+  "constraints": {
+    "singleUse": true,
+    "localOnly": true,
+    "consumerConnected": false
+  },
+  "exposure": {
+    "execution": "not-exposed",
+    "mutation": "not-allowed",
+    "network": "not-exposed",
+    "policyMutation": "not-allowed"
+  }
+}

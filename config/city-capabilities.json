@@ -451,6 +451,22 @@
         "discoverable": true,
         "execution": "not-exposed"
       }
+    },
+    {
+      "id": "city.runtime-grant.issue",
+      "buildingId": "grant-office",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Human-confirmed runtime grant",
+        "description": "Issue an exact-scope, single-use local runtime grant after explicit human activation confirmation, without connecting the grant to an executor."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
     }
   ]
 }
