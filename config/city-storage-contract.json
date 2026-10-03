@@ -1,0 +1,24 @@
+{
+  "protocol": "bondik-city-storage-adapter/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "recordProtocol": "bondik-city-storage-record/1",
+  "model": "namespaced-json-records",
+  "operations": [
+    "read",
+    "write",
+    "delete",
+    "list"
+  ],
+  "revision": "monotonic-per-key",
+  "conflictPolicy": "expected-revision",
+  "maxValueBytes": 65536,
+  "exposure": {
+    "agentExecution": "not-exposed",
+    "network": "not-exposed"
+  },
+  "platformMigration": {
+    "web": "planned",
+    "android": "planned"
+  }
+}
