@@ -196,6 +196,22 @@ buildings:
       mutation: false
       network: false
 
+  - id: audit-office
+    name: Audit Office
+    status: active
+    role: human-review-evidence-ledger
+    capabilities:
+      - permit-review-linkage
+      - sha256-evidence-digests
+      - create-once-review-record
+    constraints:
+      overwrite: false
+      delete-through-wrapper: false
+      permission-grant: false
+      policy-change: false
+      execution: false
+      network: false
+
   - id: radio-station
     name: Radio Station
     status: active
@@ -264,6 +280,9 @@ infrastructure:
   - id: human-review-record
     status: active
     purpose: record-human-review-without-applying-runtime-authority
+  - id: human-review-audit-ledger
+    status: active
+    purpose: create-once-auditable-permit-review-evidence
 
 virtual_areas:
   - id: garden

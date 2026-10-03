@@ -1,0 +1,18 @@
+{
+  "protocol": "bondik-city-audit-ledger/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "permitProtocol": "bondik-city-permit-request/1",
+  "reviewProtocol": "bondik-city-human-review/1",
+  "entryProtocol": "bondik-city-audit-entry/1",
+  "namespace": "city.audit.review",
+  "authority": "record-only",
+  "writePolicy": "create-once",
+  "exposure": {
+    "execution": "not-exposed",
+    "mutation": "append-only-wrapper",
+    "network": "not-exposed",
+    "permissionGrant": "not-allowed",
+    "policyChange": "not-allowed"
+  }
+}
