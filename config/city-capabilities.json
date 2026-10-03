@@ -323,6 +323,22 @@
         "discoverable": true,
         "execution": "not-exposed"
       }
+    },
+    {
+      "id": "city.visitor-guide.inspect",
+      "buildingId": "visitor-center",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Visitor Guide",
+        "description": "Explain which active discoverable city capabilities a principal may inspect and where they live, without granting permission or execution authority."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
     }
   ]
 }
