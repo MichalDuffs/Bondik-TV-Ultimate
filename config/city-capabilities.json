@@ -261,6 +261,22 @@
       }
     },
     {
+      "id": "city.device-share.prepare",
+      "buildingId": "device-dock",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Device Share preparation",
+        "description": "Prepare a versioned Android TV handoff from an approved media source without device discovery, transport, or playback execution."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
+    },
+    {
       "id": "radio-station.agent-signal",
       "buildingId": "radio-station",
       "status": "planned",

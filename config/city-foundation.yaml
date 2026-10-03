@@ -111,6 +111,20 @@ buildings:
       stream-rewrite: false
       agent-execution: false
 
+  - id: device-dock
+    name: Device Dock
+    status: active
+    role: prepare-only-device-handoff
+    capabilities:
+      - android-tv-target-envelope
+      - media-source-handoff-preparation
+      - logical-target-validation
+    constraints:
+      device-discovery: false
+      network-transport: false
+      playback-execution: false
+      agent-execution: false
+
   - id: radio-station
     name: Radio Station
     status: planned
@@ -154,7 +168,7 @@ infrastructure:
     status: active
     purpose: platform-independent-persistence-boundary
   - id: device-share-adapter
-    status: planned
+    status: active
     purpose: future-share-to-tv-and-device-targets
   - id: agent-safety-envelope
     status: active
