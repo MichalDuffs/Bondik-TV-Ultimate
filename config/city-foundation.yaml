@@ -97,6 +97,20 @@ buildings:
       agent-execution: false
       implicit-platform-migration: false
 
+  - id: media-gateway
+    name: Media Gateway
+    status: active
+    role: reusable-media-source-boundary
+    capabilities:
+      - catalog-channel-resolution
+      - media-source-envelope
+      - stream-header-preservation
+      - catalog-provenance
+    constraints:
+      player-control: false
+      stream-rewrite: false
+      agent-execution: false
+
   - id: radio-station
     name: Radio Station
     status: planned
@@ -128,7 +142,7 @@ infrastructure:
     status: active
     purpose: human-and-agent-readable-capabilities
   - id: media-contract
-    status: planned
+    status: active
     purpose: reusable-media-source-boundary
   - id: command-boundary
     status: active
