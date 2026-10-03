@@ -7,7 +7,10 @@
       "id": "bondik-tv.playback",
       "buildingId": "bondik-tv",
       "status": "active",
-      "surfaces": ["web", "android"],
+      "surfaces": [
+        "web",
+        "android"
+      ],
       "human": {
         "name": "Playback",
         "description": "Play an approved Bondik-TV channel on a supported client."
@@ -21,7 +24,9 @@
       "id": "bondik-tv.search",
       "buildingId": "bondik-tv",
       "status": "active",
-      "surfaces": ["web"],
+      "surfaces": [
+        "web"
+      ],
       "human": {
         "name": "Search",
         "description": "Search and filter the Bondik-TV channel catalog."
@@ -35,7 +40,9 @@
       "id": "bondik-tv.playlists",
       "buildingId": "bondik-tv",
       "status": "active",
-      "surfaces": ["web"],
+      "surfaces": [
+        "web"
+      ],
       "human": {
         "name": "Playlist library",
         "description": "Create, select and maintain local Bondik-TV playlists."
@@ -49,7 +56,9 @@
       "id": "bondik-tv.session.web",
       "buildingId": "bondik-tv",
       "status": "active",
-      "surfaces": ["web"],
+      "surfaces": [
+        "web"
+      ],
       "human": {
         "name": "Web session",
         "description": "Restore versioned Web theme and active-playlist session state."
@@ -63,10 +72,28 @@
       "id": "bondik-tv.session.android",
       "buildingId": "bondik-tv",
       "status": "active",
-      "surfaces": ["android"],
+      "surfaces": [
+        "android"
+      ],
       "human": {
         "name": "Android session",
         "description": "Restore the last valid Android channel selection after restart."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
+    },
+    {
+      "id": "city.discovery-manifest",
+      "buildingId": "radio-station",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "City discovery manifest",
+        "description": "Expose a static, non-sensitive Bondik City discovery signal linked to the capability registry."
       },
       "agent": {
         "discoverable": true,
