@@ -1,0 +1,91 @@
+{
+  "protocol": "bondik-city-capability-registry/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "capabilities": [
+    {
+      "id": "bondik-tv.playback",
+      "buildingId": "bondik-tv",
+      "status": "active",
+      "surfaces": ["web", "android"],
+      "human": {
+        "name": "Playback",
+        "description": "Play an approved Bondik-TV channel on a supported client."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
+    },
+    {
+      "id": "bondik-tv.search",
+      "buildingId": "bondik-tv",
+      "status": "active",
+      "surfaces": ["web"],
+      "human": {
+        "name": "Search",
+        "description": "Search and filter the Bondik-TV channel catalog."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
+    },
+    {
+      "id": "bondik-tv.playlists",
+      "buildingId": "bondik-tv",
+      "status": "active",
+      "surfaces": ["web"],
+      "human": {
+        "name": "Playlist library",
+        "description": "Create, select and maintain local Bondik-TV playlists."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
+    },
+    {
+      "id": "bondik-tv.session.web",
+      "buildingId": "bondik-tv",
+      "status": "active",
+      "surfaces": ["web"],
+      "human": {
+        "name": "Web session",
+        "description": "Restore versioned Web theme and active-playlist session state."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
+    },
+    {
+      "id": "bondik-tv.session.android",
+      "buildingId": "bondik-tv",
+      "status": "active",
+      "surfaces": ["android"],
+      "human": {
+        "name": "Android session",
+        "description": "Restore the last valid Android channel selection after restart."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
+    },
+    {
+      "id": "radio-station.agent-signal",
+      "buildingId": "radio-station",
+      "status": "planned",
+      "surfaces": [],
+      "human": {
+        "name": "AI city signal",
+        "description": "Future bounded discovery and approved inter-agent signal surface."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
+    }
+  ]
+}
