@@ -165,6 +165,22 @@
       }
     },
     {
+      "id": "city.archive.evidence-index",
+      "buildingId": "archive",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Archive evidence index",
+        "description": "Index known Bondik City evidence files by path, protocol, byte size, and SHA-256 digest without copying their content."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
+    },
+    {
       "id": "radio-station.agent-signal",
       "buildingId": "radio-station",
       "status": "planned",
