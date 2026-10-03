@@ -1,4 +1,6 @@
 import copy
+import hashlib
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -152,8 +154,8 @@ def test_tampered_receipt_result_is_rejected():
     # earlier at full receipt-integrity verification.
     evidence["receipt"]["receiptDigest"] = (
         "sha256:"
-        + __import__("hashlib").sha256(
-            __import__("json").dumps(
+        + hashlib.sha256(
+            json.dumps(
                 receipt,
                 ensure_ascii=False,
                 sort_keys=True,
