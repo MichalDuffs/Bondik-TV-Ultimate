@@ -85,14 +85,15 @@ def test_wildcard_subscriber_observes_event():
 def test_unsubscribe_stops_delivery():
     bus = LocalEventBus()
     received = []
+    handler = received.append
 
     bus.subscribe(
         "city.health.changed",
-        received.append,
+        handler,
     )
     assert bus.unsubscribe(
         "city.health.changed",
-        received.append,
+        handler,
     ) is True
 
     report = bus.publish(event())
