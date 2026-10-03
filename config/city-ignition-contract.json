@@ -1,0 +1,21 @@
+{
+  "protocol": "bondik-city-ignition/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "vaultEntryProtocol": "bondik-city-key-vault-entry/1",
+  "certificateProtocol": "bondik-city-approval-certificate/1",
+  "intentProtocol": "bondik-city-activation-intent/1",
+  "authority": "intent-only",
+  "intentState": "prepared-not-active",
+  "actorKind": "human",
+  "limits": {
+    "reasonChars": 1024
+  },
+  "exposure": {
+    "execution": "not-exposed",
+    "mutation": "not-allowed",
+    "network": "not-exposed",
+    "permissionGrant": "not-allowed",
+    "policyActivation": "not-allowed"
+  }
+}
