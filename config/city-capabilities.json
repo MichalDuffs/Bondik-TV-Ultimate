@@ -245,6 +245,22 @@
       }
     },
     {
+      "id": "city.media.source-contract",
+      "buildingId": "media-gateway",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Media Source Contract",
+        "description": "Resolve approved Bondik-TV catalog channels into a reusable versioned media-source shape without controlling playback."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
+    },
+    {
       "id": "radio-station.agent-signal",
       "buildingId": "radio-station",
       "status": "planned",
