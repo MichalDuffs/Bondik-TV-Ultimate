@@ -1,0 +1,15 @@
+{
+  "protocol": "bondik-city-visitor-guide/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "directoryProtocol": "bondik-city-service-directory/1",
+  "safetyProtocol": "bondik-city-agent-safety/1",
+  "operation": "inspect-evidence",
+  "authority": "advisory-only",
+  "exposure": {
+    "execution": "not-exposed",
+    "mutation": "not-allowed",
+    "network": "not-exposed",
+    "permissionGrant": "not-allowed"
+  }
+}
