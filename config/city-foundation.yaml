@@ -36,10 +36,10 @@ buildings:
 
 infrastructure:
   - id: session
-    status: planned
+    status: active
     purpose: versioned-user-and-product-state
   - id: capability-registry
-    status: planned
+    status: active
     purpose: human-and-agent-readable-capabilities
   - id: media-contract
     status: planned
@@ -60,7 +60,7 @@ infrastructure:
     status: planned
     purpose: bounded-ai-access-to-project-capabilities
   - id: agent-signal-protocol
-    status: planned
+    status: active
     purpose: machine-readable-discovery-and-approved-inter-agent-signals
 
 virtual_areas:
@@ -74,7 +74,7 @@ virtual_areas:
     status: concept
     maps_to: demo-and-showcase-surface
   - id: control-tower
-    status: concept
+    status: active
     maps_to: ci-qc-health-review
   - id: archive
     status: concept
