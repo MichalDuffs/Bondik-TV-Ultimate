@@ -387,6 +387,22 @@
         "discoverable": true,
         "execution": "not-exposed"
       }
+    },
+    {
+      "id": "city.seal.approval-certificate",
+      "buildingId": "seal-office",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Inactive approval certificate",
+        "description": "Seal an audited human approve decision into an exact-scope inactive certificate without granting runtime permission, activating policy, or executing the action."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
     }
   ]
 }
