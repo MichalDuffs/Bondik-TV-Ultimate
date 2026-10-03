@@ -219,13 +219,19 @@ Verified implementation includes:
 - [x] Live preview
 - [x] Playlist management
 - [x] Playlist interoperability
+- [x] Persistent local favorites
+- [x] Functional Favorites page
+- [x] Functional EPG metadata coverage page
+- [x] Functional catalog Statistics page
+- [x] Functional local Tools / readiness page
 - [x] Production build
 - [x] `npm run build` PASS on 2026-10-01
 - [x] `npm run lint` PASS on 2026-10-01
+- [ ] Verified live EPG programme feed / timeline
 - [ ] Deployment model decision
 - [ ] Further responsive / TV UX work
 
-Current status: **working application foundation exists**.
+Current status: **working application with the former navigation placeholders replaced by functional product views; final release work remains**.
 
 ---
 
