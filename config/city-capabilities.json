@@ -531,6 +531,22 @@
         "discoverable": true,
         "execution": "not-exposed"
       }
+    },
+    {
+      "id": "city.runtime-grant.dispatch-read-only",
+      "buildingId": "contactor-office",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Single-use authorized read-only dispatch",
+        "description": "After a fresh final preflight, claim one human-confirmed runtime grant exactly once and execute the exact registered local read-only command, recording a consumption receipt before any replay can occur."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "human-confirmed-only"
+      }
     }
   ]
 }
