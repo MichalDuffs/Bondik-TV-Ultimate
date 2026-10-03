@@ -101,6 +101,22 @@
       }
     },
     {
+      "id": "city.control-tower.health-snapshot",
+      "buildingId": "control-tower",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Control Tower health snapshot",
+        "description": "Build a read-only city health view from existing stream and EPG failure-streak artifacts."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
+    },
+    {
       "id": "radio-station.agent-signal",
       "buildingId": "radio-station",
       "status": "planned",
