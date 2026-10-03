@@ -52,6 +52,7 @@ jobs:
           python -m py_compile tools/city/event_bus.py
           python -m py_compile tools/city/command_boundary.py
           python -m py_compile tools/city/agent_safety.py
+          python -m py_compile tools/city/storage_adapter.py
 
       - name: Run automated test suite
         run: |
@@ -68,6 +69,10 @@ jobs:
       - name: Validate Bondik City agent safety policy
         run: |
           python tools/city/agent_safety.py
+
+      - name: Validate Bondik City storage adapter
+        run: |
+          python tools/city/storage_adapter.py
 
       - name: Validate channel metadata
         run: |
