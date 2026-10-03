@@ -1,0 +1,23 @@
+{
+  "protocol": "bondik-city-radio-station/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "beaconProtocol": "bondik-city-agent-beacon/1",
+  "mode": "prepared-static-beacon",
+  "audience": [
+    "ai-agents"
+  ],
+  "capabilityPolicy": "observer-allowlist",
+  "delivery": {
+    "state": "prepared",
+    "transport": "not-selected",
+    "endpoint": null
+  },
+  "exposure": {
+    "sensitiveState": "not-exposed",
+    "execution": "not-exposed",
+    "commandEndpoint": null,
+    "network": "not-exposed",
+    "handoff": "not-enabled"
+  }
+}
