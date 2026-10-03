@@ -467,6 +467,22 @@
         "discoverable": true,
         "execution": "not-exposed"
       }
+    },
+    {
+      "id": "city.runtime-grant.admit",
+      "buildingId": "starter-gate",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Runtime grant admission",
+        "description": "Validate an issued runtime grant against the exact active city capability owner without connecting a consumer, consuming the grant, or executing the action."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
     }
   ]
 }

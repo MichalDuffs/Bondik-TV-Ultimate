@@ -296,6 +296,22 @@ buildings:
       execution: false
       network: false
 
+  - id: starter-gate
+    name: Starter Gate
+    status: active
+    role: runtime-grant-admission-boundary
+    capabilities:
+      - exact-capability-owner-resolution
+      - non-consuming-grant-admission
+      - grant-evidence-binding
+    constraints:
+      consumer-connected: false
+      grant-consumption: false
+      command-dispatch: false
+      execution: false
+      policy-mutation: false
+      network: false
+
   - id: radio-station
     name: Radio Station
     status: active
@@ -382,6 +398,9 @@ infrastructure:
   - id: runtime-grant
     status: active
     purpose: issue-exact-scope-human-confirmed-grants-without-consumer-execution
+  - id: grant-admission
+    status: active
+    purpose: validate-runtime-grant-against-exact-local-capability-owner
 
 virtual_areas:
   - id: garden
