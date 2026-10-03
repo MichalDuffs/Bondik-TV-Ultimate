@@ -8,6 +8,7 @@ import pytest
 from tools.city.render_status_board import (
     CityStatusBoardError,
     STATUS_BOARD_PROTOCOL,
+    load_github,
     load_health,
     render_status_board,
 )
@@ -166,6 +167,8 @@ def test_direct_cli_writes_human_board(
             ),
             "--health",
             str(tmp_path / "missing-health.json"),
+            "--github",
+            str(tmp_path / "missing-github.json"),
             "--output",
             str(output),
         ],
@@ -186,3 +189,109 @@ def test_direct_cli_writes_human_board(
         "Bondik City Status Board OK:"
         in result.stdout
     )
+
+
+
+def github_snapshot():
+    return {
+        "protocol": "bondik-city-github-service/1",
+        "cityId": "bondik-city",
+        "repository": {
+            "fullName": (
+                "MichalDuffs/Bondik-TV-Ultimate"
+            ),
+            "defaultBranch": "main",
+            "defaultBranchHead": "abc123",
+        },
+        "pullRequests": {
+            "openCount": 8,
+        },
+        "issues": {
+            "openCount": 2,
+        },
+        "workflows": {
+            "sourceRunWindow": 100,
+            "truncated": True,
+            "defaultBranchLatest": [
+                {
+                    "name": "Bondik TV CI",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "headSha": "abc123",
+                    "runNumber": 341,
+                },
+                {
+                    "name": "Android CI",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "headSha": "oldsha",
+                    "runNumber": 9,
+                },
+                {
+                    "name": "Stream Check",
+                    "status": "completed",
+                    "conclusion": "failure",
+                    "headSha": "abc123",
+                    "runNumber": 128,
+                },
+            ],
+        },
+        "exposure": {
+            "mutation": "not-allowed",
+            "token": "not-exported",
+            "execution": "not-exposed",
+        },
+    }
+
+
+def test_github_panel_renders_repo_and_workflows():
+    rendered = render_status_board(
+        registry=registry(),
+        signal=signal(),
+        health=None,
+        github=github_snapshot(),
+    )
+
+    assert "## GitHub Service" in rendered
+    assert "main HEAD:" in rendered
+    assert "abc123" in rendered
+    assert "open PRs: **8**" in rendered
+    assert "open issues: **2**" in rendered
+    assert "Bondik TV CI" in rendered
+    assert "current-main" in rendered
+    assert "Android CI" in rendered
+    assert "stale-vs-main" in rendered
+    assert "🔴 Stream Check" in rendered
+
+
+def test_missing_github_snapshot_is_unknown():
+    rendered = render_status_board(
+        registry=registry(),
+        signal=signal(),
+        health=None,
+        github=None,
+    )
+
+    assert (
+        "⚪ **UNKNOWN** — GitHub snapshot "
+        "is not available in this workspace."
+        in rendered
+    )
+
+
+def test_invalid_github_safety_is_rejected(
+    tmp_path,
+):
+    payload = github_snapshot()
+    payload["exposure"]["mutation"] = "allowed"
+    path = tmp_path / "github.json"
+    path.write_text(
+        json.dumps(payload),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        CityStatusBoardError,
+        match="safety contract invalid",
+    ):
+        load_github(path)
