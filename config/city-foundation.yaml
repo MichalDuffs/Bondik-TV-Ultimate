@@ -125,6 +125,19 @@ buildings:
       playback-execution: false
       agent-execution: false
 
+  - id: directory-office
+    name: Directory Office
+    status: active
+    role: descriptive-city-topology
+    capabilities:
+      - location-index
+      - capability-to-location-map
+      - virtual-area-map
+    constraints:
+      execution: false
+      mutation: false
+      network: false
+
   - id: radio-station
     name: Radio Station
     status: active
@@ -178,6 +191,9 @@ infrastructure:
   - id: agent-signal-protocol
     status: active
     purpose: machine-readable-discovery-and-approved-inter-agent-signals
+  - id: service-directory
+    status: active
+    purpose: descriptive-city-topology-and-capability-location-map
 
 virtual_areas:
   - id: garden
