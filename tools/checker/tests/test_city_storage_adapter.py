@@ -267,3 +267,40 @@ def test_direct_cli_runs_self_test():
         f"{ADAPTER_PROTOCOL}"
         in result.stdout
     )
+
+
+
+def test_declarative_contract_matches_reference():
+    payload = json.loads(
+        (
+            ROOT
+            / "config"
+            / "city-storage-contract.json"
+        ).read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert payload["protocol"] == (
+        ADAPTER_PROTOCOL
+    )
+    assert payload["recordProtocol"] == (
+        "bondik-city-storage-record/1"
+    )
+    assert payload["operations"] == [
+        "read",
+        "write",
+        "delete",
+        "list",
+    ]
+    assert payload["revision"] == (
+        "monotonic-per-key"
+    )
+    assert payload["conflictPolicy"] == (
+        "expected-revision"
+    )
+    assert payload["maxValueBytes"] == 65536
+    assert payload["exposure"] == {
+        "agentExecution": "not-exposed",
+        "network": "not-exposed",
+    }
