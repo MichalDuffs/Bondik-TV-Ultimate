@@ -1,0 +1,15 @@
+{
+  "protocol": "bondik-city-access-route/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "directoryProtocol": "bondik-city-service-directory/1",
+  "safetyProtocol": "bondik-city-agent-safety/1",
+  "authority": "plan-only",
+  "outputKind": "access-route-plan",
+  "exposure": {
+    "execution": "not-exposed",
+    "mutation": "not-allowed",
+    "network": "not-exposed",
+    "permissionGrant": "not-allowed"
+  }
+}
