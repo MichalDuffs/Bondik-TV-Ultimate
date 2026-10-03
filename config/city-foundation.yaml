@@ -83,6 +83,20 @@ buildings:
       network-authority: false
       handoff-authority: false
 
+  - id: storage-hub
+    name: Storage Hub
+    status: active
+    role: local-persistence-boundary
+    capabilities:
+      - namespaced-json-storage
+      - monotonic-record-revisions
+      - expected-revision-conflict-detection
+      - local-file-reference-adapter
+    constraints:
+      network-storage: false
+      agent-execution: false
+      implicit-platform-migration: false
+
   - id: radio-station
     name: Radio Station
     status: planned
@@ -123,7 +137,7 @@ infrastructure:
     status: active
     purpose: observable-module-events
   - id: storage-adapter
-    status: planned
+    status: active
     purpose: platform-independent-persistence-boundary
   - id: device-share-adapter
     status: planned
