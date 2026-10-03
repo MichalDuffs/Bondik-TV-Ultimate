@@ -1,4 +1,6 @@
 import copy
+import hashlib
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -257,14 +259,27 @@ def test_registration_target_mismatch_is_rejected():
 
 
 def test_inactive_or_unknown_target_fails_closed():
+    grant, admission = grant_and_admission()
+    value = LocalCommandDispatcher()
+    value.register(
+        command_type="city.missing.read",
+        building_id="control-tower",
+        capability_id="city.missing",
+        handler=lambda _arguments: {},
+    )
+
     with pytest.raises(
         CityCommandLeaseError,
         match="resolve exactly once",
     ):
-        lease(
-            target_capability_id=(
-                "city.missing"
-            )
+        prepare_command_lease(
+            grant,
+            admission,
+            dispatcher=value,
+            command_type="city.missing.read",
+            target_building_id="control-tower",
+            target_capability_id="city.missing",
+            arguments={},
         )
 
 
@@ -338,6 +353,17 @@ def test_grant_scope_must_be_command_boundary():
     grant, admission = grant_and_admission()
     grant["scope"]["capabilityId"] = (
         "city.other"
+    )
+    admission["evidence"]["grantDigest"] = (
+        "sha256:"
+        + hashlib.sha256(
+            json.dumps(
+                grant,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
     )
 
     with pytest.raises(
