@@ -1,0 +1,24 @@
+{
+  "protocol": "bondik-city-agent-signal/1",
+  "version": 1,
+  "cityId": "bondik-city",
+  "identity": {
+    "name": "Bondik City",
+    "message": "Bondik City is here.",
+    "mode": "static-discovery-manifest"
+  },
+  "capabilityRegistry": {
+    "path": "config/city-capabilities.json",
+    "protocol": "bondik-city-capability-registry/1"
+  },
+  "exposure": {
+    "discoverable": true,
+    "sensitiveState": "not-exposed",
+    "execution": "not-exposed",
+    "commandEndpoint": null
+  },
+  "handoff": {
+    "status": "not-enabled",
+    "requiresPermission": true
+  }
+}

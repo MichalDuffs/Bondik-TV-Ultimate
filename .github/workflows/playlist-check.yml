@@ -44,6 +44,7 @@ jobs:
           python -m py_compile tools/updater/process_epg_health.py
           python -m py_compile tools/updater/plan_epg_maintenance.py
           python -m py_compile tools/city/validate_capability_registry.py
+          python -m py_compile tools/city/validate_city_signal.py
 
       - name: Run automated test suite
         run: |
@@ -52,6 +53,10 @@ jobs:
       - name: Validate Bondik City capability registry
         run: |
           python tools/city/validate_capability_registry.py
+
+      - name: Validate Bondik City static AI signal
+        run: |
+          python tools/city/validate_city_signal.py
 
       - name: Validate channel metadata
         run: |
