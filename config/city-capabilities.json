@@ -117,6 +117,22 @@
       }
     },
     {
+      "id": "city.control-tower.status-board",
+      "buildingId": "control-tower",
+      "status": "active",
+      "surfaces": [
+        "shared"
+      ],
+      "human": {
+        "name": "Control Tower status board",
+        "description": "Render a human-readable city status board from the same capability, signal, and health evidence used by machine-readable city surfaces."
+      },
+      "agent": {
+        "discoverable": true,
+        "execution": "not-exposed"
+      }
+    },
+    {
       "id": "radio-station.agent-signal",
       "buildingId": "radio-station",
       "status": "planned",
