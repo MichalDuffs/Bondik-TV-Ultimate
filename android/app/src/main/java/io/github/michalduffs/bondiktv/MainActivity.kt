@@ -89,7 +89,7 @@ private fun BondikTvScreen() {
             MediaItem.fromUri(channel.url)
         )
         player.prepare()
-        player.playWhenReady = false
+        player.playWhenReady = true
     }
 
     LaunchedEffect(Unit) {
