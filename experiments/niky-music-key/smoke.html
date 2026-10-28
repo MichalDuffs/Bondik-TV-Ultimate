@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="cs">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; media-src blob:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Niky · zkouška prvního klíčku</title>
+<style>
+  :root { color-scheme: dark; font: 18px/1.6 system-ui, sans-serif; }
+  body { max-width: 780px; margin: 3rem auto; padding: 0 1.2rem; background: #121323; color: #f2efff; }
+  h1 { line-height: 1.2; } p { color: #cbc9df; }
+  button { font: inherit; padding: .6rem 1rem; margin: .3rem; border: 1px solid #8781b8; border-radius: .7rem; background: #302b51; color: white; cursor: pointer; }
+  #stop { background: #8c233b; font-weight: bold; }
+  pre { padding: 1rem; background: #1d1d34; border-radius: .7rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+  fieldset { margin: 1.2rem 0; border: 1px solid #8781b8; border-radius: .7rem; }
+</style>
+<h1>🔑 Niky · první klíček</h1>
+<p>Izolovaný ruční test. Tlačítka simulují příkazy; Niky není připojená.
+  Dvousekundový tón vzniká lokálně, bez rádia a bez síťového streamu.
+  Začni s nízkou hlasitostí reproduktorů.</p>
+<fieldset><legend>Lidské ovládání</legend>
+  <button id="enable">Povolit relaci</button>
+  <button id="stop">STOP · odebrat klíček</button>
+</fieldset>
+<fieldset><legend>Simulované příkazy</legend>
+  <button id="play">Přehrát testovací tón</button>
+  <button id="pause">Pozastavit</button>
+  <button id="unknown">Nepovolená skladba</button>
+  <button id="failure">Simulovat chybu play</button>
+  <button id="pending">Play s čekajícím výsledkem</button>
+  <button id="settle">Dokončit čekající výsledek</button>
+</fieldset>
+<pre id="state" aria-live="polite">Načítám modul…</pre>
+<h2>Výsledky této relace</h2>
+<p>Výpis zůstává pouze na stránce. Zvuk musí potvrdit člověk poslechem.</p>
+<pre id="results" role="log"></pre>
+<script type="module" src="./smoke.mjs"></script>
+</html>

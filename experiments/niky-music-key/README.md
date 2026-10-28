@@ -39,6 +39,34 @@ Testy používají fake media adaptér a neplatnou doménu example.invalid.
 Ověřují OFF, výběr ID, hlasitost, pause, STOP během play, chyby a zákaz rozšíření
 oprávnění. Nepotvrzují zvuk, browser autoplay ani skutečné rozhodování Niky.
 
+### Ruční lokální zvukový smoke test
+
+Z kořene izolovaného checkoutu spusť na Blacku:
+
+```powershell
+py -m http.server 8765 --bind 127.0.0.1 --directory experiments/niky-music-key
+```
+
+Otevři `http://127.0.0.1:8765/smoke.html`. Server ukončíš Ctrl+C.
+Stránka používá lokálně vytvořený dvousekundový WAV tón s fade-in/out.
+Důvěryhodný fixture adaptér převádí virtuální schválenou HTTPS adresu
+na tento blob; žádná externí skladba ani rádio se nestahuje.
+Je to ruční simulace příkazů, nikoli propojení Niky. Hlasitost API je 10 %.
+
+1. Bez povolení klikni Přehrát: výsledek `disabled`, bez zvuku.
+2. Povol relaci a přehraj tón: `playing`; potvrď skutečný zvuk poslechem.
+3. Zkus pause a nepovolenou skladbu: `paused` / `rejected`.
+4. Dej STOP během tónu: `enabled: false`, `hasSource: false`, zvuk skončí;
+   další play vrátí `disabled`.
+5. Povol relaci, zvol čekající výsledek, dej STOP a dokonči výsledek:
+   `cancelled`, zdroj zůstane odpojený. Čekání zde simuluje promise,
+   nepředstavuje skutečnou síťovou latenci.
+6. Povol relaci a simuluj chybu play: `error`, relace se vypne.
+
+Zaznamenej SHA (`git rev-parse HEAD`), verzi prohlížeče a výsledky každého bodu.
+Výpis je omezený na 40 řádků v paměti stránky, bez ukládání či odesílání.
+Test na Blacku není splněn pouhým vytvořením této stránky.
+
 ## Otevřené acceptance brány
 
 - Nezávislá kritika konkrétního kódu/SHA a vyhodnocení připomínek.
